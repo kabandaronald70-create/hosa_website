@@ -3,8 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>HOSA | Highway Old Students' Association</title>
-<meta name="description" content="The official web home of the Highway Old Students' Association — connecting former students of Highway Secondary School, Kiganda (Kassanda District, Uganda), along with current students and supporters of the school." />
+  <meta
+    name="description"
+    content="The official web home of the Highway Old Students' Association — connecting former students of Highway Secondary School, Kiganda (Kassanda District, Uganda), along with current students and supporters of the school."
+  />
+  <meta name="theme-color" content="#1F5134" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Source+Sans+3:wght@400;600;700&display=swap"
+    rel="stylesheet"
+  />
 
   <link rel="stylesheet" href="/styles/main.css" />
   <link rel="stylesheet" href="/styles/components.css" />
@@ -12,14 +24,71 @@
 
   <script type="module" src="/js/main.js" defer></script>
 </head>
+
 <body>
-  <h1>HOSA Website</h1>
-  <p>The Mighty. For a Bright Future.</p>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <header class="site-header" role="banner">
+    <div class="container header__inner">
+      <a href="/" class="logo" aria-label="HOSA home">
+        <span class="logo__mark" aria-hidden="true">H</span>
+        <span class="logo__text">HIGHWAY OLD STUDENTS' ASSOCIATION</span>
+      </a>
+
+      <button
+        class="menu-toggle"
+        aria-expanded="false"
+        aria-controls="primary-nav"
+        aria-label="Toggle navigation"
+      >
+        <span aria-hidden="true">☰</span>
+      </button>
+
+      <nav id="primary-nav" class="primary-nav" aria-label="Main navigation">
+        <ul>
+          <li><a href="/" data-route="home">Home</a></li>
+          <li><a href="/directory" data-route="directory">Directory</a></li>
+          <li><a href="/events" data-route="events">Events</a></li>
+          <li><a href="/mentorship" data-route="mentorship">Mentorship</a></li>
+          <li><a href="/jobs" data-route="jobs">Jobs</a></li>
+          <li>
+            <a href="/saved" data-route="saved">
+              Saved <span class="badge" id="saved-count" aria-live="polite">0</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content" role="main" class="container">
+  <section id="view-root" aria-live="polite">
+    <!-- Temporary home hero (replace with dynamic view in W6) -->
+    <div class="hero">
+      <h1>The Mighty. For a Bright Future.</h1>
+      <p>
+        Welcome to the official home of the Highway Old Students' Association —
+        reconnecting former students of Highway Secondary School, Kiganda (Kassanda District)
+        with each other, with current students, and with the school.
+      </p>
+      <div class="hero__actions">
+        <a href="/directory" class="btn btn--primary">Explore the Directory</a>
+        <a href="/register" class="btn btn--ghost">Join HOSA</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="container footer__inner">
+      <p class="footer__motto">The Mighty. For a Bright Future.</p>
+      <p class="footer__copy">
+        &copy; <span id="year"></span> Highway Old Students' Association. All rights reserved. &middot; <a href="/privacy">Privacy Policy</a>
+      </p>
+      <p class="footer__location">
+        Highway Secondary School &middot; Kiganda Town Council &middot; Kassanda District &middot; Central Uganda
+      </p>
+    </div>
+  </footer>
 </body>
-<footer>
-    <p class="footer__location">
-  Highway Secondary School &middot; Kiganda Town Council &middot; Kassanda District &middot; Central Uganda
-</p>
-  <p>&copy; 2024 Highway Old Students' Association. All rights reserved.</p>
-</footer>
 </html>

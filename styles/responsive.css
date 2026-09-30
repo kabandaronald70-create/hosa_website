@@ -1,1 +1,45 @@
-/* HOSA — Media queries for tablet and desktop layouts */
+/* =========================================================
+   HOSA — responsive.css
+   Mobile-first: this file adds tablet and desktop rules.
+   ========================================================= */
+
+/* ---------- Tablet and up ---------- */
+@media (min-width: 768px) {
+  .footer__inner {
+    padding-block: var(--space-xl);
+  }
+}
+
+/* ---------- Desktop (1024px+) ---------- */
+@media (min-width: 1024px) {
+  /* Hide hamburger */
+  .menu-toggle {
+    display: none;
+  }
+
+  /* Nav is inline, always visible */
+  .primary-nav {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    background-color: transparent;
+    box-shadow: none;
+    margin-left: auto;
+  }
+
+  .primary-nav ul {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-lg);
+    padding: 0;
+  }
+
+  .primary-nav a {
+    padding: var(--space-xs) 0;
+  }
+
+  .primary-nav a::after {
+    left: 0;
+    right: 0;
+  }
+}
