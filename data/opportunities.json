@@ -1,1 +1,57 @@
-﻿[]
+﻿[
+  {
+    "id": "o001",
+    "title": "Graduate Trainee Program",
+    "employer": "Stanbic Bank Uganda",
+    "location": "Kampala",
+    "type": "Graduate Program",
+    "postedBy": "m006",
+    "deadline": "2026-04-30",
+    "description": "Stanbic Bank Uganda is recruiting fresh graduates for its 12-month graduate trainee program in banking operations, credit, and digital financial services. Open to first-class and second-class-upper graduates.",
+    "saved": false
+  },
+  {
+    "id": "o002",
+    "title": "Internship: Civil Engineering (Roads)",
+    "employer": "Uganda National Roads Authority",
+    "location": "Kampala & Field Stations",
+    "type": "Internship",
+    "postedBy": "m012",
+    "deadline": "2026-03-31",
+    "description": "UNRA is offering 6-month paid internships to final-year civil engineering students. Work on live road upgrading projects in central Uganda. Good written communication and AutoCAD skills required.",
+    "saved": false
+  },
+  {
+    "id": "o003",
+    "title": "Full Sponsorship: BSc Nursing",
+    "employer": "HOSA Scholarship Fund",
+    "location": "Mbarara University of Science and Technology",
+    "type": "Scholarship",
+    "postedBy": "m007",
+    "deadline": "2026-02-28",
+    "description": "The HOSA Scholarship Fund is offering full sponsorship for one female former Highway student to pursue a BSc in Nursing at MUST. Covers tuition, accommodation, and books for four years. Awarded on merit and financial need.",
+    "saved": false
+  },
+  {
+    "id": "o004",
+    "title": "Sales Representative – FMCG",
+    "employer": "Movit Products Limited",
+    "location": "Mbarara",
+    "type": "Full-time",
+    "postedBy": "m006",
+    "deadline": "2026-05-15",
+    "description": "Movit is hiring a sales representative for the western Uganda region. Requires a diploma or degree, a valid driving licence, and willingness to travel. Competitive salary plus commission.",
+    "saved": false
+  },
+  {
+    "id": "o005",
+    "title": "Volunteer Teachers (S.1–S.4)",
+    "employer": "Highway Secondary School",
+    "location": "Kiganda, Kassanda District",
+    "type": "Volunteer",
+    "postedBy": "m014",
+    "deadline": "2026-01-31",
+    "description": "The school is seeking volunteer teachers for Mathematics, Physics, and English for the 2026 academic year. Ideal for recent graduates awaiting posting or retired teachers who want to give back.",
+    "saved": false
+  }
+]

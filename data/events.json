@@ -1,1 +1,62 @@
-﻿[]
+﻿[
+  {
+    "id": "e001",
+    "title": "HOSA Annual General Meeting 2026",
+    "date": "2026-03-14",
+    "venue": "Highway Secondary School, Kiganda",
+    "district": "Kassanda",
+    "description": "The Annual General Meeting of the Highway Old Students' Association. Election of new executive committee, presentation of the treasurer's report, and discussion of the classroom renovation project.",
+    "type": "AGM",
+    "rsvp": false
+  },
+  {
+    "id": "e002",
+    "title": "Homecoming & Reunion Weekend",
+    "date": "2026-08-01",
+    "venue": "Highway Secondary School, Kiganda",
+    "district": "Kassanda",
+    "description": "A two-day homecoming for all former students. Includes a football match against current students, a tour of the renovated classroom block, and an evening gala dinner.",
+    "type": "Reunion",
+    "rsvp": false
+  },
+  {
+    "id": "e003",
+    "title": "Career Day for S.4 and S.6 Students",
+    "date": "2026-06-20",
+    "venue": "Highway Secondary School Main Hall",
+    "district": "Kassanda",
+    "description": "Old students from various professions speak to current O-Level and A-Level candidates about career paths, university choices, and life after secondary school.",
+    "type": "Mentorship",
+    "rsvp": false
+  },
+  {
+    "id": "e004",
+    "title": "Classroom Renovation Fundraising Dinner",
+    "date": "2026-11-07",
+    "venue": "Kampala Serena Hotel",
+    "district": "Kampala",
+    "description": "A fundraising dinner to raise funds for the renovation of the old classroom blocks. Target: UGX 120 million. Guest of honour: Honourable Member of Parliament, Kasanda District.",
+    "type": "Fundraiser",
+    "rsvp": false
+  },
+  {
+    "id": "e005",
+    "title": "HOSA UK Chapter Meetup",
+    "date": "2026-05-17",
+    "venue": "East London Community Centre",
+    "district": "London",
+    "description": "Gathering of HOSA members based in the United Kingdom. Discusses contributions to the scholarship fund and diaspora mentorship program.",
+    "type": "Chapter",
+    "rsvp": false
+  },
+  {
+    "id": "e006",
+    "title": "Inter-House Sports Day (HOSA Sponsored)",
+    "date": "2026-07-05",
+    "venue": "Highway Secondary School Playground",
+    "district": "Kassanda",
+    "description": "HOSA sponsors the annual inter-house sports day. Alumni are invited to attend, umpire, and present awards to winning houses.",
+    "type": "School",
+    "rsvp": false
+  }
+]
