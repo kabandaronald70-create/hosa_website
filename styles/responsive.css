@@ -1,23 +1,130 @@
 /* =========================================================
    HOSA — responsive.css
-   Mobile-first: this file adds tablet and desktop rules.
+   Mobile-first: base rules for small screens,
+   then tablet and desktop enhancements.
    ========================================================= */
 
-/* ---------- Tablet and up ---------- */
+/* ---------------------------------------------------------
+   1. Base / mobile polish
+   --------------------------------------------------------- */
+
+/* Prevent horizontal overflow on narrow screens */
+html,
+body {
+  overflow-x: hidden;
+}
+
+/* Touch-friendly tap targets (WCAG 2.5.5) */
+.primary-nav a,
+.btn,
+.menu-toggle {
+  min-height: 44px;
+}
+
+.primary-nav a,
+.btn {
+  display: inline-flex;
+  align-items: center;
+}
+
+.primary-nav a {
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.btn {
+  justify-content: center;
+}
+
+/* Main vertical rhythm */
+main.container {
+  padding-block: var(--space-lg);
+}
+
+/* ---------- Hero (mobile-first) ---------- */
+.hero {
+  padding-block: var(--space-lg);
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: clamp(1.5rem, 6vw, 2rem);
+  margin-bottom: var(--space-sm);
+}
+
+.hero p {
+  max-width: 60ch;
+  margin-inline: auto;
+}
+
+.hero__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+.hero__actions .btn {
+  width: 100%;
+}
+
+/* ---------- Section rhythm on mobile ---------- */
+.section {
+  padding-block: var(--space-lg);
+}
+
+.section__header {
+  text-align: left;
+}
+
+/* ---------- Directory filter drawer (mobile) ----------
+   On mobile the filters collapse behind a "Filters" button
+   (slide-over behaviour from Figure 2). On desktop they
+   appear in the .split__aside column. */
+.split__aside {
+  display: none;
+}
+
+.split__aside.open {
+  display: block;
+}
+
+/* ---------- Very small phones (≤ 480px) ---------- */
+@media (max-width: 480px) {
+  :root {
+    --font-base: 0.95rem;
+  }
+
+  h1 { font-size: clamp(1.4rem, 5vw, 1.8rem); }
+  h2 { font-size: clamp(1.2rem, 4vw, 1.5rem); }
+
+  .footer__inner {
+    padding-block: var(--space-md);
+  }
+
+  .footer__location {
+    font-size: 0.8rem;
+  }
+}
+
+/* ---------------------------------------------------------
+   2. Tablet (768px+)
+   --------------------------------------------------------- */
 @media (min-width: 768px) {
   .footer__inner {
     padding-block: var(--space-xl);
   }
 }
 
-/* ---------- Desktop (1024px+) ---------- */
+/* ---------------------------------------------------------
+   3. Desktop (1024px+)
+   --------------------------------------------------------- */
 @media (min-width: 1024px) {
-  /* Hide hamburger */
+  /* ---------- Header / navigation ---------- */
   .menu-toggle {
     display: none;
   }
 
-  /* Nav is inline, always visible */
   .primary-nav {
     position: static;
     max-height: none;
@@ -36,10 +143,33 @@
 
   .primary-nav a {
     padding: var(--space-xs) 0;
+    width: auto;              /* reset from mobile's width: 100% */
+    min-height: 0;            /* reset from mobile's min-height: 44px */
   }
 
   .primary-nav a::after {
     left: 0;
     right: 0;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero__actions {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .hero__actions .btn {
+    width: auto;
+    padding-inline: var(--space-lg);
+  }
+
+  /* ---------- Sections ---------- */
+  .section__header {
+    text-align: center;
+  }
+
+  /* ---------- Directory filters visible on desktop ---------- */
+  .split__aside {
+    display: block;           /* undo mobile's display: none */
   }
 }

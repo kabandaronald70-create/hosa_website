@@ -213,3 +213,102 @@ small {
     scroll-behavior: auto !important;
   }
 }
+
+/* =========================================================
+   Layout utilities
+   Mobile-first: stack by default; expand at breakpoints.
+   Patterns:
+     .grid      — responsive card grid (2 / 3 columns)
+     .split     — sidebar + main (directory, events)
+     .stack     — vertical list of wide rows (job board)
+     .wizard    — centered multi-step column (mentorship)
+   ========================================================= */
+
+/* ---------- .grid — responsive card grid ---------- */
+.grid {
+  display: grid;
+  gap: var(--space-lg);
+  grid-template-columns: 1fr;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ---------- .split — sidebar + main content ---------- */
+.split {
+  display: grid;
+  gap: var(--space-lg);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .split {
+    grid-template-columns: 280px 1fr;   /* filter rail 280px + main */
+    align-items: start;
+  }
+
+  .split--wide {
+    grid-template-columns: 1fr 420px;   /* events list + map */
+  }
+
+  /* Sidebar becomes sticky while scrolling the main column */
+  .split__aside {
+    position: sticky;
+    top: calc(var(--space-md) + 80px);  /* below sticky header */
+  }
+}
+
+/* ---------- .stack — vertical list of wide rows ---------- */
+.stack {
+  display: grid;
+  gap: var(--space-md);
+  grid-template-columns: 1fr;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* ---------- .wizard — centered multi-step column ---------- */
+.wizard {
+  max-width: 720px;
+  margin-inline: auto;
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.wizard__step {
+  padding: var(--space-lg);
+  background-color: var(--color-warm);
+  border: var(--border-light);
+  border-radius: var(--radius-card);
+}
+
+.wizard__step h3 {
+  margin-top: 0;
+}
+
+/* ---------- Section spacing ---------- */
+.section {
+  padding-block: var(--space-xl);
+}
+
+.section--tight {
+  padding-block: var(--space-lg);
+}
+
+.section__header {
+  margin-bottom: var(--space-lg);
+  text-align: center;
+}
