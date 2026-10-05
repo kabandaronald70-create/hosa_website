@@ -1,44 +1,87 @@
-// js/main.js
-// HOSA — Application entry point
+// HOSA — Application entry point and hash router.
 
-// 1. Footer year
-const yearEl = document.querySelector('#year');
+import HomeView from "./HomeView.js";
+import DirectoryView from "./DirectoryView.js";
+import placeholderView from "./PlaceholderView.js";
+
+// ---------- Footer year ----------
+const yearEl = document.querySelector("#year");
 if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-// 2. Mobile menu toggle
-const menuToggle = document.querySelector('.menu-toggle');
-const primaryNav = document.querySelector('#primary-nav');
+// ---------- Mobile menu toggle ----------
+const menuToggle = document.querySelector(".menu-toggle");
+const primaryNav = document.querySelector("#primary-nav");
 
 if (menuToggle && primaryNav) {
-  menuToggle.addEventListener('click', () => {
-    const isOpen = primaryNav.classList.toggle('open');
-    menuToggle.setAttribute('aria-expanded', String(isOpen));
+  menuToggle.addEventListener("click", () => {
+    const isOpen = primaryNav.classList.toggle("open");
+    menuToggle.setAttribute("aria-expanded", String(isOpen));
   });
 
-  // Close menu when a link is clicked
-  primaryNav.addEventListener('click', (e) => {
-    if (e.target.matches('a')) {
-      primaryNav.classList.remove('open');
-      menuToggle.setAttribute('aria-expanded', 'false');
+  primaryNav.addEventListener("click", (e) => {
+    if (e.target.matches("a")) {
+      primaryNav.classList.remove("open");
+      menuToggle.setAttribute("aria-expanded", "false");
     }
   });
 }
 
-// 3. Highlight the active navigation link based on current path
-const path = window.location.pathname.replace(/\/$/, '') || '/';
-const routeMap = {
-  '/': 'home',
-  '/directory': 'directory',
-  '/events': 'events',
-  '/mentorship': 'mentorship',
-  '/jobs': 'jobs',
-  '/saved': 'saved'
+// ---------- Routes ----------
+const routes = {
+  "": HomeView,
+  directory: DirectoryView,
+  events: placeholderView("Events", "Events coming in Week 6."),
+  mentorship: placeholderView(
+    "Mentorship",
+    "Mentorship matching coming in Week 6.",
+  ),
+  jobs: placeholderView("Job Board", "Opportunities coming in Week 6."),
+  saved: placeholderView("Saved Items", "Your saved items will appear here."),
+  privacy: placeholderView("Privacy Policy", "Privacy policy coming soon."),
 };
-const currentRoute = routeMap[path] || 'home';
 
-document.querySelectorAll('.primary-nav a[data-route]').forEach((link) => {
-  if (link.dataset.route === currentRoute) {
-    link.classList.add('active');
-    link.setAttribute('aria-current', 'page');
+// ---------- Router ----------
+async function router() {
+  const hash = window.location.hash.replace(/^#\/?/, "");
+  const [routeKey, param] = hash.split("/");
+
+  let view;
+
+  if (routeKey === "member" && param) {
+    const { default: MemberDetails } = await import("./MemberDetails.js");
+    view = new MemberDetails(param);
+  } else {
+    const viewClass = routes[routeKey] ?? routes[""];
+    view = typeof viewClass === "function" ? new viewClass() : viewClass;
   }
-});
+
+  const container = document.querySelector("#view-root");
+  if (!container) return;
+  container.innerHTML = "<p>Loading…</p>";
+
+  try {
+    await view.render(container);
+  } catch (err) {
+    console.error("View failed:", err);
+    container.innerHTML = `
+      <p class="alert alert--error">
+        Something went wrong loading this page.
+      </p>
+    `;
+  }
+
+  // ---------- Highlight the active nav link ----------
+  document.querySelectorAll(".primary-nav a[data-route]").forEach((link) => {
+    const isActive = link.dataset.route === (routeKey || "home");
+    link.classList.toggle("active", isActive);
+    if (isActive) {
+      link.setAttribute("aria-current", "page");
+    } else {
+      link.removeAttribute("aria-current");
+    }
+  });
+}
+
+// ---------- Boot ----------
+window.addEventListener("hashchange", router);
+window.addEventListener("DOMContentLoaded", router);

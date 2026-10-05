@@ -106,7 +106,9 @@
   text-decoration: none;
   border-radius: var(--radius-sm);
   position: relative;
-  transition: background-color var(--transition-fast), color var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .primary-nav a:hover,
@@ -197,8 +199,11 @@
   text-decoration: none;
   cursor: pointer;
   border: 2px solid transparent;
-  transition: background-color var(--transition), border-color var(--transition),
-              color var(--transition), transform var(--transition-fast);
+  transition:
+    background-color var(--transition),
+    border-color var(--transition),
+    color var(--transition),
+    transform var(--transition-fast);
 }
 
 .btn:hover {
@@ -237,7 +242,9 @@
   border-radius: var(--radius-card);
   padding: var(--space-md);
   box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--transition), transform var(--transition);
+  transition:
+    box-shadow var(--transition),
+    transform var(--transition);
 }
 
 .card:hover {
@@ -268,5 +275,192 @@
   flex-wrap: wrap;
   gap: var(--space-md);
   justify-content: center;
+  margin-top: var(--space-lg);
+}
+
+/* ---------- Forms: filters ---------- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+  font-size: var(--font-sm);
+}
+
+.field span {
+  font-weight: 600;
+  color: var(--color-heading);
+}
+
+.field input,
+.field select {
+  padding: var(--space-sm);
+  border: var(--border-light);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-cream);
+  color: var(--color-charcoal);
+  font: inherit;
+}
+
+.field input:focus,
+.field select:focus {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 1px;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+  font-size: var(--font-sm);
+  cursor: pointer;
+}
+
+/* ---------- Results count ---------- */
+.results-count {
+  margin-bottom: var(--space-md);
+  color: var(--color-charcoal);
+  font-size: var(--font-sm);
+}
+
+/* ---------- Member card ---------- */
+.member-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.member-card__header {
+  display: flex;
+  gap: var(--space-md);
+  align-items: center;
+}
+
+.member-card__avatar {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background-color: var(--color-forest);
+  color: var(--color-cream);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.member-card__name {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.member-card__meta {
+  margin: 0;
+  font-size: var(--font-sm);
+  color: var(--color-charcoal);
+  opacity: 0.75;
+}
+
+.member-card__profession {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-forest);
+}
+
+.member-card__badge {
+  display: inline-block;
+  margin: 0;
+  padding: 2px 8px;
+  background: rgba(31, 81, 52, 0.1);
+  color: var(--color-forest);
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+  align-self: flex-start;
+}
+
+.member-card__link {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+/* ---------- Empty state ---------- */
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: var(--space-lg);
+  background: var(--color-warm);
+  border-radius: var(--radius-card);
+}
+
+.link-button {
+  background: none;
+  border: 0;
+  color: var(--color-forest);
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
+/* ---------- Profile ---------- */
+.profile {
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.profile__header {
+  display: flex;
+  gap: var(--space-md);
+  align-items: center;
+  margin-bottom: var(--space-lg);
+}
+
+.profile__avatar {
+  display: grid;
+  place-items: center;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  background-color: var(--color-forest);
+  color: var(--color-cream);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.profile__meta {
+  color: var(--color-charcoal);
+  opacity: 0.75;
+  margin: 0;
+}
+
+.profile__profession {
+  color: var(--color-forest);
+  font-weight: 600;
+  margin: 0;
+}
+
+.profile__body {
+  margin-block: var(--space-lg);
+}
+
+.profile__details {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-sm) var(--space-md);
+}
+
+.profile__details dt {
+  font-weight: 600;
+  color: var(--color-heading);
+}
+
+.profile__actions {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
   margin-top: var(--space-lg);
 }
