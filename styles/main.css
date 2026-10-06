@@ -6,30 +6,31 @@
 /* ---------- Design tokens ---------- */
 :root {
   /* Colour palette (from project proposal) */
-  --color-forest:     #1F5134;
-  --color-chocolate:  #5A3A22;
-  --color-cream:      #F6F1E7;
-  --color-warm:       #FFFFD8;
-  --color-charcoal:   #22201D;
-  --color-gold:       #C8901F;
+  --color-forest: #1f5134;
+  --color-chocolate: #5a3a22;
+  --color-cream: #f6f1e7;
+  --color-warm: #ffffd8;
+  --color-charcoal: #22201d;
+  --color-gold: #c8901f;
 
   /* Semantic aliases */
-  --color-bg:         var(--color-cream);
-  --color-surface:    var(--color-warm);
-  --color-text:       var(--color-charcoal);
-  --color-heading:    var(--color-forest);
-  --color-accent:     var(--color-gold);
-  --color-border:     rgba(34, 32, 29, 0.12);
+  --color-bg: var(--color-cream);
+  --color-surface: var(--color-warm);
+  --color-text: var(--color-charcoal);
+  --color-heading: var(--color-forest);
+  --color-accent: var(--color-gold);
+  --color-border: rgba(34, 32, 29, 0.12);
 
   /* Typography */
-  --font-heading: 'Merriweather', Georgia, 'Times New Roman', serif;
-  --font-body:    'Source Sans 3', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-heading: "Merriweather", Georgia, "Times New Roman", serif;
+  --font-body:
+    "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  --font-base:    1rem;        /* 16px */
-  --font-sm:      0.875rem;    /* 14px */
-  --font-lg:      1.125rem;    /* 18px */
-  --line-height:  1.6;
-  --line-tight:   1.25;
+  --font-base: 1rem; /* 16px */
+  --font-sm: 0.875rem; /* 14px */
+  --font-lg: 1.125rem; /* 18px */
+  --line-height: 1.6;
+  --line-tight: 1.25;
 
   /* Spacing scale */
   --space-xs: 0.25rem;
@@ -39,18 +40,18 @@
   --space-xl: 4rem;
 
   /* Radii */
-  --radius-sm:   4px;
+  --radius-sm: 4px;
   --radius-card: 8px;
   --radius-pill: 999px;
 
   /* Borders & shadows */
   --border-light: 1px solid var(--color-border);
-  --shadow-sm:    0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
 
   /* Transitions */
   --transition-fast: 150ms ease;
-  --transition:      200ms ease;
+  --transition: 200ms ease;
 
   /* Layout */
   --max-width: 1200px;
@@ -70,13 +71,24 @@ html {
 }
 
 body,
-h1, h2, h3, h4, h5, h6,
-p, ul, ol, figure, blockquote, dl, dd {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+ul,
+ol,
+figure,
+blockquote,
+dl,
+dd {
   margin: 0;
 }
 
-ul[role='list'],
-ol[role='list'] {
+ul[role="list"],
+ol[role="list"] {
   list-style: none;
   padding: 0;
 }
@@ -131,17 +143,30 @@ main {
 }
 
 /* ---------- Typography ---------- */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-heading);
   color: var(--color-heading);
   line-height: var(--line-tight);
   margin-bottom: var(--space-sm);
 }
 
-h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); }
-h2 { font-size: clamp(1.5rem, 3vw, 2rem); }
-h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
-h4 { font-size: 1.125rem; }
+h1 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+}
+h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+h3 {
+  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+}
+h4 {
+  font-size: 1.125rem;
+}
 
 p {
   margin-bottom: var(--space-md);
@@ -255,18 +280,14 @@ small {
 
 @media (min-width: 1024px) {
   .split {
-    grid-template-columns: 280px 1fr;   /* filter rail 280px + main */
+    grid-template-columns: 280px 1fr; /* filter rail 280px + main */
     align-items: start;
-  }
-
-  .split--wide {
-    grid-template-columns: 1fr 420px;   /* events list + map */
   }
 
   /* Sidebar becomes sticky while scrolling the main column */
   .split__aside {
     position: sticky;
-    top: calc(var(--space-md) + 80px);  /* below sticky header */
+    top: calc(var(--space-md) + 80px); /* below sticky header */
   }
 }
 

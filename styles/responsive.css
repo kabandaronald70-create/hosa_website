@@ -77,17 +77,10 @@ main.container {
   text-align: left;
 }
 
-/* ---------- Directory filter drawer (mobile) ----------
-   On mobile the filters collapse behind a "Filters" button
-   (slide-over behaviour from Figure 2). On desktop they
-   appear in the .split__aside column. */
-.split__aside {
-  display: none;
-}
-
-.split__aside.open {
-  display: block;
-}
+/* ---------- Split layout on mobile ----------
+   Stack the sidebar above the main content on mobile and tablet.
+   The desktop version (1024px+) is defined in main.css
+   (.split uses grid-template-columns: 280px 1fr). */
 
 /* ---------- Very small phones (≤ 480px) ---------- */
 @media (max-width: 480px) {
@@ -95,8 +88,12 @@ main.container {
     --font-base: 0.95rem;
   }
 
-  h1 { font-size: clamp(1.4rem, 5vw, 1.8rem); }
-  h2 { font-size: clamp(1.2rem, 4vw, 1.5rem); }
+  h1 {
+    font-size: clamp(1.4rem, 5vw, 1.8rem);
+  }
+  h2 {
+    font-size: clamp(1.2rem, 4vw, 1.5rem);
+  }
 
   .footer__inner {
     padding-block: var(--space-md);
@@ -143,8 +140,8 @@ main.container {
 
   .primary-nav a {
     padding: var(--space-xs) 0;
-    width: auto;              /* reset from mobile's width: 100% */
-    min-height: 0;            /* reset from mobile's min-height: 44px */
+    width: auto;
+    min-height: 0;
   }
 
   .primary-nav a::after {
@@ -170,6 +167,6 @@ main.container {
 
   /* ---------- Directory filters visible on desktop ---------- */
   .split__aside {
-    display: block;           /* undo mobile's display: none */
+    display: block;
   }
 }
