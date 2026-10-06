@@ -3,10 +3,22 @@
 import HomeView from "./HomeView.js";
 import DirectoryView from "./DirectoryView.js";
 import placeholderView from "./PlaceholderView.js";
+import EventsView from "./EventsView.js";
+import MentorshipForm from "./MentorshipForm.js";
+import JobBoard from "./JobBoard.js";
+import StoriesCarousel from "./StoriesCarousel.js";
+import NotFoundView from "./NotFoundView.js";
+import { updateSavedBadge } from "./updateSavedBadge.js";
+import SavedView from "./SavedView.js";
 
 // ---------- Footer year ----------
 const yearEl = document.querySelector("#year");
 if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+// ---------- Saved items badge ----------
+updateSavedBadge();
+window.addEventListener("hosa:favourites-changed", updateSavedBadge);
+window.addEventListener("hosa:rsvps-changed", updateSavedBadge);
 
 // ---------- Mobile menu toggle ----------
 const menuToggle = document.querySelector(".menu-toggle");
@@ -30,13 +42,11 @@ if (menuToggle && primaryNav) {
 const routes = {
   "": HomeView,
   directory: DirectoryView,
-  events: placeholderView("Events", "Events coming in Week 6."),
-  mentorship: placeholderView(
-    "Mentorship",
-    "Mentorship matching coming in Week 6.",
-  ),
-  jobs: placeholderView("Job Board", "Opportunities coming in Week 6."),
-  saved: placeholderView("Saved Items", "Your saved items will appear here."),
+  events: EventsView,
+  mentorship: MentorshipForm,
+  jobs: JobBoard,
+  stories: StoriesCarousel,
+  saved: SavedView,
   privacy: placeholderView("Privacy Policy", "Privacy policy coming soon."),
 };
 
@@ -51,7 +61,10 @@ async function router() {
     const { default: MemberDetails } = await import("./MemberDetails.js");
     view = new MemberDetails(param);
   } else {
-    const viewClass = routes[routeKey] ?? routes[""];
+    // Home for empty route; known route; otherwise 404
+    const viewClass =
+      routeKey === "" ? routes[""] : (routes[routeKey] ?? NotFoundView);
+
     view = typeof viewClass === "function" ? new viewClass() : viewClass;
   }
 

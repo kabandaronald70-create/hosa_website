@@ -5,6 +5,8 @@
     "date": "2026-03-14",
     "venue": "Highway Secondary School, Kiganda",
     "district": "Kassanda",
+    "latitude": 0.7731,
+    "longitude": 31.5689,
     "description": "The Annual General Meeting of the Highway Old Students' Association. Election of new executive committee, presentation of the treasurer's report, and discussion of the classroom renovation project.",
     "type": "AGM",
     "rsvp": false
@@ -15,6 +17,8 @@
     "date": "2026-08-01",
     "venue": "Highway Secondary School, Kiganda",
     "district": "Kassanda",
+    "latitude": 0.7731,
+    "longitude": 31.5689,
     "description": "A two-day homecoming for all former students. Includes a football match against current students, a tour of the renovated classroom block, and an evening gala dinner.",
     "type": "Reunion",
     "rsvp": false
@@ -25,6 +29,8 @@
     "date": "2026-06-20",
     "venue": "Highway Secondary School Main Hall",
     "district": "Kassanda",
+    "latitude": 0.7731,
+    "longitude": 31.5689,
     "description": "Old students from various professions speak to current O-Level and A-Level candidates about career paths, university choices, and life after secondary school.",
     "type": "Mentorship",
     "rsvp": false
@@ -35,6 +41,8 @@
     "date": "2026-11-07",
     "venue": "Kampala Serena Hotel",
     "district": "Kampala",
+    "latitude": 0.3147,
+    "longitude": 32.5875,
     "description": "A fundraising dinner to raise funds for the renovation of the old classroom blocks. Target: UGX 120 million. Guest of honour: Honourable Member of Parliament, Kasanda District.",
     "type": "Fundraiser",
     "rsvp": false
@@ -45,6 +53,8 @@
     "date": "2026-05-17",
     "venue": "East London Community Centre",
     "district": "London",
+    "latitude": 51.5145,
+    "longitude": -0.0553,
     "description": "Gathering of HOSA members based in the United Kingdom. Discusses contributions to the scholarship fund and diaspora mentorship program.",
     "type": "Chapter",
     "rsvp": false
@@ -55,6 +65,8 @@
     "date": "2026-07-05",
     "venue": "Highway Secondary School Playground",
     "district": "Kassanda",
+    "latitude": 0.7731,
+    "longitude": 31.5689,
     "description": "HOSA sponsors the annual inter-house sports day. Alumni are invited to attend, umpire, and present awards to winning houses.",
     "type": "School",
     "rsvp": false
