@@ -2,7 +2,6 @@
 
 import HomeView from "./HomeView.js";
 import DirectoryView from "./DirectoryView.js";
-import placeholderView from "./PlaceholderView.js";
 import EventsView from "./EventsView.js";
 import MentorshipForm from "./MentorshipForm.js";
 import JobBoard from "./JobBoard.js";
@@ -10,6 +9,7 @@ import StoriesCarousel from "./StoriesCarousel.js";
 import NotFoundView from "./NotFoundView.js";
 import { updateSavedBadge } from "./updateSavedBadge.js";
 import SavedView from "./SavedView.js";
+import PrivacyView from "./PrivacyView.js";
 
 // ---------- Footer year ----------
 const yearEl = document.querySelector("#year");
@@ -47,7 +47,7 @@ const routes = {
   jobs: JobBoard,
   stories: StoriesCarousel,
   saved: SavedView,
-  privacy: placeholderView("Privacy Policy", "Privacy policy coming soon."),
+  privacy: PrivacyView,
 };
 
 // ---------- Router ----------

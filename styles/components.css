@@ -194,6 +194,32 @@
   letter-spacing: 0.02em;
 }
 
+.footer__nav {
+  justify-self: center;
+}
+
+.footer__link {
+  display: inline-block;
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: var(--radius-pill);
+  color: var(--color-cream);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.footer__link:hover {
+  background-color: var(--color-warm);
+  border-color: var(--color-warm);
+  color: var(--color-chocolate);
+}
+
+.footer__link:focus-visible {
+  outline: 3px solid var(--color-warm);
+  outline-offset: 3px;
+}
+
 /* ---------- Buttons ---------- */
 .btn {
   display: inline-block;
@@ -791,4 +817,32 @@ textarea {
   justify-content: center;
   gap: var(--space-sm);
   flex-wrap: wrap;
+}
+
+/* ---------- Legal / privacy page ---------- */
+.legal {
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.legal h3 {
+  margin-top: var(--space-lg);
+}
+
+.legal ul {
+  padding-left: var(--space-lg);
+  list-style: disc;
+}
+
+.legal li {
+  margin-bottom: var(--space-xs);
+}
+
+.legal kbd {
+  font-family: var(--font-body);
+  background: var(--color-charcoal);
+  color: var(--color-cream);
+  border-radius: var(--radius-sm);
+  padding: 1px 6px;
+  font-size: 0.85em;
 }
