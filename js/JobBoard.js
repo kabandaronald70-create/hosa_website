@@ -20,13 +20,13 @@ export default class JobBoard {
   async render(container) {
     container.innerHTML = `
       <header class="section__header">
-        <h2>Job Board</h2>
+        <h1>Job Board</h1>
         <p>Internships, graduate programs, scholarships, and jobs for HOSA members.</p>
       </header>
 
       <div class="split">
         <aside class="split__aside card">
-          <h3>Filters</h3>
+          <h2>Filters</h2>
 
           <label class="field">
             <span>Search</span>
@@ -213,7 +213,7 @@ function jobCardTemplate(o) {
       <header class="job-card__header">
         <div>
           <p class="job-card__type">${escapeHtml(o.type)}</p>
-          <h3 class="job-card__title">${escapeHtml(o.title)}</h3>
+          <h2 class="job-card__title">${escapeHtml(o.title)}</h2>
           <p class="job-card__employer">${escapeHtml(o.employer)}</p>
         </div>
         <p class="job-card__deadline">Deadline: ${deadlineStr}</p>

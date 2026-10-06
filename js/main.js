@@ -50,6 +50,19 @@ const routes = {
   privacy: PrivacyView,
 };
 
+// ---------- Page titles per route ----------
+const titles = {
+  "": "HOSA | Highway Old Students' Association",
+  directory: "Alumni Directory | HOSA",
+  events: "Events | HOSA",
+  mentorship: "Mentorship | HOSA",
+  jobs: "Job Board | HOSA",
+  stories: "Alumni Stories | HOSA",
+  saved: "Saved Items | HOSA",
+  privacy: "Privacy Policy | HOSA",
+  member: "Member Profile | HOSA",
+};
+
 // ---------- Router ----------
 async function router() {
   const hash = window.location.hash.replace(/^#\/?/, "");
@@ -61,7 +74,6 @@ async function router() {
     const { default: MemberDetails } = await import("./MemberDetails.js");
     view = new MemberDetails(param);
   } else {
-    // Home for empty route; known route; otherwise 404
     const viewClass =
       routeKey === "" ? routes[""] : (routes[routeKey] ?? NotFoundView);
 
@@ -82,6 +94,10 @@ async function router() {
       </p>
     `;
   }
+
+  // ---------- Set page title ----------
+  document.title =
+    titles[routeKey] || "HOSA | Highway Old Students' Association";
 
   // ---------- Highlight the active nav link ----------
   document.querySelectorAll(".primary-nav a[data-route]").forEach((link) => {

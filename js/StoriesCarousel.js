@@ -12,9 +12,12 @@ export default class StoriesCarousel {
   }
 
   async render(container) {
+    // Clear any lingering timer from a previous render.
+    this.stopAuto();
+
     container.innerHTML = `
       <header class="section__header">
-        <h2>Alumni Stories</h2>
+        <h1>Alumni Stories</h1>
         <p>Success stories from old students of Highway Secondary School.</p>
       </header>
 
@@ -27,17 +30,20 @@ export default class StoriesCarousel {
       this.stories = await services.getStories();
     } catch (err) {
       console.error("Failed to load stories:", err);
-      container.querySelector("#carousel").innerHTML =
-        '<p class="alert alert--error">Could not load stories.</p>';
+      const c = container.querySelector("#carousel");
+      if (c)
+        c.innerHTML =
+          '<p class="alert alert--error">Could not load stories.</p>';
       return;
     }
 
     if (this.stories.length === 0) {
-      container.querySelector("#carousel").innerHTML =
-        '<p class="empty-state">No stories yet.</p>';
+      const c = container.querySelector("#carousel");
+      if (c) c.innerHTML = '<p class="empty-state">No stories yet.</p>';
       return;
     }
 
+    this.currentIndex = 0;
     this.renderCarousel();
     this.attachListeners();
     this.startAuto();
@@ -45,6 +51,12 @@ export default class StoriesCarousel {
 
   renderCarousel() {
     const c = document.querySelector("#carousel");
+    if (!c) {
+      // User navigated away — clean up and stop.
+      this.stopAuto();
+      return;
+    }
+
     const story = this.stories[this.currentIndex];
 
     c.innerHTML = `
@@ -52,7 +64,7 @@ export default class StoriesCarousel {
         <p class="story-card__author">
           ${escapeHtml(story.author)} &middot; Class of ${story.classYear}
         </p>
-        <h3 class="story-card__title">${escapeHtml(story.title)}</h3>
+        <h2 class="story-card__title">${escapeHtml(story.title)}</h2>
         <p class="story-card__excerpt">${escapeHtml(story.excerpt)}</p>
         <p class="story-card__body">${escapeHtml(story.body)}</p>
       </article>
@@ -82,14 +94,15 @@ export default class StoriesCarousel {
 
   attachListeners() {
     const c = document.querySelector("#carousel");
+    if (!c) return;
 
-    c.querySelector("#story-prev").addEventListener("click", () => {
-      this.goTo(this.currentIndex - 1);
-    });
+    const prev = c.querySelector("#story-prev");
+    const next = c.querySelector("#story-next");
 
-    c.querySelector("#story-next").addEventListener("click", () => {
-      this.goTo(this.currentIndex + 1);
-    });
+    if (prev)
+      prev.addEventListener("click", () => this.goTo(this.currentIndex - 1));
+    if (next)
+      next.addEventListener("click", () => this.goTo(this.currentIndex + 1));
 
     c.querySelectorAll(".carousel__dot").forEach((dot) => {
       dot.addEventListener("click", (e) => {
@@ -99,6 +112,7 @@ export default class StoriesCarousel {
   }
 
   goTo(index) {
+    if (this.stories.length === 0) return;
     const n = this.stories.length;
     this.currentIndex = ((index % n) + n) % n;
     this.renderCarousel();
@@ -107,12 +121,20 @@ export default class StoriesCarousel {
   }
 
   startAuto() {
+    this.stopAuto();
     this.autoTimer = setInterval(() => this.goTo(this.currentIndex + 1), 8000);
   }
 
   restartAuto() {
-    if (this.autoTimer) clearInterval(this.autoTimer);
+    this.stopAuto();
     this.startAuto();
+  }
+
+  stopAuto() {
+    if (this.autoTimer) {
+      clearInterval(this.autoTimer);
+      this.autoTimer = null;
+    }
   }
 }
 

@@ -31,19 +31,19 @@ export default class MemberDetails {
           <header class="profile__header">
             <div class="profile__avatar" aria-hidden="true">${initials(member.name)}</div>
             <div>
-              <h2>${escapeHtml(member.name)}</h2>
+              <h1>${escapeHtml(member.name)}</h1>
               <p class="profile__meta">Class of ${member.classYear} &middot; ${escapeHtml(member.district)}, ${escapeHtml(member.country)}</p>
               <p class="profile__profession">${escapeHtml(member.profession)}</p>
             </div>
           </header>
 
           <section class="profile__body">
-            <h3>About</h3>
+            <h2>About</h2>
             <p>${escapeHtml(member.bio)}</p>
           </section>
 
           <section class="profile__body">
-            <h3>Details</h3>
+            <h2>Details</h2>
             <dl class="profile__details">
               <dt>Contact preference</dt><dd>${escapeHtml(member.contactPreference)}</dd>
               <dt>Mentor</dt><dd>${member.mentor ? `Yes — ${escapeHtml(member.mentorField)}` : "Not currently"}</dd>
@@ -61,6 +61,7 @@ export default class MemberDetails {
         alert("Save feature coming soon.");
       });
     } catch (err) {
+      console.error("Failed to load member profile:", err);
       container.innerHTML = `<p class="alert alert--error">Could not load this profile.</p>`;
     }
   }

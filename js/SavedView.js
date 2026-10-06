@@ -15,7 +15,7 @@ export default class SavedView {
   async render(container) {
     container.innerHTML = `
       <header class="section__header">
-        <h2>Saved Items</h2>
+        <h1>Saved Items</h1>
         <p>Your saved jobs, events, and mentors.</p>
       </header>
       <div id="saved-content">
@@ -67,7 +67,7 @@ export default class SavedView {
     if (savedJobs.length > 0) {
       html += `
         <section class="section section--tight">
-          <h3>Saved Jobs (${savedJobs.length})</h3>
+          <h2>Saved Jobs (${savedJobs.length})</h2>
           <div class="stack">
             ${savedJobs.map(savedJobTemplate).join("")}
           </div>
@@ -78,7 +78,7 @@ export default class SavedView {
     if (savedEvents.length > 0) {
       html += `
         <section class="section section--tight">
-          <h3>Saved Events (${savedEvents.length})</h3>
+          <h2>Saved Events (${savedEvents.length})</h2>
           <div class="stack">
             ${savedEvents.map(savedEventTemplate).join("")}
           </div>
@@ -89,7 +89,7 @@ export default class SavedView {
     if (savedMentors.length > 0) {
       html += `
         <section class="section section--tight">
-          <h3>Saved Mentors (${savedMentors.length})</h3>
+          <h2>Saved Mentors (${savedMentors.length})</h2>
           <div class="grid grid--cards">
             ${savedMentors.map(savedMentorTemplate).join("")}
           </div>
@@ -118,7 +118,7 @@ function savedJobTemplate(job) {
       <header class="job-card__header">
         <div>
           <p class="job-card__type">${escapeHtml(job.type)}</p>
-          <h4 class="job-card__title">${escapeHtml(job.title)}</h4>
+          <h3 class="job-card__title">${escapeHtml(job.title)}</h3>
           <p class="job-card__employer">${escapeHtml(job.employer)}</p>
         </div>
         <p class="job-card__deadline">Deadline: ${escapeHtml(job.deadline)}</p>
@@ -138,7 +138,7 @@ function savedEventTemplate(event) {
       <header class="event-card__header">
         <div>
           <p class="event-card__type">${escapeHtml(event.type)}</p>
-          <h4 class="event-card__title">${escapeHtml(event.title)}</h4>
+          <h3 class="event-card__title">${escapeHtml(event.title)}</h3>
         </div>
         <p class="event-card__date">${escapeHtml(event.date)}</p>
       </header>
@@ -159,7 +159,7 @@ function savedMentorTemplate(m) {
       <div class="member-card__header">
         <div class="member-card__avatar" aria-hidden="true">${initials(m.name)}</div>
         <div>
-          <h4 class="member-card__name">${escapeHtml(m.name)}</h4>
+          <h3 class="member-card__name">${escapeHtml(m.name)}</h3>
           <p class="member-card__meta">Class of ${m.classYear}</p>
         </div>
       </div>

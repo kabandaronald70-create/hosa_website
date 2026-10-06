@@ -14,7 +14,7 @@ export default class EventsView {
   async render(container) {
     container.innerHTML = `
       <header class="section__header">
-        <h2>Upcoming Events</h2>
+        <h1>Upcoming Events</h1>
         <p>Reunions, AGMs, career days, and fundraising activities.</p>
       </header>
       <div class="stack" id="events-list">
@@ -115,7 +115,7 @@ export default class EventsView {
       }
 
       panel.innerHTML = `
-      <h4>${escapeHtml(event.venue)}</h4>
+      <h3>${escapeHtml(event.venue)}</h3>
       <p class="event-location__name">${escapeHtml(place.displayName)}</p>
       <p class="event-location__coords">
         Coordinates: <strong>${place.latitude.toFixed(4)}, ${place.longitude.toFixed(4)}</strong>
@@ -152,7 +152,7 @@ function eventCardTemplate(event) {
       <header class="event-card__header">
         <div>
           <p class="event-card__type">${escapeHtml(event.type)}</p>
-          <h3 class="event-card__title">${escapeHtml(event.title)}</h3>
+          <h2 class="event-card__title">${escapeHtml(event.title)}</h2>
         </div>
         <p class="event-card__date">${date}</p>
       </header>

@@ -19,15 +19,15 @@ export default class HomeView {
       <section class="section section--tight">
         <div class="grid">
           <article class="card">
-            <h3>Old Students</h3>
+            <h2>Old Students</h2>
             <p>Members from every final year since the first class of 2001.</p>
           </article>
           <article class="card">
-            <h3>Mentors</h3>
+            <h2>Mentors</h2>
             <p>Old students ready to guide current S.4 and S.6 candidates.</p>
           </article>
           <article class="card">
-            <h3>Events</h3>
+            <h2>Events</h2>
             <p>Reunions, AGMs, career days, and fundraising activities.</p>
           </article>
         </div>

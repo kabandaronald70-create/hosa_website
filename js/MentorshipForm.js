@@ -14,13 +14,13 @@ export default class MentorshipForm {
   async render(container) {
     container.innerHTML = `
       <header class="section__header">
-        <h2>Mentorship</h2>
+        <h1>Mentorship</h1>
         <p>Connect with old students working in fields you're interested in.</p>
       </header>
 
       <div class="wizard">
         <div class="wizard__step">
-          <h3>Step 1 — Choose a field</h3>
+          <h2>Step 1 — Choose a field</h2>
           <label class="field">
             <span>Field of interest</span>
             <select id="mentor-field">
@@ -33,12 +33,12 @@ export default class MentorshipForm {
         </div>
 
         <div class="wizard__step" id="step-matches" hidden>
-          <h3>Step 2 — Matched mentors</h3>
+          <h2>Step 2 — Matched mentors</h2>
           <div class="grid grid--cards" id="matches-grid"></div>
         </div>
 
         <div class="wizard__step" id="step-request" hidden>
-          <h3>Step 3 — Send a request</h3>
+          <h2>Step 3 — Send a request</h2>
           <form id="mentor-request-form" novalidate>
             <input type="hidden" name="mentorId" id="mentor-id">
 
@@ -163,7 +163,7 @@ export default class MentorshipForm {
     document.querySelector("#mentor-id").value = mentorId;
     const stepRequest = document.querySelector("#step-request");
     stepRequest.hidden = false;
-    stepRequest.querySelector("h3").textContent =
+    stepRequest.querySelector("h2").textContent =
       `Step 3 — Request ${mentor.name}`;
     stepRequest.scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -197,7 +197,7 @@ function mentorCardTemplate(m) {
       <div class="member-card__header">
         <div class="member-card__avatar" aria-hidden="true">${initials(m.name)}</div>
         <div>
-          <h3 class="member-card__name">${escapeHtml(m.name)}</h3>
+          <h2 class="member-card__name">${escapeHtml(m.name)}</h2>
           <p class="member-card__meta">Class of ${m.classYear} &middot; ${escapeHtml(m.district)}</p>
         </div>
       </div>

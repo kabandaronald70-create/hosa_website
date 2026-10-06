@@ -21,13 +21,13 @@ export default class DirectoryView {
   async render(container) {
     container.innerHTML = `
       <header class="section__header">
-        <h2>Alumni Directory</h2>
+        <h1>Alumni Directory</h1>
         <p>Find and connect with former students of Highway Secondary School.</p>
       </header>
 
       <div class="split">
         <aside class="split__aside card" id="filters">
-          <h3>Filters</h3>
+          <h2>Filters</h2>
 
           <label class="field">
             <span>Search by name</span>
@@ -264,7 +264,7 @@ function memberCardTemplate(m) {
       <div class="member-card__header">
         <div class="member-card__avatar" aria-hidden="true">${initials(m.name)}</div>
         <div>
-          <h3 class="member-card__name">${escapeHtml(m.name)}</h3>
+          <h2 class="member-card__name">${escapeHtml(m.name)}</h2>
           <p class="member-card__meta">Class of ${m.classYear} &middot; ${escapeHtml(m.district)}</p>
         </div>
       </div>

@@ -4,14 +4,14 @@ export default class PrivacyView {
   async render(container) {
     container.innerHTML = `
       <header class="section__header">
-        <h2>Privacy Policy</h2>
+        <h1>Privacy Policy</h1>
         <p>How the Highway Old Students' Association website handles your data.</p>
       </header>
 
       <article class="card legal">
         <p><em>Last updated: 2026</em></p>
 
-        <h3>What we collect</h3>
+        <h2>What we collect</h2>
         <p>
           This website stores the following information in your browser's
           <strong>local storage</strong> so that your preferences persist between visits:
@@ -22,14 +22,14 @@ export default class PrivacyView {
           <li><strong>Mentorship requests</strong> — messages you submit through the mentorship form</li>
         </ul>
 
-        <h3>What we do NOT collect</h3>
+        <h2>What we do NOT collect</h2>
         <ul>
           <li>We do not use cookies for tracking.</li>
           <li>We do not collect personal information on the server — all form data stays in your browser.</li>
           <li>We do not share any data with third parties.</li>
         </ul>
 
-        <h3>Third-party services</h3>
+        <h2>Third-party services</h2>
         <p>
           This site uses two public APIs to enrich its content:
         </p>
@@ -44,7 +44,7 @@ export default class PrivacyView {
           site is sent to them.
         </p>
 
-        <h3>Your control</h3>
+        <h2>Your control</h2>
         <p>
           You can clear all locally stored data at any time by opening your browser's
           Developer Tools (usually <kbd>F12</kbd>), navigating to the
@@ -52,7 +52,7 @@ export default class PrivacyView {
           <strong>Local Storage</strong>.
         </p>
 
-        <h3>Contact</h3>
+        <h2>Contact</h2>
         <p>
           If you have questions about this policy, please contact the HOSA
           executive committee through the association's official channels.

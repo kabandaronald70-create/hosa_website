@@ -1,7 +1,6 @@
 // Fetch wrappers for internal JSON data, REST Countries, and Nominatim geocoding.
 // Handles errors and validates responses before returning them.
 
-const COUNTRIES_BASE = "https://restcountries.com/v3.1";
 const NOMINATIM_BASE = "https://nominatim.openstreetmap.org";
 
 // Simple in-memory cache — Nominatim's usage policy requires low request rates.
