@@ -36,17 +36,31 @@ export default defineConfig([
         HTMLElement: "readonly",
         Node: "readonly",
         Event: "readonly",
-        CustomEvent: "readonly"
-      }
+        CustomEvent: "readonly",
+
+        // Animation / timing
+        requestAnimationFrame: "readonly",
+        cancelAnimationFrame: "readonly",
+
+        // Optional extra browser APIs
+        IntersectionObserver: "readonly",
+        MutationObserver: "readonly",
+      },
     },
     rules: {
       "no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
       "no-console": "off",
-      "no-undef": "error"
-    }
+      "no-undef": "error",
+    },
   },
   {
     // Ignore build output and dependencies
-    ignores: ["dist/**", "node_modules/**", ".vscode/**", "*.config.js", "*.config.mjs"]
-  }
+    ignores: [
+      "dist/**",
+      "node_modules/**",
+      ".vscode/**",
+      "*.config.js",
+      "*.config.mjs",
+    ],
+  },
 ]);

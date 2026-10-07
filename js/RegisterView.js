@@ -119,13 +119,20 @@ export default class RegisterView {
     newMembers.push(member);
     Storage.set("hosa-new-members", newMembers);
 
-    // Show confirmation
+    // Show confirmation with animated checkmark
     const container = form.parentElement;
     container.innerHTML = `
-      <div class="alert" role="status">
-        <p><strong>Thank you, ${escapeHtml(member.name)}!</strong></p>
+      <div class="success-card">
+        <svg class="success-checkmark" viewBox="0 0 52 52" aria-hidden="true">
+          <circle class="success-checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+          <path class="success-checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        </svg>
+        <h2>Welcome to HOSA, ${escapeHtml(member.name.split(" ")[0])}!</h2>
         <p>Your registration has been saved. It will be reviewed by the HOSA committee.</p>
-        <p>You can view the <a href="#/directory">current directory</a> or go back <a href="#/">home</a>.</p>
+        <div class="form-actions">
+          <a href="#/directory" class="btn btn--primary">View directory</a>
+          <a href="#/" class="btn btn--ghost">Back home</a>
+        </div>
       </div>
     `;
   }

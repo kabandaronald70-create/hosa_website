@@ -11,7 +11,39 @@
     />
     <meta name="theme-color" content="#1F5134" />
 
-    <!-- Open Graph (Facebook, LinkedIn, WhatsApp previews) -->
+    <!-- Favicons -->
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/images/favicon.svg"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="96x96"
+      href="/images/favicon-96x96.png"
+    />
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
+    <link rel="manifest" href="/images/site.webmanifest" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/images/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="/images/web-app-manifest-192x192.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="512x512"
+      href="/images/web-app-manifest-512x512.png"
+    />
+
+    <!-- Open Graph (social previews) -->
     <meta
       property="og:title"
       content="HOSA | Highway Old Students' Association"
@@ -24,10 +56,10 @@
     <meta property="og:url" content="https://hosa-website-vhts.onrender.com" />
     <meta
       property="og:image"
-      content="https://hosa-website-vhts.onrender.com/favicon.svg"
+      content="https://hosa-website-vhts.onrender.com/images/web-app-manifest-512x512.png"
     />
 
-    <!-- Twitter / X card -->
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary" />
     <meta
       name="twitter:title"
@@ -37,9 +69,12 @@
       name="twitter:description"
       content="Connect with former students of Highway Secondary School, Kiganda."
     />
+    <meta
+      name="twitter:image"
+      content="https://hosa-website-vhts.onrender.com/images/web-app-manifest-512x512.png"
+    />
 
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -47,10 +82,12 @@
       rel="stylesheet"
     />
 
+    <!-- Styles -->
     <link rel="stylesheet" href="/styles/main.css" />
     <link rel="stylesheet" href="/styles/components.css" />
     <link rel="stylesheet" href="/styles/responsive.css" />
 
+    <!-- Script -->
     <script type="module" src="/js/main.js"></script>
   </head>
   <body>
@@ -59,7 +96,13 @@
     <header class="site-header">
       <div class="container header__inner">
         <a href="#/" class="logo" aria-label="HOSA home">
-          <span class="logo__mark" aria-hidden="true">H</span>
+          <img
+            src="/images/web-app-manifest-192x192.png"
+            alt=""
+            class="logo__mark"
+            width="32"
+            height="32"
+          />
           <span class="logo__text">HOSA - KIGANDA</span>
         </a>
 

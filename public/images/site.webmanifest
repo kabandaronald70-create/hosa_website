@@ -1,0 +1,35 @@
+{
+  "name": "HOSA - Highway Old Students' Association",
+  "short_name": "HOSA - KIGANDA",
+  "description": "Connecting former students of Highway Secondary School, Kiganda.",
+  "icons": [
+    {
+      "src": "/images/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/images/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "theme_color": "#1F5134",
+  "background_color": "#F6F1E7",
+  "display": "standalone",
+  "start_url": "/"
+}

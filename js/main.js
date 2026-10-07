@@ -115,6 +115,11 @@ async function router() {
       : "Page loaded";
   }
 
+  // ---------- Scroll to top on route change ----------
+  if (!window.location.hash.includes("main-content")) {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   // ---------- Highlight the active nav link ----------
   document.querySelectorAll(".primary-nav a[data-route]").forEach((link) => {
     const isActive = link.dataset.route === (routeKey || "home");
