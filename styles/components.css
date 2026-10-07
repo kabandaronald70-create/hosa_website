@@ -118,7 +118,7 @@
 }
 
 .primary-nav a.active {
-  color: var(--color-gold);
+  color: var(--color-gold-light);
 }
 
 .primary-nav a::after {
@@ -128,7 +128,7 @@
   right: 0;
   bottom: 2px;
   height: 2px;
-  background-color: var(--color-gold);
+  background-color: var(--color-gold-light);
   transform: scaleX(0);
   transform-origin: left center;
   transition: transform var(--transition);
@@ -845,4 +845,86 @@ textarea {
   border-radius: var(--radius-sm);
   padding: 1px 6px;
   font-size: 0.85em;
+}
+
+/* ---------- Story hub card ---------- */
+.story-hub-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.story-hub-card__category {
+  margin: 0;
+  font-size: var(--font-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-gold-dark);
+}
+
+.story-hub-card__title {
+  margin: var(--space-xs) 0 0;
+  font-size: 1.25rem;
+}
+
+.story-hub-card__author {
+  margin: 0;
+  font-size: var(--font-sm);
+  color: var(--color-charcoal);
+  opacity: 0.75;
+}
+
+.story-hub-card__excerpt {
+  margin: var(--space-sm) 0 0;
+  line-height: 1.55;
+}
+
+.story-hub-card__link {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+/* ---------- Story detail ---------- */
+.story-detail {
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.story-detail__category {
+  margin: 0;
+  font-size: var(--font-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-gold-dark);
+}
+
+.story-detail__byline {
+  color: var(--color-charcoal);
+  opacity: 0.8;
+  margin-bottom: var(--space-lg);
+}
+
+.story-detail__excerpt {
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--color-forest);
+  border-left: 3px solid var(--color-gold);
+  padding-left: var(--space-md);
+  margin-block: var(--space-lg);
+}
+
+.story-detail__body p {
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+
+.story-detail__actions {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  margin-top: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--color-border);
 }

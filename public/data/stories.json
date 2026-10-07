@@ -5,8 +5,9 @@
     "author": "Moses Wasswa",
     "authorId": "m008",
     "classYear": 2009,
-    "excerpt": "I sat my UACE at Highway in 2009. Fourteen years later I was enrolled as an Advocate of the High Court of Uganda. This is how a small school in Kassanda shaped a legal career.",
-    "body": "When I joined Highway Secondary School in 2004 as an S.1 student, I did not imagine I would one day stand before the High Court. My teachers, especially Mr. Ssekabira in Literature, taught me to argue clearly and read widely. That foundation carried me through Makerere Law School and the Law Development Centre. Today I run my own practice in Kampala, and I mentor S.6 students every year at the HOSA Career Day.",
+    "category": "Law",
+    "excerpt": "I sat my UACE at Highway in 2009. Fourteen years later I was enrolled as an Advocate of the High Court of Uganda.",
+    "body": "When I joined Highway Secondary School in 2004 as an S.1 student, I did not imagine I would one day stand before the High Court. My teachers, especially Mr. Ssekabira in Literature, taught me to argue clearly and read widely. That foundation carried me through Makerere Law School and the Law Development Centre.",
     "date": "2026-01-20"
   },
   {
@@ -15,8 +16,9 @@
     "author": "James Okello",
     "authorId": "m002",
     "classYear": 2010,
+    "category": "Health",
     "excerpt": "I could have stayed in Kampala. I chose Mbarara, and then chose to serve upcountry. This is what I learned.",
-    "body": "After A-Level at Highway, I joined Mbarara University for MBChB. In my fourth year I did a placement at a rural health centre and saw how thin the medical staffing was. I decided then that my career would not be in a big city only. Today I am at Mbarara Regional Referral Hospital. My message to current S.4 students: if you study medicine, come back and serve. That is how our districts will grow.",
+    "body": "After A-Level at Highway, I joined Mbarara University for MBChB. In my fourth year I did a placement at a rural health centre and saw how thin the medical staffing was. I decided then that my career would not be in a big city only.",
     "date": "2026-02-10"
   },
   {
@@ -25,8 +27,9 @@
     "author": "David Ssemakula",
     "authorId": "m004",
     "classYear": 2005,
-    "excerpt": "People told me farming was for those who failed in class. I now export coffee and vanilla to Europe. Here's my story.",
-    "body": "I graduated from Highway in 2005 with decent grades. I could have gone to university. Instead I stayed in Kassanda and started with two acres of coffee. Sixteen years later, my cooperative has forty smallholder farmers, three drying sheds, and a buyer in Germany. Agriculture is not what you do when you fail. It is what you do when you are serious about money.",
+    "category": "Agriculture",
+    "excerpt": "People told me farming was for those who failed in class. I now export coffee and vanilla to Europe.",
+    "body": "I graduated from Highway in 2005 with decent grades. I could have gone to university. Instead I stayed in Kassanda and started with two acres of coffee. Sixteen years later, my cooperative has forty smallholder farmers, three drying sheds, and a buyer in Germany.",
     "date": "2026-03-05"
   },
   {
@@ -35,8 +38,9 @@
     "author": "Agnes Kirabo",
     "authorId": "m007",
     "classYear": 2013,
+    "category": "Health",
     "excerpt": "Nursing is not just a job. It is the doorway between fear and hope for the families we serve.",
-    "body": "I remember my first night shift at Jinja Regional Referral Hospital. A mother had brought in a child with severe malaria. We stabilized the child, and by morning she was eating. That moment is why I still do this. I also run a community health outreach in rural Busoga — the same kind of communities many of us come from. Every Highway student who goes into health carries the school with them, whether they know it or not.",
+    "body": "I remember my first night shift at Jinja Regional Referral Hospital. A mother had brought in a child with severe malaria. We stabilized the child, and by morning she was eating. That moment is why I still do this.",
     "date": "2026-03-22"
   },
   {
@@ -45,8 +49,9 @@
     "author": "Robert Kigongo",
     "authorId": "m014",
     "classYear": 2003,
-    "excerpt": "I was in the very first class of Highway Secondary School. Now I am headteacher at another school. Here is why the HOSA renovation project matters.",
-    "body": "I was in S.1 in 2001, the year Highway opened. We studied under temporary structures. Now, more than twenty years later, the old blocks leak in the rain. HOSA's renovation project is not about nostalgia. It is about making sure the next generation of Highway students has classrooms that respect their dignity. I encourage every member — at home or abroad — to give what they can. Even UGX 20,000 from every member would change everything.",
+    "category": "Community",
+    "excerpt": "I was in the very first class of Highway Secondary School. Now I am headteacher at another school.",
+    "body": "I was in S.1 in 2001, the year Highway opened. We studied under temporary structures. Now, more than twenty years later, the old blocks leak in the rain. HOSA's renovation project is not about nostalgia. It is about making sure the next generation of Highway students has classrooms that respect their dignity.",
     "date": "2026-04-02"
   }
 ]

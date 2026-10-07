@@ -5,11 +5,12 @@ import DirectoryView from "./DirectoryView.js";
 import EventsView from "./EventsView.js";
 import MentorshipForm from "./MentorshipForm.js";
 import JobBoard from "./JobBoard.js";
-import StoriesCarousel from "./StoriesCarousel.js";
+import StoriesView from "./StoriesView.js";
 import NotFoundView from "./NotFoundView.js";
 import { updateSavedBadge } from "./updateSavedBadge.js";
 import SavedView from "./SavedView.js";
 import PrivacyView from "./PrivacyView.js";
+import RegisterView from "./RegisterView.js";
 
 // ---------- Footer year ----------
 const yearEl = document.querySelector("#year");
@@ -45,9 +46,10 @@ const routes = {
   events: EventsView,
   mentorship: MentorshipForm,
   jobs: JobBoard,
-  stories: StoriesCarousel,
+  stories: StoriesView,
   saved: SavedView,
   privacy: PrivacyView,
+  register: RegisterView,
 };
 
 // ---------- Page titles per route ----------
@@ -61,6 +63,8 @@ const titles = {
   saved: "Saved Items | HOSA",
   privacy: "Privacy Policy | HOSA",
   member: "Member Profile | HOSA",
+  register: "Join HOSA | Highway Old Students' Association",
+  story: "Alumni Story | HOSA",
 };
 
 // ---------- Router ----------
@@ -73,6 +77,9 @@ async function router() {
   if (routeKey === "member" && param) {
     const { default: MemberDetails } = await import("./MemberDetails.js");
     view = new MemberDetails(param);
+  } else if (routeKey === "story" && param) {
+    const { default: StoryDetails } = await import("./StoryDetails.js");
+    view = new StoryDetails(param);
   } else {
     const viewClass =
       routeKey === "" ? routes[""] : (routes[routeKey] ?? NotFoundView);
@@ -98,6 +105,15 @@ async function router() {
   // ---------- Set page title ----------
   document.title =
     titles[routeKey] || "HOSA | Highway Old Students' Association";
+
+  // ---------- Announce to screen readers ----------
+  const announcer = document.querySelector("#route-announcer");
+  if (announcer) {
+    const viewHeading = document.querySelector("#view-root h1");
+    announcer.textContent = viewHeading
+      ? viewHeading.textContent
+      : "Page loaded";
+  }
 
   // ---------- Highlight the active nav link ----------
   document.querySelectorAll(".primary-nav a[data-route]").forEach((link) => {

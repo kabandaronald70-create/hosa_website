@@ -1,6 +1,7 @@
 // Directory view — renders members, search, filter, and sort.
 
 import ExternalServices from "./ExternalServices.js";
+import Storage from "./Storage.js";
 
 const services = new ExternalServices();
 
@@ -85,6 +86,9 @@ export default class DirectoryView {
     // Load members
     try {
       this.members = await services.getMembers();
+      // Merge with locally-registered members from this browser
+      const localMembers = Storage.get("hosa-new-members", []);
+      this.members = [...this.members, ...localMembers];
     } catch (err) {
       console.error("Could not load alumni directory:", err);
       container.innerHTML = `

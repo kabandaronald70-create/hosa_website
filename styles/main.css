@@ -12,6 +12,7 @@
   --color-warm: #ffffd8;
   --color-charcoal: #22201d;
   --color-gold: #c8901f;
+  --color-gold-light: #f5e6b8; /* warm gold — 8:1 on forest green, 12:1 on cream */
 
   /* Semantic aliases */
   --color-bg: var(--color-cream);
@@ -181,6 +182,12 @@ small {
   outline: 3px solid var(--color-gold);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
+}
+
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 3px solid Highlight;
+  }
 }
 
 /* ---------- Global layout ---------- */
