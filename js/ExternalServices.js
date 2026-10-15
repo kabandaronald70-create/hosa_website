@@ -1,7 +1,11 @@
-// Fetch wrappers for internal JSON data, REST Countries, and Nominatim geocoding.
+// Fetch wrappers for internal API data, REST Countries, and Nominatim geocoding.
 // Handles errors and validates responses before returning them.
 
 const NOMINATIM_BASE = "https://nominatim.openstreetmap.org";
+
+// Our Express backend. In dev, Vite proxies /api/* to :3000.
+// In production, Express serves both the SPA and /api from one origin.
+const API_BASE = "/api";
 
 // Simple in-memory cache — Nominatim's usage policy requires low request rates.
 const cache = new Map();
@@ -17,30 +21,96 @@ async function convertToJson(res) {
   }
 }
 
-// Fetch a local JSON file from /data/.
-async function fetchLocalJson(path) {
-  const baseUrl = import.meta.env.BASE_URL;
-  const dataPath = path.replace(/^\/+/, "");
-  const res = await fetch(`${baseUrl}${dataPath}`);
+// Fetch a JSON endpoint from our own /api/*. Returns the whole envelope
+// { data, pagination } so callers can use either.
+async function fetchApi(path, query) {
+  const url = new URL(`${API_BASE}${path}`, window.location.origin);
+  if (query && typeof query === "object") {
+    for (const [k, v] of Object.entries(query)) {
+      if (v !== undefined && v !== null && v !== "") {
+        url.searchParams.set(k, String(v));
+      }
+    }
+  }
+  const res = await fetch(url.toString(), {
+    headers: { Accept: "application/json" },
+  });
   return await convertToJson(res);
 }
 
 export default class ExternalServices {
-  // ---------- Local JSON data ----------
+  // ---------- Backend API (was: local JSON) ----------
+  //
+  // These four methods now return the *array* of items, matching the old
+  // behaviour where callers did `const members = await services.getMembers()`.
+  // Pagination metadata is available via the *Page variants below.
+
   async getMembers() {
-    return await fetchLocalJson("/data/hosa-members.json");
+    const envelope = await fetchApi("/directory", { limit: 100 });
+    return envelope.data;
   }
 
   async getEvents() {
-    return await fetchLocalJson("/data/events.json");
+    const envelope = await fetchApi("/events", { limit: 100 });
+    return envelope.data;
   }
 
   async getOpportunities() {
-    return await fetchLocalJson("/data/opportunities.json");
+    const envelope = await fetchApi("/opportunities", { limit: 100 });
+    return envelope.data;
   }
 
   async getStories() {
-    return await fetchLocalJson("/data/stories.json");
+    const envelope = await fetchApi("/stories", { limit: 100 });
+    return envelope.data;
+  }
+
+  // ---------- Paged variants (for future use) ----------
+
+  async getMembersPage({
+    q,
+    year,
+    district,
+    profession,
+    mentor,
+    sort,
+    page = 1,
+    limit = 24,
+  } = {}) {
+    return await fetchApi("/directory", {
+      q,
+      year,
+      district,
+      profession,
+      mentor,
+      sort,
+      page,
+      limit,
+    });
+  }
+
+  async getEventsPage({ from, to, page = 1, limit = 24 } = {}) {
+    return await fetchApi("/events", { from, to, page, limit });
+  }
+
+  async getOpportunitiesPage({ category, page = 1, limit = 24 } = {}) {
+    return await fetchApi("/opportunities", { category, page, limit });
+  }
+
+  async getStoriesPage({ page = 1, limit = 20 } = {}) {
+    return await fetchApi("/stories", { page, limit });
+  }
+
+  // ---------- Single item ----------
+
+  async getMemberById(id) {
+    const envelope = await fetchApi(`/directory/${encodeURIComponent(id)}`);
+    return envelope.data;
+  }
+
+  async getEventBySlug(slug) {
+    const envelope = await fetchApi(`/events/${encodeURIComponent(slug)}`);
+    return envelope.data;
   }
 
   // ---------- REST Countries API ----------
