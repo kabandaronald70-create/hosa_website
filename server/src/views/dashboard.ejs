@@ -1,33 +1,49 @@
 <h1>Dashboard</h1>
 
-<p>
-  Welcome,
-  <strong><%= currentProfile?.display_name || currentProfile?.first_name || currentUser.email %></strong>.
+<p style="display:flex; align-items:center; gap:1rem;">
+  <% if (currentProfile?.avatar_path) { %>
+    <img src="/dashboard/avatar/me" alt="" width="64" height="64"
+         style="border-radius:50%; object-fit:cover;">
+  <% } %>
+  <span>
+    Welcome,
+    <strong><%= currentProfile?.display_name || currentProfile?.first_name || currentUser.email %></strong>.
+  </span>
 </p>
 
-<dl>
-  <dt>Email</dt>
-  <dd><%= currentUser.email %></dd>
-
-  <dt>Roles</dt>
-  <dd><%= currentUserRoles.join(', ') || '(none)' %></dd>
-
-  <dt>Account status</dt>
-  <dd><%= currentUser.status %></dd>
-
-  <dt>Member since</dt>
-  <dd><%= new Date(currentUser.created_at).toLocaleString() %></dd>
-
-  <% if (currentProfile) { %>
-    <dt>Graduation year</dt>
-    <dd><%= currentProfile.graduation_year ?? '—' %></dd>
-
-    <dt>District</dt>
-    <dd><%= currentProfile.district || '—' %></dd>
-
-    <dt>Mentor opt-in</dt>
-    <dd><%= currentProfile.mentor_opt_in ? 'Yes' : 'No' %></dd>
+<section aria-labelledby="completion-heading">
+  <h2 id="completion-heading">Profile completion</h2>
+  <p><strong><%= completion.pct %>%</strong> complete.</p>
+  <% if (completion.missing.length > 0) { %>
+    <p>Still missing:
+      <em><%= completion.missing.map(s => s.replace(/_/g, ' ')).join(', ') %></em>
+    </p>
+  <% } else { %>
+    <p>Your profile looks complete. 🎉</p>
   <% } %>
-</dl>
+</section>
 
-<p>Phase 3 will add profile editing, avatar upload, and saved items here.</p>
+<section aria-labelledby="account-heading">
+  <h2 id="account-heading">Account</h2>
+  <dl>
+    <dt>Email</dt>
+    <dd><%= currentUser.email %></dd>
+
+    <dt>Roles</dt>
+    <dd><%= currentUserRoles.join(', ') || '(none)' %></dd>
+
+    <dt>Status</dt>
+    <dd><%= currentUser.status %></dd>
+
+    <dt>Member since</dt>
+    <dd><%= new Date(currentUser.created_at).toLocaleString() %></dd>
+  </dl>
+</section>
+
+<section aria-labelledby="actions-heading">
+  <h2 id="actions-heading">Actions</h2>
+  <ul>
+    <li><a href="/dashboard/profile">Edit profile</a></li>
+    <li><a href="/dashboard/password">Change password</a></li>
+  </ul>
+</section>

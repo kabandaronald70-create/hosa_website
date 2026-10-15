@@ -1,0 +1,165 @@
+<h1>Edit profile</h1>
+
+<% if (Object.keys(fieldErrors).length > 0) { %>
+  <div class="errors" role="alert">
+    <strong>Please fix the following:</strong>
+    <ul>
+      <% Object.entries(fieldErrors).forEach(([k, msg]) => { %>
+        <li><%= k.replace(/_/g, ' ') %>: <%= msg %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<!-- ------------------------------------------------------------------ -->
+<!-- Avatar: its own form because it needs multipart/form-data encoding. -->
+<!-- ------------------------------------------------------------------ -->
+<form method="post" action="/dashboard/avatar" enctype="multipart/form-data">
+  <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+
+  <fieldset>
+    <legend>Profile photo</legend>
+
+    <% if (values.avatar_path) { %>
+      <p>
+        <img
+          src="/dashboard/avatar/me"
+          alt="Your current profile photo"
+          width="96" height="96"
+          style="border-radius:50%; object-fit:cover;">
+      </p>
+      <p><small>Signed URL is generated per request &mdash; the image link changes each time.</small></p>
+    <% } else { %>
+      <p><em>No photo yet.</em></p>
+    <% } %>
+
+    <label for="avatar">Upload a new photo (JPEG, PNG, or WebP, max 2 MB)</label>
+    <input id="avatar" name="avatar" type="file"
+           accept="image/jpeg,image/png,image/webp">
+
+    <p><button type="submit">Upload photo</button></p>
+  </fieldset>
+</form>
+
+<% if (values.avatar_path) { %>
+  <form method="post" action="/dashboard/avatar/delete">
+    <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+    <p><button type="submit">Remove current photo</button></p>
+  </form>
+<% } %>
+
+<!-- ------------------------------------------------------------------ -->
+<!-- Profile fields: separate form, default urlencoded encoding.         -->
+<!-- ------------------------------------------------------------------ -->
+<form method="post" action="/dashboard/profile" novalidate>
+  <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+
+  <fieldset>
+    <legend>Name</legend>
+
+    <label for="first_name">First name</label>
+    <input id="first_name" name="first_name" type="text" required maxlength="80"
+           value="<%= values.first_name || '' %>">
+    <% if (fieldErrors.first_name) { %><p class="field-error"><%= fieldErrors.first_name %></p><% } %>
+
+    <label for="last_name">Last name</label>
+    <input id="last_name" name="last_name" type="text" required maxlength="80"
+           value="<%= values.last_name || '' %>">
+    <% if (fieldErrors.last_name) { %><p class="field-error"><%= fieldErrors.last_name %></p><% } %>
+
+    <label for="display_name">Display name (optional)</label>
+    <input id="display_name" name="display_name" type="text" maxlength="120"
+           value="<%= values.display_name || '' %>">
+  </fieldset>
+
+  <fieldset>
+    <legend>Alumni details</legend>
+
+    <label for="graduation_year">Graduation year</label>
+    <input id="graduation_year" name="graduation_year" type="number"
+           min="1950" max="2100" inputmode="numeric"
+           value="<%= values.graduation_year ?? '' %>">
+    <% if (fieldErrors.graduation_year) { %><p class="field-error"><%= fieldErrors.graduation_year %></p><% } %>
+
+    <label for="profession">Profession</label>
+    <input id="profession" name="profession" type="text" maxlength="120"
+           value="<%= values.profession || '' %>">
+
+    <label for="organization">Organization</label>
+    <input id="organization" name="organization" type="text" maxlength="120"
+           value="<%= values.organization || '' %>">
+  </fieldset>
+
+  <fieldset>
+    <legend>Location &amp; contact</legend>
+
+    <label for="district">District</label>
+    <input id="district" name="district" type="text" maxlength="120"
+           value="<%= values.district || '' %>">
+
+    <label for="country_code">Country code (2 letters)</label>
+    <input id="country_code" name="country_code" type="text" maxlength="2"
+           pattern="[A-Za-z]{2}" value="<%= values.country_code || '' %>">
+    <% if (fieldErrors.country_code) { %><p class="field-error"><%= fieldErrors.country_code %></p><% } %>
+
+    <label for="phone">Phone (optional)</label>
+    <input id="phone" name="phone" type="tel" maxlength="40"
+           value="<%= values.phone || '' %>">
+
+    <label for="preferred_contact">Preferred contact</label>
+    <select id="preferred_contact" name="preferred_contact">
+      <option value="" <%= !values.preferred_contact ? 'selected' : '' %>>&mdash;</option>
+      <option value="email" <%= values.preferred_contact === 'email' ? 'selected' : '' %>>Email</option>
+      <option value="phone" <%= values.preferred_contact === 'phone' ? 'selected' : '' %>>Phone</option>
+      <option value="none"  <%= values.preferred_contact === 'none'  ? 'selected' : '' %>>None</option>
+    </select>
+  </fieldset>
+
+  <fieldset>
+    <legend>About you</legend>
+
+    <label for="biography">Biography</label>
+    <textarea id="biography" name="biography" rows="5" maxlength="2000"><%= values.biography || '' %></textarea>
+
+    <label for="skills">Skills</label>
+    <textarea id="skills" name="skills" rows="3" maxlength="500"><%= values.skills || '' %></textarea>
+
+    <label for="interests">Interests</label>
+    <textarea id="interests" name="interests" rows="3" maxlength="500"><%= values.interests || '' %></textarea>
+
+    <label for="career_history">Career history</label>
+    <textarea id="career_history" name="career_history" rows="6" maxlength="4000"><%= values.career_history || '' %></textarea>
+  </fieldset>
+
+  <fieldset>
+    <legend>Visibility &amp; mentoring</legend>
+
+    <label>
+      <input type="checkbox" name="mentor_opt_in" value="on"
+             <%= values.mentor_opt_in ? 'checked' : '' %>>
+      I'm willing to mentor current students
+    </label>
+
+    <label>
+      <input type="checkbox" name="public_visibility" value="on"
+             <%= values.public_visibility !== false ? 'checked' : '' %>>
+      Show my profile in the public directory
+    </label>
+
+    <label>
+      <input type="checkbox" name="show_email" value="on"
+             <%= values.show_email ? 'checked' : '' %>>
+      Show my email in the directory
+    </label>
+
+    <label>
+      <input type="checkbox" name="show_phone" value="on"
+             <%= values.show_phone ? 'checked' : '' %>>
+      Show my phone in the directory
+    </label>
+  </fieldset>
+
+  <p><button type="submit">Save profile</button></p>
+</form>
+
+<p><a href="/dashboard">Back to dashboard</a></p>
