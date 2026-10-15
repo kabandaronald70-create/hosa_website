@@ -33,6 +33,7 @@ export function csrf(req, res, next) {
     return next(new Error("csrf middleware requires a session"));
   }
 
+  // Always ensure a token exists so views can render it.
   if (!req.session.csrfToken) {
     req.session.csrfToken = generateToken(req.sessionID);
   }
@@ -41,7 +42,39 @@ export function csrf(req, res, next) {
 
   if (SAFE_METHODS.has(req.method)) return next();
 
-  // For state-changing requests, verify.
+  // Multipart bodies aren't parsed yet at this point in the chain.
+  // Let csrfCheck() (mounted after multer) verify those instead.
+  const contentType = req.get("content-type") || "";
+  if (contentType.startsWith("multipart/form-data")) return next();
+
+  // For everything else (urlencoded/json), verify now.
+  const submitted =
+    req.body?.[env.csrf.fieldName] || req.get(env.csrf.headerName) || "";
+
+  if (!submitted || !safeEqual(submitted, req.session.csrfToken)) {
+    const err = new Error("Invalid or missing CSRF token.");
+    err.status = 403;
+    err.code = "CSRF_FAILED";
+    return next(err);
+  }
+  next();
+}
+
+/**
+ * Verification-only CSRF middleware.
+ * Use this on routes where the body is parsed by something else (e.g. multer
+ * for multipart/form-data) AFTER the global csrf() middleware has already run.
+ * Assumes req.session.csrfToken exists (csrf() set it earlier in the chain).
+ */
+export function csrfCheck(req, res, next) {
+  if (SAFE_METHODS.has(req.method)) return next();
+  if (!req.session?.csrfToken) {
+    const err = new Error("CSRF session missing.");
+    err.status = 403;
+    err.code = "CSRF_FAILED";
+    return next(err);
+  }
+
   const submitted =
     req.body?.[env.csrf.fieldName] || req.get(env.csrf.headerName) || "";
 

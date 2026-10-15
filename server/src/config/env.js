@@ -56,6 +56,13 @@ export const env = Object.freeze({
     fieldName: optional("CSRF_FIELD_NAME", "_csrf"),
   },
 
+  supabase: {
+    url: required("SUPABASE_URL"),
+    serviceRoleKey: required("SUPABASE_SERVICE_ROLE_KEY"),
+    avatarBucket: optional("SUPABASE_AVATAR_BUCKET", "avatars"),
+    signedUrlTtlSeconds: toInt("SUPABASE_SIGNED_URL_TTL_SECONDS", 60),
+  },
+
   log: {
     level: optional("LOG_LEVEL", NODE_ENV === "production" ? "info" : "debug"),
   },
