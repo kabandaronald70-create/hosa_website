@@ -2,3 +2,11 @@ node_modules/
 dist/
 .env
 .history/
+
+
+# --- backend ---
+server/node_modules/
+server/.env
+server/.env.local
+server/logs/
+*.log

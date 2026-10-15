@@ -1,0 +1,80 @@
+:root {
+  color-scheme: light dark;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0 auto;
+  font:
+    16px/1.5 system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  padding: 1rem;
+  max-width: 60rem;
+}
+header nav {
+  display: flex;
+  gap: 1rem;
+  padding-block: 1rem;
+  border-bottom: 1px solid #ccc;
+}
+main {
+  padding-block: 2rem;
+}
+footer {
+  border-top: 1px solid #ccc;
+  padding-block: 1rem;
+  color: #555;
+}
+
+form {
+  margin-block: 1rem;
+}
+label {
+  display: block;
+  margin-block: 0.5rem 0.25rem;
+  font-weight: 600;
+}
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+select,
+textarea {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #888;
+  border-radius: 4px;
+  font: inherit;
+}
+button {
+  padding: 0.5rem 1rem;
+  font: inherit;
+  cursor: pointer;
+}
+.errors {
+  background: #fee;
+  border: 1px solid #c33;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  margin-block: 1rem;
+}
+.errors ul {
+  margin: 0.25rem 0 0 1rem;
+  padding: 0;
+}
+.success {
+  background: #efe;
+  border: 1px solid #3c3;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+}
+.field-error {
+  color: #c33;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
