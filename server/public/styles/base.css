@@ -78,3 +78,41 @@ button {
   font-size: 0.875rem;
   margin-top: 0.25rem;
 }
+
+/* Admin tables and stats */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin-block: 1rem;
+}
+.stat-grid li {
+  background: #f6f6f6;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-block: 1rem;
+}
+th,
+td {
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  padding: 0.5rem 0.75rem;
+  vertical-align: top;
+}
+th {
+  background: #f2f2f2;
+  font-weight: 600;
+}
+code {
+  background: #eef;
+  padding: 0.05rem 0.35rem;
+  border-radius: 3px;
+  font-size: 0.9em;
+}

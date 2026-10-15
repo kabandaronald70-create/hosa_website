@@ -1,0 +1,50 @@
+<h1>Admin dashboard</h1>
+
+<section aria-labelledby="stats-heading">
+  <h2 id="stats-heading">At a glance</h2>
+  <ul class="stat-grid">
+    <li><strong><%= counts.members.total %></strong> members</li>
+    <li><strong><%= counts.members.verified %></strong> verified</li>
+    <li><strong><%= counts.members.suspended %></strong> suspended</li>
+    <li><strong><%= counts.pendingStories %></strong> pending stories</li>
+    <li><strong><%= counts.pendingOpportunities %></strong> pending opportunities</li>
+    <li><strong><%= counts.upcomingEvents %></strong> upcoming events</li>
+    <li><strong><%= counts.auditLast7Days %></strong> admin actions (7d)</li>
+  </ul>
+</section>
+
+<nav aria-label="Admin sections">
+  <h2>Manage</h2>
+  <ul>
+    <li><a href="/admin/members">Members</a> <em>(Phase 4B)</em></li>
+    <li><a href="/admin/moderation">Moderation queue</a> <em>(Phase 4C)</em></li>
+    <li><a href="/admin/events">Events</a> <em>(Phase 4D)</em></li>
+    <li><a href="/admin/audit">Audit log</a> <em>(Phase 4E)</em></li>
+  </ul>
+</nav>
+
+<section aria-labelledby="recent-heading">
+  <h2 id="recent-heading">Recent admin actions</h2>
+  <% if (recentAudits.length === 0) { %>
+    <p><em>No admin actions yet.</em></p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr><th>When</th><th>Actor</th><th>Action</th><th>Target</th></tr>
+      </thead>
+      <tbody>
+        <% recentAudits.forEach((a) => { %>
+          <tr>
+            <td><%= new Date(a.occurred_at).toLocaleString() %></td>
+            <td><%= a.actor_email || '—' %></td>
+            <td><code><%= a.action %></code></td>
+            <td>
+              <%= a.target_type || '—' %>
+              <% if (a.target_id) { %> <small>(<%= a.target_id.slice(0, 8) %>…)</small><% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>

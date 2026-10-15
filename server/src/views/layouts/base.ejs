@@ -12,13 +12,16 @@
       <a href="/">HOSA</a>
       <a href="/health">Health</a>
       <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
-        <a href="/dashboard">Dashboard</a>
-        <a href="/dashboard/profile">Profile</a>
-        <form method="post" action="/logout" style="display:inline">
-          <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
-          <button type="submit">Log out</button>
-        </form>
-      <% } else { %>
+  <a href="/dashboard">Dashboard</a>
+  <a href="/dashboard/profile">Profile</a>
+  <% if (currentUserRoles && currentUserRoles.some(r => r === 'admin' || r === 'super_admin' || r === 'moderator')) { %>
+    <a href="/admin">Admin</a>
+  <% } %>
+  <form method="post" action="/logout" style="display:inline">
+    <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+    <button type="submit">Log out</button>
+  </form>
+<% } else { %>
         <a href="/login">Log in</a>
         <a href="/register">Register</a>
       <% } %>
