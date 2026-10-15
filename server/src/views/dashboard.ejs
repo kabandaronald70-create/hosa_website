@@ -2,10 +2,7 @@
 
 <p>
   Welcome,
-  <strong
-    ><%= currentProfile?.display_name || currentProfile?.first_name ||
-    currentUser.email %></strong
-  >.
+  <strong><%= currentProfile?.display_name || currentProfile?.first_name || currentUser.email %></strong>.
 </p>
 
 <dl>
@@ -20,11 +17,17 @@
 
   <dt>Member since</dt>
   <dd><%= new Date(currentUser.created_at).toLocaleString() %></dd>
+
+  <% if (currentProfile) { %>
+    <dt>Graduation year</dt>
+    <dd><%= currentProfile.graduation_year ?? '—' %></dd>
+
+    <dt>District</dt>
+    <dd><%= currentProfile.district || '—' %></dd>
+
+    <dt>Mentor opt-in</dt>
+    <dd><%= currentProfile.mentor_opt_in ? 'Yes' : 'No' %></dd>
+  <% } %>
 </dl>
 
-<form method="post" action="/logout">
-  <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>" />
-  <button type="submit">Log out</button>
-</form>
-
-<p><a href="/">Back to home</a></p>
+<p>Phase 3 will add profile editing, avatar upload, and saved items here.</p>

@@ -1,0 +1,26 @@
+<h1>Log in to HOSA</h1>
+
+<% if (fieldErrors._form) { %>
+  <div class="errors" role="alert"><%= fieldErrors._form %></div>
+<% } %>
+
+<form method="post" action="/login" novalidate>
+  <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+  <% if (next) { %>
+    <input type="hidden" name="next" value="<%= next %>">
+  <% } %>
+
+  <label for="email">Email</label>
+  <input id="email" name="email" type="email" autocomplete="email"
+         required maxlength="254" value="<%= values.email || '' %>">
+  <% if (fieldErrors.email) { %><p class="field-error"><%= fieldErrors.email %></p><% } %>
+
+  <label for="password">Password</label>
+  <input id="password" name="password" type="password"
+         autocomplete="current-password" required>
+  <% if (fieldErrors.password) { %><p class="field-error"><%= fieldErrors.password %></p><% } %>
+
+  <p><button type="submit">Log in</button></p>
+</form>
+
+<p>New to HOSA? <a href="/register">Create an account</a>.</p>

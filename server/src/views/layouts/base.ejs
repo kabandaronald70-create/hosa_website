@@ -25,6 +25,13 @@
   </header>
 
   <main id="main">
+    <% if (typeof flash !== 'undefined' && flash.success) { %>
+      <div class="success" role="status"><%= flash.success %></div>
+    <% } %>
+    <% if (typeof flash !== 'undefined' && flash.error) { %>
+      <div class="errors" role="alert"><%= flash.error %></div>
+    <% } %>
+
     <%- body %>
   </main>
 

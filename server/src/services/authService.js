@@ -11,10 +11,6 @@ import {
   getDummyHash,
 } from "./passwordService.js";
 
-/**
- * Register a new member.
- * Throws { status, code, message } shaped errors so controllers can map them.
- */
 export async function registerMember({
   email,
   password,
@@ -25,6 +21,13 @@ export async function registerMember({
   countryCode,
   mentorOptIn,
 }) {
+  if (!email || !password || !firstName || !lastName) {
+    const err = new Error("Registration payload is incomplete.");
+    err.status = 400;
+    err.code = "INCOMPLETE_PAYLOAD";
+    throw err;
+  }
+
   const existing = await findUserByEmail(email.trim().toLowerCase());
   if (existing) {
     const err = new Error("An account with that email already exists.");
@@ -49,15 +52,9 @@ export async function registerMember({
   return { user, roles };
 }
 
-/**
- * Authenticate an email/password pair.
- * Returns { user, roles } on success, or throws a generic INVALID_CREDENTIALS error.
- * Never reveals whether the email exists.
- */
 export async function loginUser({ email, password }) {
   const user = await findUserByEmail(email.trim().toLowerCase());
 
-  // Always run a verification so timing doesn't leak whether the email exists.
   const hashToVerify = user ? user.password_hash : await getDummyHash();
   const ok = await verifyPassword(hashToVerify, password);
 

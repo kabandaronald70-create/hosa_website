@@ -1,0 +1,67 @@
+<h1>Create your HOSA account</h1>
+
+<% if (Object.keys(fieldErrors).length > 0) { %>
+  <div class="errors" role="alert">
+    <strong>Please fix the following:</strong>
+    <ul>
+      <% Object.entries(fieldErrors).forEach(([k, msg]) => { %>
+        <li><%= k === '_form' ? msg : `${k.replace(/_/g, ' ')}: ${msg}` %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<form method="post" action="/register" novalidate>
+  <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+
+  <label for="email">Email</label>
+  <input id="email" name="email" type="email" autocomplete="email"
+         required maxlength="254" value="<%= values.email || '' %>">
+  <% if (fieldErrors.email) { %><p class="field-error"><%= fieldErrors.email %></p><% } %>
+
+  <label for="first_name">First name</label>
+  <input id="first_name" name="first_name" type="text" autocomplete="given-name"
+         required maxlength="80" value="<%= values.first_name || '' %>">
+  <% if (fieldErrors.first_name) { %><p class="field-error"><%= fieldErrors.first_name %></p><% } %>
+
+  <label for="last_name">Last name</label>
+  <input id="last_name" name="last_name" type="text" autocomplete="family-name"
+         required maxlength="80" value="<%= values.last_name || '' %>">
+  <% if (fieldErrors.last_name) { %><p class="field-error"><%= fieldErrors.last_name %></p><% } %>
+
+  <label for="graduation_year">Graduation year (optional)</label>
+  <input id="graduation_year" name="graduation_year" type="number"
+         min="1950" max="2100" inputmode="numeric"
+         value="<%= values.graduation_year || '' %>">
+  <% if (fieldErrors.graduation_year) { %><p class="field-error"><%= fieldErrors.graduation_year %></p><% } %>
+
+  <label for="district">District (optional)</label>
+  <input id="district" name="district" type="text" maxlength="120"
+         value="<%= values.district || '' %>">
+  <% if (fieldErrors.district) { %><p class="field-error"><%= fieldErrors.district %></p><% } %>
+
+  <label for="country_code">Country code (optional, e.g. UG)</label>
+  <input id="country_code" name="country_code" type="text" maxlength="2"
+         pattern="[A-Za-z]{2}" value="<%= values.country_code || '' %>">
+  <% if (fieldErrors.country_code) { %><p class="field-error"><%= fieldErrors.country_code %></p><% } %>
+
+  <label for="password">Password (min 10 characters)</label>
+  <input id="password" name="password" type="password"
+         autocomplete="new-password" required minlength="10" maxlength="200">
+  <% if (fieldErrors.password) { %><p class="field-error"><%= fieldErrors.password %></p><% } %>
+
+  <label for="confirm_password">Confirm password</label>
+  <input id="confirm_password" name="confirm_password" type="password"
+         autocomplete="new-password" required minlength="10" maxlength="200">
+  <% if (fieldErrors.confirm_password) { %><p class="field-error"><%= fieldErrors.confirm_password %></p><% } %>
+
+  <label>
+    <input type="checkbox" name="mentor_opt_in" value="on"
+           <%= values.mentor_opt_in ? 'checked' : '' %>>
+    I'm willing to mentor current students
+  </label>
+
+  <p><button type="submit">Create account</button></p>
+</form>
+
+<p>Already have an account? <a href="/login">Log in</a>.</p>

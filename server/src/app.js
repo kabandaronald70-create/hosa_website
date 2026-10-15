@@ -11,6 +11,7 @@ import { buildSessionMiddleware } from "./config/session.js";
 import { requestLogger } from "./middleware/requestLogger.js";
 import { currentUser } from "./middleware/currentUser.js";
 import { csrf } from "./middleware/csrf.js";
+import { flash } from "./middleware/flash.js";
 import { notFound } from "./middleware/notFound.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import routes from "./routes/index.js";
@@ -34,15 +35,11 @@ export function createApp() {
   app.use(express.json({ limit: "100kb" }));
   app.use(cookieParser());
 
-  // Session must come before currentUser and csrf.
   app.use(buildSessionMiddleware());
-
   app.use(requestLogger);
 
-  // Load req.user / req.userRoles / req.profile from the session.
   app.use(currentUser);
-
-  // CSRF tokens available to every view; verification on state-changing methods.
+  app.use(flash);
   app.use(csrf);
 
   app.use(
