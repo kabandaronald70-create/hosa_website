@@ -1,0 +1,84 @@
+<h1>Moderation queue</h1>
+
+<p>
+  <a href="/admin">← Back to admin</a>
+</p>
+
+<section aria-labelledby="stories-heading">
+  <h2 id="stories-heading">
+    Pending stories (<%= stories.total %>)
+  </h2>
+
+  <% if (stories.rows.length === 0) { %>
+    <p><em>No stories waiting for review.</em></p>
+  <% } else { %>
+    <% stories.rows.forEach((s) => { %>
+      <article class="card" style="margin-block:1rem">
+        <h3><%= s.title %></h3>
+        <p>
+          By <strong><%= s.author_name || '—' %></strong>
+          <% if (s.class_year) { %> · Class of <%= s.class_year %><% } %>
+          <% if (s.category) { %> · <%= s.category %><% } %>
+          · Submitted <%= new Date(s.created_at).toLocaleString() %>
+        </p>
+
+        <% if (s.excerpt) { %>
+          <p><em><%= s.excerpt %></em></p>
+        <% } %>
+
+        <details>
+          <summary>Read full body</summary>
+          <p><%= s.body %></p>
+        </details>
+
+        <form method="post" action="/admin/moderation/stories/<%= s.id %>/approve" style="display:inline">
+          <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+          <button type="submit">Approve &amp; publish</button>
+        </form>
+
+        <form method="post" action="/admin/moderation/stories/<%= s.id %>/reject" style="display:inline">
+          <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+          <label for="story-reason-<%= s.id %>">Reason</label>
+          <input id="story-reason-<%= s.id %>" name="reason" type="text" maxlength="500" required>
+          <button type="submit">Reject</button>
+        </form>
+      </article>
+    <% }) %>
+  <% } %>
+</section>
+
+<section aria-labelledby="opps-heading" style="margin-top:2rem">
+  <h2 id="opps-heading">
+    Pending opportunities (<%= opportunities.total %>)
+  </h2>
+
+  <% if (opportunities.rows.length === 0) { %>
+    <p><em>No opportunities waiting for review.</em></p>
+  <% } else { %>
+    <% opportunities.rows.forEach((o) => { %>
+      <article class="card" style="margin-block:1rem">
+        <h3><%= o.title %></h3>
+        <p>
+          <%= o.employer || o.organization || '—' %>
+          <% if (o.location) { %> · <%= o.location %><% } %>
+          <% if (o.type_label) { %> · <%= o.type_label %><% } %>
+          <% if (o.deadline) { %> · Deadline <%= o.deadline %><% } %>
+        </p>
+
+        <p><%= o.description %></p>
+
+        <form method="post" action="/admin/moderation/opportunities/<%= o.id %>/approve" style="display:inline">
+          <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+          <button type="submit">Approve</button>
+        </form>
+
+        <form method="post" action="/admin/moderation/opportunities/<%= o.id %>/reject" style="display:inline">
+          <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+          <label for="opp-reason-<%= o.id %>">Reason</label>
+          <input id="opp-reason-<%= o.id %>" name="reason" type="text" maxlength="500" required>
+          <button type="submit">Reject</button>
+        </form>
+      </article>
+    <% }) %>
+  <% } %>
+</section>

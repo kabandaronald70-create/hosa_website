@@ -1,39 +1,26 @@
 /**
- * Minimal session-backed flash messages.
+ * Session-backed flash messages.
  *
- * Usage in a controller:
- *   req.flash('success', 'Welcome back!');
- *   req.flash('error', 'Invalid credentials.');
- *
- * The messages are written into the session AFTER the response finishes,
- * then rendered on the next request via res.locals.flash.
+ * req.flash('success', 'Saved.') writes into req.session.flash immediately,
+ * so express-session's autosave persists it to the store for the *next*
+ * request. This is the standard pattern and works across redirects.
  */
 export function flash(req, res, next) {
-  const session = req.session;
-  if (!session) return next();
+  if (!req.session) return next();
 
-  if (!session.flash) session.flash = {};
+  if (!req.session.flash) req.session.flash = {};
 
-  // Accumulate messages in a local object; commit on finish.
-  const pending = {};
+  // Expose whatever is in the session to this request's views, then clear it.
+  // These messages will NOT appear on the *next* request because we clear them.
+  res.locals.flash = { ...req.session.flash };
+  req.session.flash = {};
 
+  // Write messages for the next request directly into the session.
   req.flash = function setFlash(type, message) {
-    pending[type] = message;
-  };
-
-  res.on("finish", () => {
-    // Session may have been destroyed (logout) or regenerated (login)
-    // between when we set up this handler and when the response finished.
-    // In either case, silently drop the pending flashes.
-    if (!req.session || req.session !== session) return;
-    if (Object.keys(pending).length === 0) return;
+    if (!req.session) return;
     if (!req.session.flash) req.session.flash = {};
-    Object.assign(req.session.flash, pending);
-  });
-
-  // Expose any existing flashes to this request's views, then clear.
-  res.locals.flash = { ...session.flash };
-  session.flash = {};
+    req.session.flash[type] = message;
+  };
 
   next();
 }

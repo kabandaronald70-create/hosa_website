@@ -1,0 +1,54 @@
+<% if (!member) { %>
+  <h1>Member not found</h1>
+  <p><a href="/admin/members">← Back to members</a></p>
+<% } else { %>
+  <p><a href="/admin/members" class="link-button">← Back to members</a></p>
+
+  <h1><%= member.display_name || `${member.first_name} ${member.last_name}` %></h1>
+  <p><%= member.email %></p>
+
+  <section aria-labelledby="account-heading">
+    <h2 id="account-heading">Account</h2>
+    <dl>
+      <dt>Status</dt><dd><%= member.status %></dd>
+      <dt>Roles</dt><dd><%= member.roles.join(', ') || '—' %></dd>
+      <dt>Verified</dt><dd><%= member.verified_at ? new Date(member.verified_at).toLocaleString() : 'Not verified' %></dd>
+      <dt>Public visibility</dt><dd><%= member.public_visibility ? 'Yes' : 'No' %></dd>
+      <dt>Joined</dt><dd><%= new Date(member.created_at).toLocaleString() %></dd>
+      <dt>Last login</dt><dd><%= member.last_login_at ? new Date(member.last_login_at).toLocaleString() : '—' %></dd>
+    </dl>
+  </section>
+
+  <section aria-labelledby="profile-heading">
+    <h2 id="profile-heading">Profile</h2>
+    <dl>
+      <dt>Class year</dt><dd><%= member.graduation_year ?? '—' %></dd>
+      <dt>District</dt><dd><%= member.district || '—' %></dd>
+      <dt>Country</dt><dd><%= member.country_code || '—' %></dd>
+      <dt>Profession</dt><dd><%= member.profession || '—' %></dd>
+    </dl>
+  </section>
+
+  <section aria-labelledby="actions-heading">
+    <h2 id="actions-heading">Actions</h2>
+
+    <form method="post" action="/admin/members/<%= member.id %>/<%= member.verified_at ? 'unverify' : 'verify' %>" style="display:inline">
+      <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+      <button type="submit"><%= member.verified_at ? 'Remove verification' : 'Verify member' %></button>
+    </form>
+
+    <% if (member.status === 'active') { %>
+      <form method="post" action="/admin/members/<%= member.id %>/suspend">
+        <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+        <label for="reason">Reason for suspension (optional)</label>
+        <input id="reason" name="reason" type="text" maxlength="500">
+        <button type="submit" onclick="return confirm('Suspend this account?')">Suspend</button>
+      </form>
+    <% } else if (member.status === 'suspended') { %>
+      <form method="post" action="/admin/members/<%= member.id %>/reactivate">
+        <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+        <button type="submit">Reactivate</button>
+      </form>
+    <% } %>
+  </section>
+<% } %>

@@ -3,23 +3,51 @@
 <section aria-labelledby="stats-heading">
   <h2 id="stats-heading">At a glance</h2>
   <ul class="stat-grid">
-    <li><strong><%= counts.members.total %></strong> members</li>
-    <li><strong><%= counts.members.verified %></strong> verified</li>
-    <li><strong><%= counts.members.suspended %></strong> suspended</li>
-    <li><strong><%= counts.pendingStories %></strong> pending stories</li>
-    <li><strong><%= counts.pendingOpportunities %></strong> pending opportunities</li>
-    <li><strong><%= counts.upcomingEvents %></strong> upcoming events</li>
-    <li><strong><%= counts.auditLast7Days %></strong> admin actions (7d)</li>
+    <li>
+      <a href="/admin/members">
+        <strong><%= counts.members.total %></strong> members
+      </a>
+    </li>
+    <li>
+      <a href="/admin/members?verified=yes">
+        <strong><%= counts.members.verified %></strong> verified
+      </a>
+    </li>
+    <li>
+      <a href="/admin/members?status=suspended">
+        <strong><%= counts.members.suspended %></strong> suspended
+      </a>
+    </li>
+    <li>
+  <a href="/admin/moderation">
+    <strong><%= counts.pendingStories %></strong> pending stories
+  </a>
+</li>
+<li>
+  <a href="/admin/moderation">
+    <strong><%= counts.pendingOpportunities %></strong> pending opportunities
+  </a>
+</li>
+   <li>
+  <a href="/admin/events?when=upcoming&amp;status=published">
+    <strong><%= counts.upcomingEvents %></strong> upcoming events
+  </a>
+</li>
+   <li>
+  <a href="/admin/audit">
+    <strong><%= counts.auditLast7Days %></strong> admin actions (7d)
+  </a>
+</li>
   </ul>
 </section>
 
 <nav aria-label="Admin sections">
   <h2>Manage</h2>
   <ul>
-    <li><a href="/admin/members">Members</a> <em>(Phase 4B)</em></li>
-    <li><a href="/admin/moderation">Moderation queue</a> <em>(Phase 4C)</em></li>
-    <li><a href="/admin/events">Events</a> <em>(Phase 4D)</em></li>
-    <li><a href="/admin/audit">Audit log</a> <em>(Phase 4E)</em></li>
+    <li><a href="/admin/members">Members</a></li>
+    <li><a href="/admin/moderation">Moderation queue</a></li>
+    <li><a href="/admin/events">Events</a></li>
+    <li><a href="/admin/audit">Audit log</a></li>
   </ul>
 </nav>
 

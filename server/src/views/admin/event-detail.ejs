@@ -1,0 +1,68 @@
+<p><a href="/admin/events" class="link-button">← Back to events</a></p>
+
+<h1><%= event.title %></h1>
+<p><code><%= event.slug %></code></p>
+
+<section aria-labelledby="details-heading">
+  <h2 id="details-heading">Details</h2>
+  <dl>
+    <dt>Status</dt><dd><strong><%= event.status %></strong></dd>
+    <dt>Starts</dt><dd><%= new Date(event.starts_at).toLocaleString() %> (<%= event.timezone %>)</dd>
+    <dt>Ends</dt><dd><%= event.ends_at ? new Date(event.ends_at).toLocaleString() : '—' %></dd>
+    <dt>Venue</dt><dd><%= event.venue || '—' %></dd>
+    <dt>District</dt><dd><%= event.district || '—' %></dd>
+    <dt>Capacity</dt><dd><%= event.capacity ?? '—' %></dd>
+    <dt>Registration deadline</dt>
+    <dd><%= event.registration_deadline ? new Date(event.registration_deadline).toLocaleString() : '—' %></dd>
+    <dt>Published at</dt>
+    <dd><%= event.published_at ? new Date(event.published_at).toLocaleString() : '—' %></dd>
+    <dt>Created</dt><dd><%= new Date(event.created_at).toLocaleString() %></dd>
+    <dt>Updated</dt><dd><%= new Date(event.updated_at).toLocaleString() %></dd>
+  </dl>
+</section>
+
+<section aria-labelledby="rsvp-heading">
+  <h2 id="rsvp-heading">RSVP summary</h2>
+  <ul>
+    <li><strong><%= rsvps.going %></strong> going</li>
+    <li><strong><%= rsvps.maybe %></strong> maybe</li>
+    <li><strong><%= rsvps.cancelled %></strong> cancelled</li>
+  </ul>
+</section>
+
+<section aria-labelledby="desc-heading">
+  <h2 id="desc-heading">Description</h2>
+  <p><%= event.description %></p>
+  <% if (event.accessibility) { %>
+    <h3>Accessibility</h3>
+    <p><%= event.accessibility %></p>
+  <% } %>
+  <% if (event.internal_notes) { %>
+    <h3>Internal notes</h3>
+    <p><%= event.internal_notes %></p>
+  <% } %>
+</section>
+
+<section aria-labelledby="actions-heading">
+  <h2 id="actions-heading">Actions</h2>
+
+  <p><a href="/admin/events/<%= event.id %>/edit" class="btn">Edit</a></p>
+
+  <% const statuses = [
+       ['published', 'Publish'],
+       ['draft',     'Move to draft'],
+       ['cancelled', 'Cancel'],
+       ['archived',  'Archive'],
+     ];
+     statuses.filter(([s]) => s !== event.status).forEach(([s, label]) => { %>
+    <form method="post" action="/admin/events/<%= event.id %>/status" style="display:inline">
+      <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+      <input type="hidden" name="status" value="<%= s %>">
+      <button type="submit"
+        <%- (s === 'cancelled' || s === 'archived')
+              ? `onclick="return confirm('${label} this event?')"`
+              : '' %>> <%= label %>
+      </button>
+    </form>
+  <% }) %>
+</section>

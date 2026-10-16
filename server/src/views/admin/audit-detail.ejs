@@ -1,0 +1,45 @@
+<p><a href="/admin/audit" class="link-button">← Back to audit log</a></p>
+
+<h1>Audit entry #<%= entry.id %></h1>
+
+<section aria-labelledby="summary-heading">
+  <h2 id="summary-heading">Summary</h2>
+  <dl>
+    <dt>When</dt><dd><%= new Date(entry.occurred_at).toLocaleString() %></dd>
+    <dt>Actor</dt><dd><%= entry.actor_email || '—' %></dd>
+    <dt>Actor user id</dt><dd><code><%= entry.actor_user_id || '—' %></code></dd>
+    <dt>Action</dt><dd><code><%= entry.action %></code></dd>
+    <dt>Target type</dt><dd><%= entry.target_type || '—' %></dd>
+    <dt>Target id</dt><dd><code><%= entry.target_id || '—' %></code></dd>
+    <dt>IP address</dt><dd><%= entry.ip_address || '—' %></dd>
+  </dl>
+</section>
+
+<section aria-labelledby="metadata-heading">
+  <h2 id="metadata-heading">Metadata</h2>
+  <% const keys = Object.keys(entry.metadata || {}); %>
+  <% if (keys.length === 0) { %>
+    <p><em>No metadata recorded.</em></p>
+  <% } else { %>
+    <dl>
+      <% keys.forEach((k) => { %>
+        <dt><%= k %></dt>
+        <dd>
+          <%
+            const v = entry.metadata[k];
+          %>
+          <% if (v && typeof v === 'object') { %>
+            <pre><%= JSON.stringify(v, null, 2) %></pre>
+          <% } else { %>
+            <%= v %>
+          <% } %>
+        </dd>
+      <% }) %>
+    </dl>
+  <% } %>
+</section>
+
+<section aria-labelledby="ua-heading">
+  <h2 id="ua-heading">User agent</h2>
+  <p><small><%= entry.user_agent || '—' %></small></p>
+</section>
