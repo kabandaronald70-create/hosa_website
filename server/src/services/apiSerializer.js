@@ -26,7 +26,9 @@ export function serializeMember(row) {
 
 export function serializeEvent(row) {
   return {
-    id: row.external_ref || row.slug,
+    id: row.slug,
+    slug: row.slug,
+    externalRef: row.external_ref,
     title: row.title,
     date: row.starts_at ? row.starts_at.toISOString().slice(0, 10) : null,
     venue: row.venue,

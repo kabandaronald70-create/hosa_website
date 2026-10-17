@@ -68,6 +68,7 @@ export function csrf(req, res, next) {
  */
 export function csrfCheck(req, res, next) {
   if (SAFE_METHODS.has(req.method)) return next();
+  if (req.path.startsWith("/api/")) return next();
   if (!req.session?.csrfToken) {
     const err = new Error("CSRF session missing.");
     err.status = 403;
