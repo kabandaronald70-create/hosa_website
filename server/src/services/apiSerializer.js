@@ -43,19 +43,19 @@ export function serializeEvent(row) {
 
 export function serializeOpportunity(row) {
   return {
-    id: row.external_ref || row.slug,
+    id: row.slug, // ← Use slug as the ID
+    slug: row.slug,
+    externalRef: row.external_ref,
     title: row.title,
+    category: row.category || "",
+    description: row.description,
+    organization: row.employer || row.organization || "",
     employer: row.employer || row.organization || "",
     location: row.location,
-    type: row.type_label || "",
-    postedBy: row.posted_by_ref || "",
-    deadline: row.deadline
-      ? row.deadline instanceof Date
-        ? row.deadline.toISOString().slice(0, 10)
-        : String(row.deadline)
-      : null,
-    description: row.description,
-    saved: false, // per-user, added in a later phase
+    applicationUrl: row.application_url,
+    url: row.application_url,
+    deadline: row.deadline,
+    // ...
   };
 }
 

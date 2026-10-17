@@ -201,27 +201,36 @@ export default class JobBoard {
 
     list.querySelectorAll("[data-save-slug]").forEach((btn) => {
       btn.addEventListener("click", async (e) => {
+        e.preventDefault();
         const slug = e.currentTarget.dataset.saveSlug;
         const isSaved = this.savedIds.has(slug);
         e.currentTarget.disabled = true;
-        const original = e.currentTarget.textContent;
         e.currentTarget.textContent = "…";
 
-        if (isSaved) {
-          const savedList = await getMySaved().catch(() => []);
-          const r = await unsaveByLookup(savedList, "opportunity", slug);
-          if (r.ok) {
-            this.savedIds.delete(slug);
+        try {
+          if (isSaved) {
+            const savedList = await getMySaved().catch(() => []);
+            const r = await unsaveByLookup(savedList, "opportunity", slug);
+            if (r.ok) {
+              this.savedIds.delete(slug);
+            } else {
+              alert("Could not unsave: " + (r.reason || "Unknown error"));
+            }
+          } else {
+            const r = await saveItem("opportunity", slug);
+            if (r.ok) {
+              this.savedIds.add(slug);
+            } else {
+              alert("Could not save: " + (r.reason || "Unknown error"));
+            }
           }
-        } else {
-          const r = await saveItem("opportunity", slug);
-          if (r.ok) {
-            this.savedIds.add(slug);
-          }
+        } catch (err) {
+          console.error("Save failed:", err);
+          alert("Error saving: " + err.message);
+        } finally {
+          e.currentTarget.disabled = false;
+          this.applyFilters(); // This re-renders and shows the correct state
         }
-        e.currentTarget.disabled = false;
-        e.currentTarget.textContent = original; // reapplyFilters will fix it
-        this.applyFilters();
       });
     });
   }
@@ -254,7 +263,7 @@ function jobCardTemplate(o, view) {
 
       <div class="job-card__actions">
         <button type="button"
-                class="btn btn--ghost"
+                class="btn ${saved ? "btn--primary" : "btn--ghost"}"
                 data-save-slug="${escapeHtml(o.id)}"
                 aria-pressed="${saved}">
           ${saved ? "★ Saved" : "☆ Save"}
