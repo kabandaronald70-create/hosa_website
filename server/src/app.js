@@ -95,11 +95,11 @@ export function createApp() {
 
   // SPA fallback: any GET that isn't server-owned and isn't a static file
   // gets dist/index.html so client-side routing can take over.
-  app.get(/^(?!\/api\/).*/, (req, res, next) => {
-    if (req.method !== "GET") return next();
+  app.all(/^(?!\/api\/).*/, (req, res, next) => {
+    // Only GET and HEAD fall through to the SPA. Everything else 404s.
+    if (req.method !== "GET" && req.method !== "HEAD") return next();
     if (isServerOwnedPath(req.path)) return next();
     if (!existsSync(SPA_INDEX)) {
-      // Build hasn't been produced yet (dev with only :5173). Not an error.
       return res
         .status(404)
         .type("text/plain")
