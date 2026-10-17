@@ -34,8 +34,7 @@ export default class MemberDetails {
           s.item_type === "member" && String(s.item_id) === String(member.id),
       );
       const { user } = await getMe();
-      const mentorshipUrl = `/dashboard/mentorship/requests/new?mentor=${encodeURIComponent(member.id)}`;
-
+      const mentorshipUrl = `/dashboard/mentorship/requests/new?mentor=${encodeURIComponent(member.userId)}`;
       container.innerHTML = `
         <p><a href="#/directory" class="link-button">← Back to directory</a></p>
 
@@ -88,7 +87,7 @@ export default class MemberDetails {
 
         if (currentlySaved) {
           const list = await getMySaved().catch(() => []);
-          const r = await unsaveByLookup(list, "member", member.id);
+          const r = await unsaveByLookup(list, "member", member.userId);
           if (r.ok) {
             saveBtn.dataset.saved = "false";
             saveBtn.setAttribute("aria-pressed", "false");
@@ -99,7 +98,7 @@ export default class MemberDetails {
             saveBtn.textContent = original;
           }
         } else {
-          const r = await saveItem("member", member.id);
+          const r = await saveItem("member", member.userId);
           if (r.ok) {
             saveBtn.dataset.saved = "true";
             saveBtn.setAttribute("aria-pressed", "true");

@@ -5,6 +5,7 @@ export function serializeMember(row) {
 
   return {
     id: row.seed_ref || row.user_id,
+    userId: row.user_id,
     name,
     classYear: row.graduation_year,
     country: row.country_code,
