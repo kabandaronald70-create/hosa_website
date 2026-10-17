@@ -22,7 +22,12 @@
 
     <% if (values.avatar_path) { %>
       <p>
-        <img src="/dashboard/avatar/me?v=<%= values.updated_at ? new Date(values.updated_at).getTime() : Date.now() %>" alt="Your current profile photo" width="96" height="96" ...>
+        <img
+  src="/dashboard/avatar/me?v=<%= values.updated_at ? new Date(values.updated_at).getTime() : Date.now() %>"
+  alt="Your current profile photo"
+  width="96"
+  height="96"
+  class="profile-avatar">
       </p>
       <p><small>Signed URL is generated per request &mdash; the image link changes each time.</small></p>
     <% } else { %>
