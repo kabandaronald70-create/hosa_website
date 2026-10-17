@@ -35,7 +35,6 @@ const routes = {
   "": HomeView,
   directory: DirectoryView,
   events: EventsView,
-  mentorship: MentorshipForm,
   jobs: JobBoard,
   stories: StoriesView,
   privacy: PrivacyView,
