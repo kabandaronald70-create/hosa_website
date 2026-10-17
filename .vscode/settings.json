@@ -63,5 +63,10 @@
     "specialising",
     "Ssekabira",
     "Stanbic"
-  ]
+  ],
+  "html.validate.styles": false,
+  "html.validate.scripts": false,
+  "files.associations": {
+    "*.ejs": "html"
+  }
 }

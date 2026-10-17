@@ -4,6 +4,7 @@ import authRoutes from "./auth.js";
 import profileRoutes from "./profile.js";
 import submissionRoutes from "./submissionRoutes.js";
 import interactiveRoutes from "./interactiveRoutes.js";
+import notificationRoutes from "./notificationRoutes.js";
 import memberRoutes from "./member.js";
 import apiPublicRoutes from "./apiPublic.js";
 import adminRoutes from "./admin.js";
@@ -16,6 +17,7 @@ router.use(authRoutes);
 router.use(profileRoutes);
 router.use(submissionRoutes);
 router.use(interactiveRoutes);
+router.use(notificationRoutes);
 router.use(memberRoutes);
 router.use(adminRoutes);
 

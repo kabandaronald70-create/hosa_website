@@ -1,0 +1,41 @@
+<h1>Notifications</h1>
+
+<p>
+  <% if (unread > 0) { %>
+    <strong><%= unread %></strong> unread.
+    <form method="post" action="/notifications/read-all" style="display:inline">
+      <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+      <button type="submit">Mark all as read</button>
+    </form>
+  <% } else { %>
+    <em>You're all caught up.</em>
+  <% } %>
+</p>
+
+<p><a href="/dashboard">← Back to dashboard</a></p>
+
+<% if (items.length === 0) { %>
+  <p><em>No notifications yet.</em></p>
+<% } else { %>
+  <ul class="notification-list" style="list-style:none; padding:0;">
+    <% items.forEach((n) => { %>
+      <li class="card" style="<%= n.read_at ? 'margin-block:0.75rem; padding:1rem; opacity:0.6;' : 'margin-block:0.75rem; padding:1rem; border-left:4px solid #1F5134;' %>">
+        <p><strong><%= n.title %></strong>
+           <small>&middot; <%= new Date(n.created_at).toLocaleString() %></small>
+        </p>
+        <% if (n.body) { %><p><%= n.body %></p><% } %>
+        <p>
+          <% if (n.link) { %>
+            <a href="<%= n.link %>">Open →</a>
+          <% } %>
+          <% if (!n.read_at) { %>
+            <form method="post" action="/notifications/<%= n.id %>/read" style="display:inline; margin-left: 1rem;">
+              <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+              <button type="submit">Mark as read</button>
+            </form>
+          <% } %>
+        </p>
+      </li>
+    <% }) %>
+  </ul>
+<% } %>

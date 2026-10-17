@@ -6,6 +6,10 @@ import {
   listMyRequests,
 } from "../models/mentorshipModel.js";
 import { logger } from "../utils/logger.js";
+import {
+  notifyMentorshipAccepted,
+  notifyMentorshipDeclined,
+} from "../services/notificationsService.js";
 
 export function showNewRequestForm(req, res, next) {
   getMentorPublicById(req.query.mentor)
@@ -150,6 +154,22 @@ async function transition(req, res, next, nextStatus, ownerField, successMsg) {
     }
 
     await setRequestStatus(request.id, nextStatus);
+    const mentorName =
+      req.profile?.display_name ||
+      `${req.profile?.first_name || ""} ${req.profile?.last_name || ""}`.trim() ||
+      "Your mentor";
+
+    if (nextStatus === "accepted") {
+      await notifyMentorshipAccepted({
+        requesterId: request.requester_user_id,
+        mentorName,
+      });
+    } else if (nextStatus === "declined") {
+      await notifyMentorshipDeclined({
+        requesterId: request.requester_user_id,
+        mentorName,
+      });
+    }
     req.flash("success", successMsg);
     res.redirect("/dashboard/mentorship/requests");
   } catch (err) {

@@ -17,6 +17,14 @@
   <% if (currentUserRoles && currentUserRoles.some(r => r === 'admin' || r === 'super_admin' || r === 'moderator')) { %>
     <a href="/admin">Admin</a>
   <% } %>
+  <a href="/notifications" class="notification-bell">
+  Notifications
+  <% if (typeof unreadNotifications !== 'undefined' && unreadNotifications > 0) { %>
+    <span class="badge" aria-label="<%= unreadNotifications %> unread">
+      <%= unreadNotifications %>
+    </span>
+  <% } %>
+</a>
   <form method="post" action="/logout" style="display:inline">
     <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
     <button type="submit">Log out</button>

@@ -4,6 +4,7 @@ import {
   getProfileForUser,
 } from "../models/userModel.js";
 import { logger } from "../utils/logger.js";
+import { countUnread } from "../models/notificationModel.js";
 
 /**
  * Loads req.user, req.userRoles, req.profile from the session (if any).
@@ -38,6 +39,7 @@ export async function currentUser(req, res, next) {
     res.locals.currentUserRoles = roles;
     res.locals.currentProfile = profile;
     res.locals.isAuthenticated = true;
+    res.locals.unreadNotifications = await countUnread(user.id);
   } catch (err) {
     logger.error({ err }, "Failed to load current user; treating as guest");
   }

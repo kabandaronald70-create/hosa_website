@@ -24,6 +24,13 @@ import {
   listAuditTargetTypes,
 } from "../models/adminModel.js";
 
+import {
+  notifyStoryApproved,
+  notifyStoryRejected,
+  notifyOpportunityApproved,
+  notifyOpportunityRejected,
+} from "../services/notificationsService.js";
+
 import { redactMetadata, toCsvCell } from "../services/auditRedact.js";
 import { auditLog } from "../services/auditService.js";
 import { AUDIT_ACTIONS } from "../services/auditActions.js";
@@ -133,6 +140,9 @@ export async function actionVerifyMember(req, res, next) {
       targetId: id,
       metadata: { email: member.email },
     });
+
+    // BUG FIXED: Removed the accidental story notification block here
+
     req.flash("success", `Verified ${member.email}.`);
     res.redirect(`/admin/members/${id}`);
   } catch (err) {
@@ -155,6 +165,9 @@ export async function actionUnverifyMember(req, res, next) {
       targetId: id,
       metadata: { email: member.email },
     });
+
+    // BUG FIXED: Removed the accidental story notification block here
+
     req.flash("success", `Removed verification from ${member.email}.`);
     res.redirect(`/admin/members/${id}`);
   } catch (err) {
@@ -185,6 +198,9 @@ export async function actionSuspendMember(req, res, next) {
       targetId: id,
       metadata: { email: member.email, reason: reason || null },
     });
+
+    // BUG FIXED: Removed the accidental opportunity notification block here
+
     req.flash("success", `Suspended ${member.email}.`);
     res.redirect(`/admin/members/${id}`);
   } catch (err) {
@@ -251,6 +267,15 @@ export async function actionApproveStory(req, res, next) {
       targetId: id,
       metadata: { title: story.title, slug: story.slug },
     });
+
+    // --- NOTIFICATION ADDED HERE ---
+    if (story.author_user_id) {
+      await notifyStoryApproved({
+        userId: story.author_user_id,
+        storyTitle: story.title,
+      });
+    }
+
     req.flash("success", `Published "${story.title}".`);
     res.redirect("/admin/moderation");
   } catch (err) {
@@ -278,6 +303,16 @@ export async function actionRejectStory(req, res, next) {
       targetId: id,
       metadata: { title: story.title, reason },
     });
+
+    // --- NOTIFICATION ADDED HERE ---
+    if (story.author_user_id) {
+      await notifyStoryRejected({
+        userId: story.author_user_id,
+        storyTitle: story.title,
+        reason,
+      });
+    }
+
     req.flash("success", `Rejected "${story.title}".`);
     res.redirect("/admin/moderation");
   } catch (err) {
@@ -304,6 +339,15 @@ export async function actionApproveOpportunity(req, res, next) {
       targetId: id,
       metadata: { title: opp.title, slug: opp.slug },
     });
+
+    // --- NOTIFICATION ADDED HERE ---
+    if (opp.submitted_by) {
+      await notifyOpportunityApproved({
+        userId: opp.submitted_by,
+        oppTitle: opp.title,
+      });
+    }
+
     req.flash("success", `Approved "${opp.title}".`);
     res.redirect("/admin/moderation");
   } catch (err) {
@@ -336,6 +380,16 @@ export async function actionRejectOpportunity(req, res, next) {
       targetId: id,
       metadata: { title: opp.title, reason },
     });
+
+    // --- NOTIFICATION ADDED HERE ---
+    if (opp.submitted_by) {
+      await notifyOpportunityRejected({
+        userId: opp.submitted_by,
+        oppTitle: opp.title,
+        reason,
+      });
+    }
+
     req.flash("success", `Rejected "${opp.title}".`);
     res.redirect("/admin/moderation");
   } catch (err) {
