@@ -36,6 +36,38 @@
   </ul>
 </section>
 
+<% if (typeof rsvps !== 'undefined' && rsvps.length > 0) { %>
+  <section aria-labelledby="rsvps-heading">
+    <h2 id="rsvps-heading">My upcoming RSVPs</h2>
+    <ul>
+      <% rsvps.forEach((r) => { %>
+        <li>
+          <strong><%= r.title %></strong>
+          — <%= new Date(r.starts_at).toLocaleDateString() %>
+          at <%= r.venue || '—' %>
+          <em>(<%= r.status %>)</em>
+        </li>
+      <% }) %>
+    </ul>
+  </section>
+<% } %>
+
+<% if (typeof activeMentorship !== 'undefined' && activeMentorship > 0) { %>
+  <section aria-labelledby="mentorship-heading">
+    <h2 id="mentorship-heading">Mentorship</h2>
+    <p>
+      You have <strong><%= activeMentorship %></strong> active mentorship
+      request<%= activeMentorship === 1 ? '' : 's' %>.
+      <a href="/dashboard/mentorship/requests">View them →</a>
+    </p>
+  </section>
+<% } %>
+
+<section aria-labelledby="saved-heading">
+  <h2 id="saved-heading">Saved items</h2>
+  <p><a href="/dashboard/saved">View my saved items →</a></p>
+</section>
+
 <section aria-labelledby="account-heading">
   <h2 id="account-heading">Account</h2>
   <dl>

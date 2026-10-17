@@ -1,0 +1,35 @@
+<h1>Saved items</h1>
+
+<p><a href="/dashboard">← Back to dashboard</a></p>
+
+<%
+  function renderGroup(title, items, basePath) {
+%>
+  <section aria-labelledby="saved-<%= title.toLowerCase() %>-heading">
+    <h2 id="saved-<%= title.toLowerCase() %>-heading"><%= title %> (<%= items.length %>)</h2>
+    <% if (items.length === 0) { %>
+      <p><em>Nothing saved yet.</em></p>
+    <% } else { %>
+      <ul>
+        <% items.forEach(({ saved, data }) => { %>
+          <li>
+            <strong><%= data.title %></strong>
+            <% if (data.sub) { %> — <%= data.sub %><% } %>
+            <% if (data.sub2) { %> · <%= data.sub2 %><% } %>
+            <form method="post" action="/dashboard/saved/<%= saved.id %>/delete" style="display:inline">
+              <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+              <button type="submit">Remove</button>
+            </form>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </section>
+<%
+  }
+%>
+
+<% renderGroup('Events', grouped.events, '/events'); %>
+<% renderGroup('Stories', grouped.stories, '/stories'); %>
+<% renderGroup('Opportunities', grouped.opportunities, '/jobs'); %>
+<% renderGroup('Members', grouped.members, '/directory'); %>

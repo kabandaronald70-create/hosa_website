@@ -1,0 +1,35 @@
+<h1>Request mentorship</h1>
+
+<p>
+  You're requesting mentorship from
+  <strong><%= mentor.display_name || mentor.first_name + ' ' + mentor.last_name %></strong>
+  <% if (mentor.mentor_field) { %>in <em><%= mentor.mentor_field %></em><% } %>.
+</p>
+
+<% if (Object.keys(fieldErrors).length > 0) { %>
+  <div class="errors" role="alert">
+    <ul>
+      <% Object.entries(fieldErrors).forEach(([k, msg]) => { %>
+        <li><%= k.replace(/_/g, ' ') %>: <%= msg %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<form method="post" action="/dashboard/mentorship/requests/new" novalidate>
+  <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+  <input type="hidden" name="mentor_id" value="<%= mentor.user_id %>">
+
+  <label for="field_of_interest">What area are you seeking mentorship in?</label>
+  <input id="field_of_interest" name="field_of_interest" type="text" maxlength="200" required
+         value="<%= values.field_of_interest || '' %>">
+  <% if (fieldErrors.field_of_interest) { %><p class="field-error"><%= fieldErrors.field_of_interest %></p><% } %>
+
+  <label for="goals">What are your goals? (at least 20 characters)</label>
+  <textarea id="goals" name="goals" rows="6" maxlength="2000" required><%= values.goals || '' %></textarea>
+  <% if (fieldErrors.goals) { %><p class="field-error"><%= fieldErrors.goals %></p><% } %>
+
+  <p><button type="submit">Send request</button></p>
+</form>
+
+<p><a href="/directory">← Back to directory</a></p>
