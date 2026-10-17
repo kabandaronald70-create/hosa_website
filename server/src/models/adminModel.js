@@ -213,7 +213,7 @@ export async function listPendingStories({ page = 1, limit = 25 } = {}) {
 export async function getStoryForModeration(storyId) {
   const { rows } = await query(
     `SELECT id, slug, title, body, excerpt, author_name, author_ref,
-            class_year, category, status, created_at
+            author_user_id, class_year, category, status, created_at
        FROM stories WHERE id = $1 LIMIT 1`,
     [storyId],
   );
@@ -277,7 +277,7 @@ export async function listPendingOpportunities({ page = 1, limit = 25 } = {}) {
 export async function getOpportunityForModeration(opportunityId) {
   const { rows } = await query(
     `SELECT id, slug, title, description, employer, organization,
-            location, type_label, posted_by_ref, deadline, status, created_at
+            location, type_label, posted_by_ref, submitted_by, deadline, status, created_at
        FROM opportunities WHERE id = $1 LIMIT 1`,
     [opportunityId],
   );
