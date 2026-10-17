@@ -2,7 +2,7 @@
 
 <p style="display:flex; align-items:center; gap:1rem;">
   <% if (currentProfile?.avatar_path) { %>
-    <img src="/dashboard/avatar/me" alt="" width="64" height="64"
+    <img src="/dashboard/avatar/me?v=<%= currentProfile?.updated_at ? new Date(currentProfile.updated_at).getTime() : Date.now() %>" alt="" width="64" height="64" ...>
          style="border-radius:50%; object-fit:cover;">
   <% } %>
   <span>
