@@ -1,7 +1,8 @@
 // Job Board view — renders opportunities with search, filter, and save.
 
 import ExternalServices from "./ExternalServices.js";
-import Storage from "./Storage.js";
+import { saveItem, unsaveByLookup } from "./apiSaved.js";
+import { getMySaved } from "./apiAuth.js";
 
 const services = new ExternalServices();
 
@@ -9,6 +10,7 @@ export default class JobBoard {
   constructor() {
     this.opportunities = [];
     this.filtered = [];
+    this.savedIds = new Set();
     this.state = {
       search: "",
       type: "all",
@@ -63,7 +65,16 @@ export default class JobBoard {
     `;
 
     try {
-      this.opportunities = await services.getOpportunities();
+      const [opps, saved] = await Promise.all([
+        services.getOpportunities(),
+        getMySaved().catch(() => []),
+      ]);
+      this.opportunities = opps;
+      this.savedIds = new Set(
+        saved
+          .filter((s) => s.item_type === "opportunity")
+          .map((s) => String(s.item_id)),
+      );
     } catch (err) {
       console.error("Failed to load opportunities:", err);
       container.querySelector("#jobs-list").innerHTML =
@@ -146,8 +157,8 @@ export default class JobBoard {
       result = result.filter(
         (o) =>
           o.title.toLowerCase().includes(q) ||
-          o.employer.toLowerCase().includes(q) ||
-          o.description.toLowerCase().includes(q),
+          (o.employer || "").toLowerCase().includes(q) ||
+          (o.description || "").toLowerCase().includes(q),
       );
     }
 
@@ -160,10 +171,9 @@ export default class JobBoard {
     }
 
     if (this.state.savedOnly) {
-      result = result.filter((o) => Storage.isFavourite(o.id));
+      result = result.filter((o) => this.savedIds.has(String(o.id)));
     }
 
-    // Sort by deadline ascending
     result.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
 
     this.filtered = result;
@@ -185,20 +195,40 @@ export default class JobBoard {
       return;
     }
 
-    list.innerHTML = this.filtered.map(jobCardTemplate).join("");
+    list.innerHTML = this.filtered
+      .map((o) => jobCardTemplate(o, this))
+      .join("");
 
-    list.querySelectorAll("[data-save-id]").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        const id = e.currentTarget.dataset.saveId;
-        Storage.toggleFavourite(id);
+    list.querySelectorAll("[data-save-slug]").forEach((btn) => {
+      btn.addEventListener("click", async (e) => {
+        const slug = e.currentTarget.dataset.saveSlug;
+        const isSaved = this.savedIds.has(slug);
+        e.currentTarget.disabled = true;
+        const original = e.currentTarget.textContent;
+        e.currentTarget.textContent = "…";
+
+        if (isSaved) {
+          const savedList = await getMySaved().catch(() => []);
+          const r = await unsaveByLookup(savedList, "opportunity", slug);
+          if (r.ok) {
+            this.savedIds.delete(slug);
+          }
+        } else {
+          const r = await saveItem("opportunity", slug);
+          if (r.ok) {
+            this.savedIds.add(slug);
+          }
+        }
+        e.currentTarget.disabled = false;
+        e.currentTarget.textContent = original; // reapplyFilters will fix it
         this.applyFilters();
       });
     });
   }
 }
 
-function jobCardTemplate(o) {
-  const saved = Storage.isFavourite(o.id);
+function jobCardTemplate(o, view) {
+  const saved = view.savedIds.has(String(o.id));
   const deadline = new Date(o.deadline + "T00:00:00");
   const deadlineStr = isNaN(deadline.getTime())
     ? o.deadline
@@ -225,7 +255,7 @@ function jobCardTemplate(o) {
       <div class="job-card__actions">
         <button type="button"
                 class="btn btn--ghost"
-                data-save-id="${o.id}"
+                data-save-slug="${escapeHtml(o.id)}"
                 aria-pressed="${saved}">
           ${saved ? "★ Saved" : "☆ Save"}
         </button>

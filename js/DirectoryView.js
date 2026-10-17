@@ -1,7 +1,7 @@
 // Directory view — renders members, search, filter, and sort.
 
 import ExternalServices from "./ExternalServices.js";
-import Storage from "./Storage.js";
+import { saveItem } from "./apiSaved.js";
 
 const services = new ExternalServices();
 
@@ -83,12 +83,9 @@ export default class DirectoryView {
       </div>
     `;
 
-    // Load members
+    // Load members from the backend API
     try {
       this.members = await services.getMembers();
-      // Merge with locally-registered members from this browser
-      const localMembers = Storage.get("hosa-new-members", []);
-      this.members = [...this.members, ...localMembers];
     } catch (err) {
       console.error("Could not load alumni directory:", err);
       container.innerHTML = `
@@ -192,36 +189,30 @@ export default class DirectoryView {
   applyFilters() {
     let result = [...this.members];
 
-    // Search by name
     if (this.state.search) {
       result = result.filter((m) =>
         m.name.toLowerCase().includes(this.state.search),
       );
     }
 
-    // Filter by decade
     if (this.state.classDecade === "2000s") {
       result = result.filter((m) => m.classYear >= 2000 && m.classYear <= 2009);
     } else if (this.state.classDecade === "2010s") {
       result = result.filter((m) => m.classYear >= 2010 && m.classYear <= 2019);
     }
 
-    // Filter by district
     if (this.state.district !== "all") {
       result = result.filter((m) => m.district === this.state.district);
     }
 
-    // Filter by profession
     if (this.state.profession !== "all") {
       result = result.filter((m) => m.profession === this.state.profession);
     }
 
-    // Mentor only
     if (this.state.mentorOnly) {
       result = result.filter((m) => m.mentor === true);
     }
 
-    // Sort
     const [field, dir] = this.state.sort.split("-");
     result.sort((a, b) => {
       let cmp;
@@ -259,6 +250,25 @@ export default class DirectoryView {
     }
 
     grid.innerHTML = this.filtered.map(memberCardTemplate).join("");
+
+    // Wire up Save buttons
+    grid.querySelectorAll("[data-save-member]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const memberId = btn.dataset.saveMember;
+        btn.disabled = true;
+        btn.textContent = "Saving…";
+        const result = await saveItem("member", memberId);
+        if (result.ok) {
+          btn.textContent = "Saved ✓";
+        } else {
+          btn.disabled = false;
+          btn.textContent = "Save to favourites";
+          if (result.reason && result.reason !== "login_required") {
+            alert(`Could not save: ${result.reason}`);
+          }
+        }
+      });
+    });
   }
 }
 
@@ -274,7 +284,10 @@ function memberCardTemplate(m) {
       </div>
       <p class="member-card__profession">${escapeHtml(m.profession)}</p>
       ${m.mentor ? `<p class="member-card__badge">Available as mentor &middot; ${escapeHtml(m.mentorField)}</p>` : ""}
-      <a href="#/member/${m.id}" class="btn btn--ghost member-card__link">View profile</a>
+      <div class="member-card__actions">
+        <a href="#/member/${m.id}" class="btn btn--ghost member-card__link">View profile</a>
+        <button type="button" class="btn btn--ghost" data-save-member="${escapeHtml(m.id)}">Save to favourites</button>
+      </div>
     </article>
   `;
 }

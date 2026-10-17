@@ -33,6 +33,7 @@ async function fetchApi(path, query) {
     }
   }
   const res = await fetch(url.toString(), {
+    credentials: "same-origin",
     headers: { Accept: "application/json" },
   });
   return await convertToJson(res);

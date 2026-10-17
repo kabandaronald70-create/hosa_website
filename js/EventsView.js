@@ -2,13 +2,17 @@
 
 import ExternalServices from "./ExternalServices.js";
 import EventMap from "./EventMap.js";
-import Storage from "./Storage.js";
+import { saveItem, unsaveByLookup } from "./apiSaved.js";
+import { setRsvp, clearRsvp } from "./apiRsvp.js";
+import { getMySaved, getMyRsvps } from "./apiAuth.js";
 
 const services = new ExternalServices();
 
 export default class EventsView {
   constructor() {
     this.events = [];
+    this.savedIds = new Set(); // item_ids of saved events
+    this.rsvpedIds = new Set(); // slugs of RSVP'd events
   }
 
   async render(container) {
@@ -23,7 +27,18 @@ export default class EventsView {
     `;
 
     try {
-      this.events = await services.getEvents();
+      const [events, saved, rsvps] = await Promise.all([
+        services.getEvents(),
+        getMySaved().catch(() => []),
+        getMyRsvps().catch(() => ({})),
+      ]);
+      this.events = events;
+      this.savedIds = new Set(
+        saved
+          .filter((s) => s.item_type === "event")
+          .map((s) => String(s.item_id)),
+      );
+      this.rsvpedIds = new Set(Object.keys(rsvps));
     } catch (err) {
       console.error("Failed to load events:", err);
       container.querySelector("#events-list").innerHTML = `
@@ -38,14 +53,16 @@ export default class EventsView {
 
   renderEvents() {
     const list = document.querySelector("#events-list");
-    list.innerHTML = this.events.map(eventCardTemplate).join("");
+    list.innerHTML = this.events
+      .map((e) => eventCardTemplate(e, this))
+      .join("");
   }
 
   attachListeners() {
-    document.querySelectorAll("[data-rsvp-id]").forEach((btn) => {
+    document.querySelectorAll("[data-rsvp-slug]").forEach((btn) => {
       btn.addEventListener("click", (e) => {
-        const id = e.currentTarget.dataset.rsvpId;
-        this.toggleRsvp(id);
+        const slug = e.currentTarget.dataset.rsvpSlug;
+        this.toggleRsvp(slug);
       });
     });
 
@@ -56,30 +73,76 @@ export default class EventsView {
       });
     });
 
-    // Save / unsave event
-    document.querySelectorAll("[data-save-event-id]").forEach((btn) => {
+    document.querySelectorAll("[data-save-event-slug]").forEach((btn) => {
       btn.addEventListener("click", (e) => {
-        const id = e.currentTarget.dataset.saveEventId;
-        Storage.toggleFavourite(id);
-        const saved = Storage.isFavourite(id);
-        e.currentTarget.textContent = saved ? "★ Saved" : "☆ Save";
-        e.currentTarget.setAttribute("aria-pressed", String(saved));
+        const slug = e.currentTarget.dataset.saveEventSlug;
+        this.toggleSave(slug, e.currentTarget);
       });
     });
   }
 
-  toggleRsvp(eventId) {
-    const currentlyRsvped = Storage.isRsvped(eventId);
-    Storage.setRsvp(eventId, !currentlyRsvped);
+  async toggleRsvp(slug) {
+    const btn = document.querySelector(`[data-rsvp-slug="${slug}"]`);
+    if (!btn) return;
 
-    const btn = document.querySelector(`[data-rsvp-id="${eventId}"]`);
-    if (btn) {
-      const newState = !currentlyRsvped;
-      btn.textContent = newState ? "✓ RSVP’d — Cancel" : "RSVP";
-      btn.classList.toggle("btn--primary", newState);
-      btn.classList.toggle("btn--ghost", !newState);
-      btn.setAttribute("aria-pressed", String(newState));
+    const isRsvped = this.rsvpedIds.has(slug);
+    btn.disabled = true;
+    const original = btn.textContent;
+    btn.textContent = "…";
+
+    if (isRsvped) {
+      const r = await clearRsvp(slug);
+      if (r.ok) {
+        this.rsvpedIds.delete(slug);
+        btn.textContent = "RSVP";
+        btn.classList.remove("btn--primary");
+        btn.classList.add("btn--ghost");
+        btn.setAttribute("aria-pressed", "false");
+      } else {
+        btn.textContent = original;
+      }
+    } else {
+      const r = await setRsvp(slug, "going");
+      if (r.ok) {
+        this.rsvpedIds.add(slug);
+        btn.textContent = "✓ RSVP’d — Cancel";
+        btn.classList.remove("btn--ghost");
+        btn.classList.add("btn--primary");
+        btn.setAttribute("aria-pressed", "true");
+      } else {
+        btn.textContent = original;
+      }
     }
+    btn.disabled = false;
+  }
+
+  async toggleSave(slug, btn) {
+    const isSaved = this.savedIds.has(slug);
+    btn.disabled = true;
+    const original = btn.textContent;
+    btn.textContent = "…";
+
+    if (isSaved) {
+      const saved = await getMySaved().catch(() => []);
+      const r = await unsaveByLookup(saved, "event", slug);
+      if (r.ok) {
+        this.savedIds.delete(slug);
+        btn.textContent = "☆ Save";
+        btn.setAttribute("aria-pressed", "false");
+      } else {
+        btn.textContent = original;
+      }
+    } else {
+      const r = await saveItem("event", slug);
+      if (r.ok) {
+        this.savedIds.add(slug);
+        btn.textContent = "★ Saved";
+        btn.setAttribute("aria-pressed", "true");
+      } else {
+        btn.textContent = original;
+      }
+    }
+    btn.disabled = false;
   }
 
   async showLocation(eventId) {
@@ -142,13 +205,14 @@ export default class EventsView {
 
 // ---------- Templates & helpers ----------
 
-function eventCardTemplate(event) {
-  const rsvped = Storage.isRsvped(event.id);
-  const saved = Storage.isFavourite(event.id);
+function eventCardTemplate(event, view) {
+  const slug = String(event.id); // API returns slug as `id`
+  const rsvped = view.rsvpedIds.has(slug);
+  const saved = view.savedIds.has(slug);
   const date = formatDate(event.date);
 
   return `
-    <article class="card event-card" data-event-id="${event.id}">
+    <article class="card event-card" data-event-id="${escapeHtml(event.id)}">
       <header class="event-card__header">
         <div>
           <p class="event-card__type">${escapeHtml(event.type)}</p>
@@ -167,7 +231,7 @@ function eventCardTemplate(event) {
         <button
           type="button"
           class="btn ${rsvped ? "btn--primary" : "btn--ghost"}"
-          data-rsvp-id="${event.id}"
+          data-rsvp-slug="${escapeHtml(event.id)}"
           aria-pressed="${rsvped}">
           ${rsvped ? "✓ RSVP’d — Cancel" : "RSVP"}
         </button>
@@ -175,20 +239,20 @@ function eventCardTemplate(event) {
         <button
           type="button"
           class="btn btn--ghost"
-          data-map-id="${event.id}">
+          data-map-id="${escapeHtml(event.id)}">
           Show location
         </button>
 
         <button
           type="button"
           class="btn btn--ghost"
-          data-save-event-id="${event.id}"
+          data-save-event-slug="${escapeHtml(event.id)}"
           aria-pressed="${saved}">
           ${saved ? "★ Saved" : "☆ Save"}
         </button>
       </div>
 
-      <div class="event-location" data-map-panel="${event.id}"></div>
+      <div class="event-location" data-map-panel="${escapeHtml(event.id)}"></div>
     </article>
   `;
 }
