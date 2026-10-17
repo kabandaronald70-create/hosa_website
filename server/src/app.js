@@ -49,7 +49,24 @@ export function createApp() {
 
   app.use(
     helmet({
-      contentSecurityPolicy: env.isProd ? undefined : false,
+      contentSecurityPolicy: env.isProd
+        ? {
+            directives: {
+              defaultSrc: ["'self'"],
+              scriptSrc: ["'self'"],
+              scriptSrcAttr: ["'none'"],
+              styleSrc: ["'self'", "'unsafe-inline'"],
+              imgSrc: ["'self'", "data:", "https://*.supabase.co"],
+              connectSrc: ["'self'", "https://*.supabase.co"],
+              fontSrc: ["'self'", "https:"],
+              objectSrc: ["'none'"],
+              baseUri: ["'self'"],
+              formAction: ["'self'"],
+              frameAncestors: ["'self'"],
+              upgradeInsecureRequests: [],
+            },
+          }
+        : false,
     }),
   );
 
