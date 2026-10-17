@@ -1,0 +1,36 @@
+<h1>Submit an alumni story</h1>
+
+<p>Stories are reviewed by a moderator before appearing on the public site. This usually takes a day or two.</p>
+
+<% if (Object.keys(fieldErrors).length > 0) { %>
+  <div class="errors" role="alert">
+    <strong>Please fix the following:</strong>
+    <ul>
+      <% Object.entries(fieldErrors).forEach(([k, msg]) => { %>
+        <li><%= k.replace(/_/g, ' ') %>: <%= msg %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<form method="post" action="/dashboard/stories/new" novalidate>
+  <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+
+  <label for="title">Title</label>
+  <input id="title" name="title" type="text" required minlength="5" maxlength="200" value="<%= values.title || '' %>">
+  <% if (fieldErrors.title) { %><p class="field-error"><%= fieldErrors.title %></p><% } %>
+
+  <label for="category">Category (optional)</label>
+  <input id="category" name="category" type="text" maxlength="80" placeholder="e.g. Career, Education, Agriculture" value="<%= values.category || '' %>">
+
+  <label for="excerpt">Short summary (optional, shown on the stories list)</label>
+  <textarea id="excerpt" name="excerpt" rows="2" maxlength="500"><%= values.excerpt || '' %></textarea>
+
+  <label for="body">Story</label>
+  <textarea id="body" name="body" rows="12" required minlength="50" maxlength="8000"><%= values.body || '' %></textarea>
+  <% if (fieldErrors.body) { %><p class="field-error"><%= fieldErrors.body %></p><% } %>
+
+  <p><button type="submit">Submit for review</button></p>
+</form>
+
+<p><a href="/dashboard">← Back to dashboard</a></p>

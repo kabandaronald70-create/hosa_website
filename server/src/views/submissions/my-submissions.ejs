@@ -1,0 +1,62 @@
+<h1>My submissions</h1>
+
+<p><a href="/dashboard">← Back to dashboard</a></p>
+
+<section aria-labelledby="stories-heading">
+  <h2 id="stories-heading">Stories (<%= stories.length %>)</h2>
+
+  <% if (stories.length === 0) { %>
+    <p><em>No stories submitted yet.</em> <a href="/dashboard/stories/new">Submit one →</a></p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr><th>Title</th><th>Status</th><th>Submitted</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <% stories.forEach((s) => { %>
+          <tr>
+            <td><%= s.title %></td>
+            <td><%= s.status %></td>
+            <td><%= new Date(s.created_at).toLocaleString() %></td>
+            <td>
+              <% if (s.status === 'rejected' && s.rejection_reason) { %>
+                <em><%= s.rejection_reason %></em>
+              <% } else if (s.status === 'published' && s.published_at) { %>
+                Published <%= new Date(s.published_at).toLocaleDateString() %>
+              <% } else { %>—<% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<section aria-labelledby="opps-heading" style="margin-top:2rem">
+  <h2 id="opps-heading">Opportunities (<%= opportunities.length %>)</h2>
+
+  <% if (opportunities.length === 0) { %>
+    <p><em>No opportunities submitted yet.</em> <a href="/dashboard/opportunities/new">Submit one →</a></p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr><th>Title</th><th>Organization</th><th>Status</th><th>Submitted</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <% opportunities.forEach((o) => { %>
+          <tr>
+            <td><%= o.title %></td>
+            <td><%= o.employer || '—' %></td>
+            <td><%= o.status %></td>
+            <td><%= new Date(o.created_at).toLocaleString() %></td>
+            <td>
+              <% if (o.status === 'rejected' && o.rejection_reason) { %>
+                <em><%= o.rejection_reason %></em>
+              <% } else { %>—<% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>

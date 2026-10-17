@@ -1,0 +1,46 @@
+<h1>Submit an opportunity</h1>
+
+<p>Post a job, internship, scholarship, volunteering role, or training program for HOSA members. Submissions are reviewed before appearing publicly.</p>
+
+<% if (Object.keys(fieldErrors).length > 0) { %>
+  <div class="errors" role="alert">
+    <strong>Please fix the following:</strong>
+    <ul>
+      <% Object.entries(fieldErrors).forEach(([k, msg]) => { %>
+        <li><%= k.replace(/_/g, ' ') %>: <%= msg %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<form method="post" action="/dashboard/opportunities/new" novalidate>
+  <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+
+  <label for="title">Title</label>
+  <input id="title" name="title" type="text" required minlength="5" maxlength="200" value="<%= values.title || '' %>">
+  <% if (fieldErrors.title) { %><p class="field-error"><%= fieldErrors.title %></p><% } %>
+
+  <label for="type_label">Type</label>
+  <input id="type_label" name="type_label" type="text" maxlength="80" placeholder="e.g. Job, Internship, Scholarship, Volunteering, Training" value="<%= values.type_label || '' %>">
+
+  <label for="employer">Organization / employer</label>
+  <input id="employer" name="employer" type="text" maxlength="200" value="<%= values.employer || '' %>">
+
+  <label for="location">Location</label>
+  <input id="location" name="location" type="text" maxlength="200" value="<%= values.location || '' %>">
+
+  <label for="description">Description</label>
+  <textarea id="description" name="description" rows="8" required minlength="30" maxlength="5000"><%= values.description || '' %></textarea>
+  <% if (fieldErrors.description) { %><p class="field-error"><%= fieldErrors.description %></p><% } %>
+
+  <label for="application_url">Application link (https://…)</label>
+  <input id="application_url" name="application_url" type="url" placeholder="https://example.com/apply" maxlength="500" value="<%= values.application_url || '' %>">
+  <% if (fieldErrors.application_url) { %><p class="field-error"><%= fieldErrors.application_url %></p><% } %>
+
+  <label for="deadline">Deadline (optional)</label>
+  <input id="deadline" name="deadline" type="date" value="<%= values.deadline || '' %>">
+
+  <p><button type="submit">Submit for review</button></p>
+</form>
+
+<p><a href="/dashboard">← Back to dashboard</a></p>

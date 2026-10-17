@@ -3,7 +3,7 @@
 A responsive web application for former students of Highway Secondary School
 (Kiganda Town Council, Kassanda District, Uganda).
 
-**Live site:** <https://hosa-website-vhts.onrender.com>
+**Live site:** <https://hosa-websiterk.onrender.com>
 
 **Trello board:** <https://trello.com/b/iRLK5T7/hosa-final-project>
 
@@ -77,7 +77,7 @@ npm run lint      # run ESLint# HOSA — Highway Old Students' Association
 A responsive web application for former students of Highway Secondary School
 (Kiganda Town Council, Kassanda District, Uganda).
 
-**Live site:** <https://hosa-website-vhts.onrender.com>
+**Live site:** <https://hosa-websiterk.onrender.com>
 
 **Trello board:** <https://trello.com/b/iRLK5T7/hosa-final-project>
 

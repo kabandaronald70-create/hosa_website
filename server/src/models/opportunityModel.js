@@ -40,3 +40,50 @@ export async function listApprovedOpportunities({
 
   return { rows, total: countRows[0].total, page, limit };
 }
+
+export async function createPendingOpportunity({
+  slug,
+  title,
+  typeLabel,
+  employer,
+  location,
+  description,
+  applicationUrl,
+  deadline,
+  authorUserId,
+}) {
+  const { rows } = await query(
+    `INSERT INTO opportunities
+       (external_ref, slug, title, description,
+        employer, organization, location, type_label,
+        application_url, deadline,
+        submitted_by, posted_by_ref, status)
+     VALUES (NULL, $1, $2, $3, $4, $4, $5, $6, $7, $8, $9, NULL, 'pending')
+     RETURNING id, slug, title, status, created_at`,
+    [
+      slug,
+      title,
+      description,
+      employer,
+      location,
+      typeLabel,
+      applicationUrl,
+      deadline,
+      authorUserId,
+    ],
+  );
+  return rows[0];
+}
+
+export async function listMyOpportunities(userId) {
+  const { rows } = await query(
+    `SELECT id, slug, title, employer, location, type_label,
+            status, rejection_reason, deadline, created_at
+       FROM opportunities
+      WHERE submitted_by = $1
+      ORDER BY created_at DESC
+      LIMIT 100`,
+    [userId],
+  );
+  return rows;
+}
