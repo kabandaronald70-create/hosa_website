@@ -2,10 +2,6 @@ import crypto from "node:crypto";
 import { env } from "../config/env.js";
 
 // Signed-token CSRF: no server-side storage needed.
-// Token = HMAC(secret, sessionId + ':' + randomNonce)
-// The token is written into the session (csrfToken) and into a hidden form field.
-// On POST we compare the submitted field to the session value in constant time.
-
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 function sign(sessionId, nonce) {
@@ -33,7 +29,6 @@ export function csrf(req, res, next) {
     return next(new Error("csrf middleware requires a session"));
   }
 
-  // Always ensure a token exists so views can render it.
   if (!req.session.csrfToken) {
     req.session.csrfToken = generateToken(req.sessionID);
   }
@@ -42,12 +37,15 @@ export function csrf(req, res, next) {
 
   if (SAFE_METHODS.has(req.method)) return next();
 
-  // Multipart bodies aren't parsed yet at this point in the chain.
-  // Let csrfCheck() (mounted after multer) verify those instead.
+  // JSON API bypass: these requests are protected by SameSite cookies and
+  // require JSON Content-Type, which cannot be sent cross-site without CORS.
+  if (req.path.startsWith("/api/") || req.originalUrl.startsWith("/api/")) {
+    return next();
+  }
+
   const contentType = req.get("content-type") || "";
   if (contentType.startsWith("multipart/form-data")) return next();
 
-  // For everything else (urlencoded/json), verify now.
   const submitted =
     req.body?.[env.csrf.fieldName] || req.get(env.csrf.headerName) || "";
 
@@ -60,15 +58,9 @@ export function csrf(req, res, next) {
   next();
 }
 
-/**
- * Verification-only CSRF middleware.
- * Use this on routes where the body is parsed by something else (e.g. multer
- * for multipart/form-data) AFTER the global csrf() middleware has already run.
- * Assumes req.session.csrfToken exists (csrf() set it earlier in the chain).
- */
 export function csrfCheck(req, res, next) {
   if (SAFE_METHODS.has(req.method)) return next();
-  if (req.path.startsWith("/api/")) return next();
+
   if (!req.session?.csrfToken) {
     const err = new Error("CSRF session missing.");
     err.status = 403;
