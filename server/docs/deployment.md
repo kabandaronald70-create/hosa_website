@@ -18,3 +18,5 @@ For production DB use Supabase Free with SSL (the app enables SSL when
 ## Migrations in production
 
 Run once from a Render Shell after deploy:
+
+<!-- auto-deploy test: 2026-10-18 01:51 -->
