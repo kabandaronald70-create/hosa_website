@@ -1,26 +1,46 @@
-<h1>Log in to HOSA</h1>
+<div class="auth-layout">
+  <div class="auth-layout__panel">
+    <div class="auth-layout__brand">
+      <h1 class="auth-layout__title">Reconnect. Mentor. Grow.</h1>
+      <p class="auth-layout__lede">
+        Welcome back to the Highway Old Students' Association.
+        The Mighty. For a Bright Future.
+      </p>
+    </div>
+  </div>
 
-<% if (fieldErrors._form) { %>
-  <div class="errors" role="alert"><%= fieldErrors._form %></div>
-<% } %>
+  <div class="auth-layout__form">
+    <h2>Welcome back</h2>
 
-<form method="post" action="/login" novalidate>
-  <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
-  <% if (next) { %>
-    <input type="hidden" name="next" value="<%= next %>">
-  <% } %>
+    <% if (fieldErrors._form) { %>
+      <div class="alert alert--error" role="alert"><%= fieldErrors._form %></div>
+    <% } %>
 
-  <label for="email">Email</label>
-  <input id="email" name="email" type="email" autocomplete="email"
-         required maxlength="254" value="<%= values.email || '' %>">
-  <% if (fieldErrors.email) { %><p class="field-error"><%= fieldErrors.email %></p><% } %>
+    <form method="post" action="/login" novalidate>
+      <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+      <% if (next) { %>
+        <input type="hidden" name="next" value="<%= next %>">
+      <% } %>
 
-  <label for="password">Password</label>
-  <input id="password" name="password" type="password"
-         autocomplete="current-password" required>
-  <% if (fieldErrors.password) { %><p class="field-error"><%= fieldErrors.password %></p><% } %>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email"
+               required maxlength="254" value="<%= values.email || '' %>">
+        <% if (fieldErrors.email) { %><span class="field-error"><%= fieldErrors.email %></span><% } %>
+      </div>
 
-  <p><button type="submit">Log in</button></p>
-</form>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password"
+               autocomplete="current-password" required>
+        <% if (fieldErrors.password) { %><span class="field-error"><%= fieldErrors.password %></span><% } %>
+      </div>
 
-<p>New to HOSA? <a href="/register">Create an account</a>.</p>
+      <button type="submit" class="btn btn--primary" style="width: 100%;">Log in</button>
+    </form>
+
+    <p style="margin-top: var(--space-4); text-align: center; font-size: var(--text-sm);">
+      New here? <a href="/register">Join HOSA</a>
+    </p>
+  </div>
+</div>

@@ -1,0 +1,143 @@
+<h1>Styleguide</h1>
+<p class="field-hint">
+  Hidden in production. This page shows every component in the HOSA design
+  system.
+</p>
+
+<h2>Colour tokens</h2>
+<div
+  style="
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--space-4);
+  "
+>
+  <div class="card" style="background: var(--green); color: var(--white)">
+    <strong>Highway Green</strong><br /><code>#0F4C3A</code>
+  </div>
+  <div class="card" style="background: var(--gold); color: var(--ink)">
+    <strong>Crest Gold</strong><br /><code>#C89B2C</code>
+  </div>
+  <div class="card" style="background: var(--ivory)">
+    <strong>Ivory</strong><br /><code>#FAF8F3</code>
+  </div>
+  <div class="card" style="background: var(--success); color: var(--white)">
+    <strong>Success</strong><br /><code>#247A52</code>
+  </div>
+  <div class="card" style="background: var(--danger); color: var(--white)">
+    <strong>Danger</strong><br /><code>#A33C32</code>
+  </div>
+  <div class="card" style="background: var(--warning); color: var(--white)">
+    <strong>Warning</strong><br /><code>#8A6410</code>
+  </div>
+</div>
+
+<h2>Typography</h2>
+<h1>Heading 1 — Fraunces 600</h1>
+<h2>Heading 2 — Fraunces 600</h2>
+<h3>Heading 3 — Fraunces 600</h3>
+<p>
+  Body text — Manrope 400. The quick brown fox jumps over the lazy dog. This is
+  the default paragraph style.
+</p>
+<p><small>Small text — used for captions and hints.</small></p>
+
+<h2>Buttons</h2>
+<div style="display: flex; gap: var(--space-3); flex-wrap: wrap">
+  <button class="btn btn--primary">Primary</button>
+  <button class="btn btn--accent">Accent (Join)</button>
+  <button class="btn btn--ghost">Ghost</button>
+  <button class="btn btn--danger">Danger</button>
+  <button class="btn btn--sm btn--primary">Small</button>
+  <button class="btn btn--primary" disabled>Disabled</button>
+</div>
+
+<h2>Forms</h2>
+<div class="field">
+  <label for="sg-email">Email address</label>
+  <input id="sg-email" type="email" placeholder="you@example.com" />
+  <span class="field-hint">We'll never share your email.</span>
+</div>
+<div class="field">
+  <label for="sg-pass">Password</label>
+  <input id="sg-pass" type="password" value="bad" />
+  <span class="field-error">Password must be at least 10 characters.</span>
+</div>
+
+<h2>Cards</h2>
+<article class="card" style="max-width: 320px">
+  <div class="card__header">
+    <div
+      style="
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: var(--gold);
+        display: grid;
+        place-items: center;
+        color: var(--ink);
+        font-weight: 600;
+      "
+    >
+      SN
+    </div>
+    <div>
+      <strong>Sarah Nakato</strong>
+      <p class="field-hint">Class of 2008 · Software Engineer</p>
+    </div>
+  </div>
+  <p>
+    Works at a fintech company in Kampala building mobile money integrations.
+  </p>
+</article>
+
+<h2>Badges</h2>
+<div style="display: flex; gap: var(--space-2); flex-wrap: wrap">
+  <span class="badge badge--success">✓ Verified</span>
+  <span class="badge badge--warning">Pending</span>
+  <span class="badge badge--danger">Rejected</span>
+  <span class="badge badge--gold">Mentor</span>
+  <span class="badge badge--muted">Draft</span>
+</div>
+
+<h2>Alerts</h2>
+<div class="alert alert--success">Your profile has been saved.</div>
+<div class="alert alert--error">Invalid email or password.</div>
+<div class="alert alert--warning">Your submission is pending review.</div>
+<div class="alert alert--info">New event: Reunion 2027.</div>
+
+<h2>Table</h2>
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Class</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td data-label="Name">Sarah Nakato</td>
+      <td data-label="Class">2008</td>
+      <td data-label="Status">
+        <span class="badge badge--success">Verified</span>
+      </td>
+    </tr>
+    <tr>
+      <td data-label="Name">James Okello</td>
+      <td data-label="Class">2010</td>
+      <td data-label="Status">
+        <span class="badge badge--warning">Pending</span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Empty state</h2>
+<div class="empty-state">
+  <p class="empty-state__title">No alumni match your filters.</p>
+  <p>Try adjusting your search or clearing filters.</p>
+  <div class="empty-state__action">
+    <button class="btn btn--ghost">Clear filters</button>
+  </div>
+</div>
