@@ -3,7 +3,6 @@
 import HomeView from "./HomeView.js";
 import DirectoryView from "./DirectoryView.js";
 import EventsView from "./EventsView.js";
-import MentorshipForm from "./MentorshipForm.js";
 import JobBoard from "./JobBoard.js";
 import StoriesView from "./StoriesView.js";
 import NotFoundView from "./NotFoundView.js";
