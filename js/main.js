@@ -7,19 +7,11 @@ import MentorshipForm from "./MentorshipForm.js";
 import JobBoard from "./JobBoard.js";
 import StoriesView from "./StoriesView.js";
 import NotFoundView from "./NotFoundView.js";
-import { updateSavedBadge } from "./updateSavedBadge.js";
-import SavedView from "./SavedView.js";
 import PrivacyView from "./PrivacyView.js";
-import RegisterView from "./RegisterView.js";
 
 // ---------- Footer year ----------
 const yearEl = document.querySelector("#year");
 if (yearEl) yearEl.textContent = new Date().getFullYear();
-
-// ---------- Saved items badge ----------
-updateSavedBadge();
-window.addEventListener("hosa:favourites-changed", updateSavedBadge);
-window.addEventListener("hosa:rsvps-changed", updateSavedBadge);
 
 // ---------- Mobile menu toggle ----------
 const menuToggle = document.querySelector(".menu-toggle");
@@ -47,9 +39,7 @@ const routes = {
   mentorship: MentorshipForm,
   jobs: JobBoard,
   stories: StoriesView,
-  saved: SavedView,
   privacy: PrivacyView,
-  register: RegisterView,
 };
 
 // ---------- Page titles per route ----------
@@ -60,10 +50,8 @@ const titles = {
   mentorship: "Mentorship | HOSA",
   jobs: "Job Board | HOSA",
   stories: "Alumni Stories | HOSA",
-  saved: "Saved Items | HOSA",
   privacy: "Privacy Policy | HOSA",
   member: "Member Profile | HOSA",
-  register: "Join HOSA | Highway Old Students' Association",
   story: "Alumni Story | HOSA",
 };
 

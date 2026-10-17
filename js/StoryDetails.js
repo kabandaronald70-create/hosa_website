@@ -56,7 +56,7 @@ export default class StoryDetails {
           <p class="story-detail__excerpt">${escapeHtml(story.excerpt)}</p>
 
           <div class="story-detail__body">
-            <p>${escapeHtml(story.body)}</p>
+          <p>${escapeHtml(story.body).replace(/\n/g, "<br>")}</p>
           </div>
 
           <div class="story-detail__actions">

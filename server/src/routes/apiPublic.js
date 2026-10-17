@@ -1,4 +1,5 @@
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import { requireAuth } from "../middleware/auth.js";
 import {
   getDirectory,
@@ -21,6 +22,20 @@ import {
 } from "../controllers/apiActionController.js";
 
 const router = Router();
+
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  limit: 100,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  handler: (req, res) => {
+    res
+      .status(429)
+      .json({ error: "Too many requests. Please try again later." });
+  },
+});
+
+router.use("/api", apiLimiter);
 
 router.get("/api/health", (req, res) => {
   res.json({
