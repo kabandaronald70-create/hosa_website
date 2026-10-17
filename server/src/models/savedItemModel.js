@@ -66,10 +66,9 @@ export async function listMySavedEnriched(userId) {
     storySlugs.length === 0
       ? { rows: [] }
       : query(
-          `SELECT slug AS id, title, published_at AS sub, category AS sub2
+          `SELECT COALESCE(external_ref, slug) AS id, title, published_at AS sub, category AS sub2
          FROM stories
-        WHERE slug = ANY($1::text[])
-          AND status = 'published'`,
+        WHERE slug = ANY($1::text[]) OR external_ref = ANY($1::text[])`,
           [storySlugs],
         ),
     oppSlugs.length === 0

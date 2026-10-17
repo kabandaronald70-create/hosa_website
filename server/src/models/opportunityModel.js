@@ -87,3 +87,20 @@ export async function listMyOpportunities(userId) {
   );
   return rows;
 }
+
+// New addition: fetch a single opportunity by its slug or external_ref
+export async function getOpportunityByIdOrRef(idOrSlug) {
+  const { rows } = await query(
+    `SELECT o.id, o.external_ref, o.slug, o.title, o.description,
+            o.employer, o.organization, o.location, o.type_label,
+            o.posted_by_ref, o.application_url, o.deadline,
+            oc.name AS category, o.created_at
+       FROM opportunities o
+       LEFT JOIN opportunity_categories oc ON oc.id = o.category_id
+      WHERE (o.slug = $1 OR o.external_ref = $1)
+        AND o.status = 'approved'
+      LIMIT 1`,
+    [idOrSlug],
+  );
+  return rows[0] || null;
+}
