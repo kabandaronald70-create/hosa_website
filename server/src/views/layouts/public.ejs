@@ -4,16 +4,62 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="<%= csrfToken %>">
-  <title><%= typeof title !== 'undefined' ? title : 'HOSA' %></title>
+  <title><%= typeof title !== 'undefined' ? title : 'HOSA — Highway Old Students\' Association' %></title>
   
+  <!-- SEO -->
+  <meta name="description" content="The official web home of the Highway Old Students' Association — connecting former students of Highway Secondary School, Kiganda.">
+  <meta name="theme-color" content="#0F4C3A">
+
+  <!-- Open Graph / Social Sharing -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="<%= env.APP_ORIGIN %>">
+  <meta property="og:title" content="<%= typeof title !== 'undefined' ? title : 'HOSA' %>">
+  <meta property="og:description" content="Reconnect with fellow alumni, find a mentor, and stay updated on HOSA events.">
+  <meta property="og:image" content="<%= env.APP_ORIGIN %>/images/web-app-manifest-512x512.png">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+  <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96x96.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+  <!-- Fonts & Styles -->
   <link rel="preload" href="/fonts/manrope-400.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="preload" href="/fonts/manrope-600.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="/fonts/fraunces-600.ttf" as="font" type="font/ttf" crossorigin>
-  
   <link rel="stylesheet" href="/styles/base.css">
   <link rel="stylesheet" href="/styles/components.css">
   <link rel="stylesheet" href="/styles/layouts.css">
 </head>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const btnTopnav = document.getElementById('btn-topnav');
+    const btnSidebar = document.getElementById('btn-sidebar');
+    const topnav = document.getElementById('topbar-nav');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    if (btnTopnav && topnav) {
+      btnTopnav.addEventListener('click', () => {
+        topnav.classList.toggle('is-open');
+        if (sidebar) sidebar.classList.remove('is-open');
+      });
+    }
+
+    if (btnSidebar && sidebar) {
+      btnSidebar.addEventListener('click', () => {
+        sidebar.classList.add('is-open');
+        if (overlay) overlay.classList.add('is-visible');
+        if (topnav) topnav.classList.remove('is-open');
+      });
+    }
+
+    if (overlay) {
+      overlay.addEventListener('click', () => {
+        sidebar.classList.remove('is-open');
+        overlay.classList.remove('is-visible');
+      });
+    }
+  });
+</script>
 <body>
   <a href="#main-content" class="skip-link">Skip to main content</a>
   

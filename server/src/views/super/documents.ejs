@@ -1,0 +1,58 @@
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5);">
+  <h1 style="margin: 0;">Manage Documents</h1>
+  <a href="/admin" class="btn btn--ghost">← Back to Admin</a>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: var(--space-5);">
+  
+  <!-- Upload Form -->
+  <div class="card" style="align-self: start;">
+    <h2 style="font-size: var(--text-lg); margin-top: 0;">Upload Document</h2>
+    <form method="post" action="/super/documents" enctype="multipart/form-data">
+      <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+      
+      <div class="field">
+        <label for="title">Title</label>
+        <input id="title" name="title" type="text" required>
+      </div>
+
+      <div class="field">
+        <label for="description">Description (optional)</label>
+        <textarea id="description" name="description" rows="3"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="document">File (Max 10MB)</label>
+        <input id="document" name="document" type="file" required style="padding: var(--space-2) 0;">
+      </div>
+
+      <button type="submit" class="btn btn--primary" style="width: 100%;">Upload</button>
+    </form>
+  </div>
+
+  <!-- List -->
+  <div>
+    <h2 style="font-size: var(--text-lg);">Uploaded Documents</h2>
+    <% if (documents.length === 0) { %>
+      <div class="empty-state"><p>No documents uploaded yet.</p></div>
+    <% } else { %>
+      <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+        <% documents.forEach((doc) => { %>
+          <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4);">
+            <div>
+              <h3 style="margin: 0 0 var(--space-1); font-size: var(--text-base);"><%= doc.title %></h3>
+              <p style="margin: 0; font-size: var(--text-xs); color: var(--muted);"><%= doc.file_name %> · Uploaded <%= new Date(doc.created_at).toLocaleDateString() %></p>
+            </div>
+            <div style="display: flex; gap: var(--space-2);">
+              <a href="<%= doc.file_path %>" target="_blank" class="btn btn--ghost btn--sm">View</a>
+              <form method="post" action="/super/documents/<%= doc.id %>/delete" style="margin: 0;">
+                <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn--danger btn--sm" onclick="return confirm('Delete this file?')">Delete</button>
+              </form>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</div>

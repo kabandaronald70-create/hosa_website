@@ -1,0 +1,65 @@
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); flex-wrap: wrap; gap: var(--space-3);">
+  <div style="display: flex; align-items: center; gap: var(--space-3);">
+    <a href="/admin" class="btn btn--ghost" style="padding: var(--space-2);">←</a>
+    <h1 style="margin: 0;">Manage Announcements</h1>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: var(--space-5);">
+  <!-- Create Form -->
+  <div class="card" style="align-self: start;">
+    <h2 style="font-size: var(--text-lg); margin-top: 0;">New Announcement</h2>
+    <form method="post" action="/admin/announcements">
+      <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+      
+      <div class="field">
+        <label for="title">Title</label>
+        <input id="title" name="title" type="text" required maxlength="200">
+      </div>
+
+      <div class="field">
+        <label for="body">Message</label>
+        <textarea id="body" name="body" rows="5" required></textarea>
+      </div>
+
+      <div class="field" style="flex-direction: row; align-items: center; gap: var(--space-2);">
+        <input type="checkbox" id="pinned" name="pinned" style="min-height: auto;">
+        <label for="pinned" style="margin: 0; font-weight: normal;">Pin to top</label>
+      </div>
+
+      <button type="submit" class="btn btn--primary" style="width: 100%;">Post Announcement</button>
+    </form>
+  </div>
+
+  <!-- List -->
+  <div>
+    <h2 style="font-size: var(--text-lg);">Posted Announcements</h2>
+    
+    <% if (announcements.length === 0) { %>
+      <div class="empty-state"><p>No announcements yet.</p></div>
+    <% } else { %>
+      <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+        <% announcements.forEach((a) => { %>
+          <article class="card" style="<%= a.pinned ? 'border-left: 4px solid var(--gold);' : '' %>">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <h3 style="margin: 0 0 var(--space-1); font-size: var(--text-lg);">
+                  <%= a.title %> 
+                  <% if (a.pinned) { %><span class="badge badge--gold">Pinned</span><% } %>
+                </h3>
+                <p style="font-size: var(--text-xs); color: var(--muted); margin-bottom: var(--space-3);">
+                  Posted by <%= a.author_name || 'Admin' %> on <%= new Date(a.created_at).toLocaleDateString('en-GB') %>
+                </p>
+              </div>
+              <form method="post" action="/admin/announcements/<%= a.id %>/delete" style="margin: 0;">
+                <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn--ghost btn--sm" style="color: var(--danger);" onclick="return confirm('Delete this announcement?')">Delete</button>
+              </form>
+            </div>
+            <p style="white-space: pre-wrap; font-size: var(--text-sm);"><%= a.body %></p>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</div>

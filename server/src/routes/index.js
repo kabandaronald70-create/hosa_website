@@ -11,6 +11,7 @@ import apiPublicRoutes from "./apiPublic.js";
 import adminRoutes from "./admin.js";
 import publicEjsRoutes from "./publicEjsRoutes.js";
 import publicRoutes from "./publicRoutes.js";
+import superAdminRoutes from "./superAdminRoutes.js";
 
 const router = Router();
 
@@ -26,5 +27,6 @@ router.use(memberRoutes);
 router.use(publicEjsRoutes);
 router.use(publicRoutes);
 router.use(adminRoutes);
+router.use(superAdminRoutes);
 
 export default router;

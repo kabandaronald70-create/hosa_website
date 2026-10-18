@@ -7,25 +7,29 @@ import {
   showContact,
   showMentorshipInfo,
 } from "../controllers/publicPageController.js";
+import { showAnnouncements } from "../controllers/announcementController.js";
 import { query } from "../config/db.js";
+import { listAnnouncements } from "../models/announcementModel.js";
+import { listDocuments } from "../models/documentModel.js"; // ← ADDED THIS IMPORT
 
 const router = Router();
 
 // --- Home Page Route ---
 router.get("/", async (req, res, next) => {
   try {
-    // Fetch honest, verified stats for the home page
-    const [memberCount, eventCount, jobCount] = await Promise.all([
-      query(
-        `SELECT COUNT(*)::int AS n FROM member_profiles WHERE public_visibility = TRUE`,
-      ),
-      query(
-        `SELECT COUNT(*)::int AS n FROM events WHERE status = 'published' AND starts_at >= now()`,
-      ),
-      query(
-        `SELECT COUNT(*)::int AS n FROM opportunities WHERE status = 'approved' AND (deadline IS NULL OR deadline >= CURRENT_DATE)`,
-      ),
-    ]);
+    const [memberCount, eventCount, jobCount, announcements] =
+      await Promise.all([
+        query(
+          `SELECT COUNT(*)::int AS n FROM member_profiles WHERE public_visibility = TRUE`,
+        ),
+        query(
+          `SELECT COUNT(*)::int AS n FROM events WHERE status = 'published' AND starts_at >= now()`,
+        ),
+        query(
+          `SELECT COUNT(*)::int AS n FROM opportunities WHERE status = 'approved' AND (deadline IS NULL OR deadline >= CURRENT_DATE)`,
+        ),
+        listAnnouncements(1),
+      ]);
 
     res.render("public/home", {
       title: "HOSA — Highway Old Students' Association",
@@ -35,6 +39,41 @@ router.get("/", async (req, res, next) => {
         events: eventCount.rows[0].n,
         jobs: jobCount.rows[0].n,
       },
+      latestAnnouncement: announcements[0] || null,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// --- Archive Route (Now fetches documents) ---
+router.get("/archive", async (req, res, next) => {
+  try {
+    // Fetch past events
+    const eventsResult = await query(
+      `SELECT slug, title, starts_at, venue, description 
+         FROM events 
+        WHERE status = 'published' AND starts_at < now() 
+        ORDER BY starts_at DESC LIMIT 20`,
+    );
+
+    // Fetch older stories
+    const storiesResult = await query(
+      `SELECT slug, title, excerpt, published_at, category
+         FROM stories 
+        WHERE status = 'published' 
+        ORDER BY published_at ASC LIMIT 20`,
+    );
+
+    // Fetch documents (for logged-in users)
+    const documents = await listDocuments();
+
+    res.render("public/archive", {
+      title: "Archive — HOSA",
+      layout: "layouts/public",
+      pastEvents: eventsResult.rows,
+      stories: storiesResult.rows,
+      documents: documents,
     });
   } catch (err) {
     next(err);
@@ -44,6 +83,7 @@ router.get("/", async (req, res, next) => {
 // --- Static Public Pages ---
 router.get("/about", showAbout);
 router.get("/privacy", showPrivacy);
+router.get("/announcements", showAnnouncements);
 router.get("/terms", showTerms);
 router.get("/help", showHelp);
 router.get("/contact", showContact);

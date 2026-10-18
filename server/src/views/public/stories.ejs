@@ -6,31 +6,53 @@
 <% if (stories.length === 0) { %>
   <div class="empty-state">
     <p class="empty-state__title">No stories published yet.</p>
+    <p>Check back soon to read about the incredible journeys of our alumni.</p>
   </div>
 <% } else { %>
-  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-4);">
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-5);">
     <% stories.forEach((s) => { %>
-      <a href="/stories/<%= s.slug %>" style="text-decoration: none; color: inherit;">
-              <article class="card" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+      
+      <article class="card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+        
         <div>
           <% if (s.category) { %>
-            <span class="badge badge--gold" style="margin-bottom: var(--space-2);"><%= s.category %></span>
+            <span class="badge badge--gold" style="margin-bottom: var(--space-3);"><%= s.category %></span>
           <% } %>
-          <h2 style="font-size: var(--text-lg); margin: 0 0 var(--space-2);"><%= s.title %></h2>
+          
+          <h2 style="font-size: var(--text-xl); margin: 0 0 var(--space-3); line-height: 1.2;">
+            <%= s.title %>
+          </h2>
+          
           <% if (s.excerpt) { %>
-            <p style="color: var(--muted); font-size: var(--text-sm);"><%= s.excerpt %></p>
+            <p style="color: var(--muted); font-size: var(--text-sm); margin-bottom: var(--space-4);">
+              <%= s.excerpt %>
+            </p>
           <% } %>
         </div>
-        
+
         <div style="margin-top: var(--space-4); display: flex; gap: var(--space-2);">
-          <a href="/stories/<%= s.slug %>" class="btn btn--ghost" style="flex-grow: 1;">Read Story</a>
+          <a href="/stories/<%= s.slug %>" class="btn btn--ghost" style="flex-grow: 1; text-align: center;">Read Story</a>
           
           <% if (currentUser) { %>
-            <button type="button" class="btn btn--ghost" data-save="story" data-id="<%= s.slug %>" style="padding-inline: var(--space-3);" title="Save Story">☆</button>
+            <button type="button" class="btn btn--ghost" data-save="story" data-id="<%= s.slug %>" style="padding-inline: var(--space-3); color: #D2691E; border-color: #D2691E;" title="Save Story">☆</button>
           <% } %>
         </div>
+
       </article>
-      </a>
+      
     <% }) %>
   </div>
-<% } %>
+
+  <!-- Pagination -->
+  <% if (pagination && pagination.pages > 1) { %>
+    <nav class="pagination" aria-label="Pagination">
+      <% if (pagination.page > 1) { %>
+        <a href="?page=<%= pagination.page - 1 %>">← Prev</a>
+      <% } %>
+      <span class="active"><%= pagination.page %> / <%= pagination.pages %></span>
+      <% if (pagination.page < pagination.pages) { %>
+        <a href="?page=<%= pagination.page + 1 %>">Next →</a>
+      <% } %>
+    </nav>
+  <% } %>
+<% } %>s

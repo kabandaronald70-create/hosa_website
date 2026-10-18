@@ -18,6 +18,14 @@
     <a href="/directory" class="btn btn--ghost" style="color: var(--ivory); border-color: var(--ivory);">Browse directory</a>
   </div>
 </section>
+<% if (latestAnnouncement) { %>
+  <div class="alert alert--info" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-6);">
+    <div>
+      <strong>📢 Announcement:</strong> <%= latestAnnouncement.title %>
+      <p style="margin: var(--space-1) 0 0; font-size: var(--text-sm);"><%= latestAnnouncement.body %></p>
+    </div>
+  </div>
+<% } %>
 
 <!-- Honest Stats Strip -->
 <% if (stats && (stats.members > 0 || stats.events > 0 || stats.jobs > 0)) { %>

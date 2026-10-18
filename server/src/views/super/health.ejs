@@ -1,0 +1,86 @@
+<div
+  style="
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-5);
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  "
+>
+  <div style="display: flex; align-items: center; gap: var(--space-3)">
+    <a href="/admin" class="btn btn--ghost" style="padding: var(--space-2)"
+      >←</a
+    >
+    <h1 style="margin: 0">System Health</h1>
+  </div>
+</div>
+
+<div
+  style="
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+  "
+>
+  <div class="card" style="text-align: center">
+    <div
+      style="font-size: var(--text-2xl); font-weight: 700; color: var(--green)"
+    >
+      <%= stats.users %>
+    </div>
+    <div style="color: var(--muted); font-size: var(--text-sm)">
+      Registered Users
+    </div>
+  </div>
+  <div class="card" style="text-align: center">
+    <div
+      style="font-size: var(--text-2xl); font-weight: 700; color: var(--green)"
+    >
+      <%= stats.stories %>
+    </div>
+    <div style="color: var(--muted); font-size: var(--text-sm)">
+      Total Stories
+    </div>
+  </div>
+  <div class="card" style="text-align: center">
+    <div
+      style="font-size: var(--text-2xl); font-weight: 700; color: var(--green)"
+    >
+      <%= stats.events %>
+    </div>
+    <div style="color: var(--muted); font-size: var(--text-sm)">
+      Total Events
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 style="font-size: var(--text-lg); margin-top: 0">Server Information</h2>
+  <dl
+    style="
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: var(--space-2);
+      font-size: var(--text-sm);
+    "
+  >
+    <dt><strong>Database Status:</strong></dt>
+    <dd style="color: var(--success)">
+      <span class="badge badge--success">🟢 Online</span>
+    </dd>
+
+    <dt><strong>Database Time:</strong></dt>
+    <dd><%= new Date(stats.dbTime).toLocaleString('en-GB') %></dd>
+
+    <dt><strong>Node.js Version:</strong></dt>
+    <dd><%= stats.nodeVersion %></dd>
+
+    <dt><strong>Uptime:</strong></dt>
+    <dd><%= Math.floor(stats.uptime / 60) %> minutes</dd>
+
+    <dt><strong>Memory Usage:</strong></dt>
+    <dd><%= stats.memory %></dd>
+  </dl>
+</div>

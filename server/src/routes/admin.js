@@ -1,6 +1,11 @@
 import { Router } from "express";
 import { requireRole } from "../middleware/auth.js";
 import {
+  showAdminAnnouncements,
+  submitAnnouncement,
+  removeAnnouncement,
+} from "../controllers/announcementController.js";
+import {
   showAdminOverview,
   showMembersList,
   showMemberDetail,
@@ -65,5 +70,9 @@ router.post("/admin/events/:id/status", actionSetEventStatus);
 router.get("/admin/audit", showAuditLog);
 router.get("/admin/audit/export.csv", exportAuditCsv);
 router.get("/admin/audit/:id", showAuditDetail);
+
+router.get("/admin/announcements", showAdminAnnouncements);
+router.post("/admin/announcements", submitAnnouncement);
+router.post("/admin/announcements/:id/delete", removeAnnouncement);
 
 export default router;

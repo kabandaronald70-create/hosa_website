@@ -378,3 +378,11 @@
     display: none;
   }
 }
+
+/* Global focus state */
+*:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(15, 76, 58, 0.2);
+  border-radius: 4px;
+}

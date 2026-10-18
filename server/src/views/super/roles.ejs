@@ -1,0 +1,80 @@
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); flex-wrap: wrap; gap: var(--space-3);">
+  <div style="display: flex; align-items: center; gap: var(--space-3);">
+    <a href="/admin" class="btn btn--ghost" style="padding: var(--space-2);">←</a>
+    <h1 style="margin: 0;">Role Management</h1>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5);">
+  
+  <!-- Current Admins -->
+  <section>
+    <h2 style="font-size: var(--text-lg); margin-bottom: var(--space-3);">Current Admins</h2>
+    <div class="card" style="padding: 0; overflow: hidden;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Name</th><th>Role</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% admins.forEach(a => { %>
+            <tr>
+              <td data-label="Name">
+                <strong><%= a.first_name %> <%= a.last_name %></strong><br>
+                <small style="color: var(--muted);"><%= a.email %></small>
+              </td>
+              <td data-label="Role">
+                <% if (a.role === 'super_admin') { %>
+                  <span class="badge badge--danger">Super Admin</span>
+                <% } else { %>
+                  <span class="badge badge--warning">Admin</span>
+                <% } %>
+              </td>
+              <td style="text-align: right;">
+                <% if (a.role !== 'super_admin' || a.id !== currentUser.id) { %>
+                  <form method="post" action="/super/roles/<%= a.id %>" style="margin: 0;">
+                    <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                    <input type="hidden" name="role" value="member">
+                    <button type="submit" class="btn btn--ghost btn--sm" style="color: var(--danger);" onclick="return confirm('Demote this admin to a regular member?')">Demote</button>
+                  </form>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Promote Members -->
+  <section>
+    <h2 style="font-size: var(--text-lg); margin-bottom: var(--space-3);">Promote a Member</h2>
+    <div class="card" style="padding: 0; overflow: hidden; max-height: 500px; overflow-y: auto;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Name</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% if (members.length === 0) { %>
+            <tr><td colspan="2">No regular members found.</td></tr>
+          <% } else { %>
+            <% members.forEach(m => { %>
+              <tr>
+                <td data-label="Name">
+                  <strong><%= m.first_name %> <%= m.last_name %></strong><br>
+                  <small style="color: var(--muted);"><%= m.email %></small>
+                </td>
+                <td style="text-align: right;">
+                  <form method="post" action="/super/roles/<%= m.id %>" style="margin: 0;">
+                    <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                    <input type="hidden" name="role" value="admin">
+                    <button type="submit" class="btn btn--primary btn--sm">Make Admin</button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

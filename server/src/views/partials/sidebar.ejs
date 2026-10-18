@@ -71,15 +71,30 @@
       <a href="/admin/events" class="sidebar__link" <%= activePath.startsWith('/admin/events') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">📅</span> Manage Events
       </a>
+      <a href="/admin/announcements" class="sidebar__link" <%= activePath.startsWith('/admin/announcements') ? 'aria-current="page"' : '' %>>
+        <span class="sidebar__link-icon">📢</span> Announcements
+      </a>
     </div>
   <% } %>
 
-  <% if (isSuper) { %>
+    <% if (isSuper) { %>
     <hr class="sidebar__divider">
     <div class="sidebar__group">
       <p class="sidebar__group-title">Super Admin</p>
+      
+      <a href="/super/roles" class="sidebar__link" <%= activePath.startsWith('/super/roles') ? 'aria-current="page"' : '' %>>
+        <span class="sidebar__link-icon">🔑</span> Role Management
+      </a>
+      
       <a href="/admin/audit" class="sidebar__link" <%= activePath.startsWith('/admin/audit') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">📜</span> Audit Log
+      </a>
+
+      <a href="/super/health" class="sidebar__link" <%= activePath.startsWith('/super/health') ? 'aria-current="page"' : '' %>>
+        <span class="sidebar__link-icon">⚙</span> System Health
+      </a>
+            <a href="/super/documents" class="sidebar__link" <%= activePath.startsWith('/super/documents') ? 'aria-current="page"' : '' %>>
+        <span class="sidebar__link-icon">📁</span> Manage Documents
       </a>
     </div>
   <% } %>
