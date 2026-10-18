@@ -1,0 +1,105 @@
+<header style="margin-bottom: var(--space-6);">
+  <h1>Alumni Directory</h1>
+  <p>Find and connect with former students of Highway Secondary School.</p>
+</header>
+
+<div style="display: grid; grid-template-columns: 260px 1fr; gap: var(--space-6);">
+  <aside class="card" style="align-self: start; position: sticky; top: calc(var(--topbar-h) + var(--space-4));">
+    <h2 style="font-size: var(--text-lg);">Filters</h2>
+    <form method="GET" action="/directory">
+      <div class="field">
+        <label for="q">Search by name</label>
+        <input type="search" id="q" name="q" value="<%= filters.q %>" placeholder="e.g. Sarah">
+      </div>
+      <div class="field">
+        <label for="district">District</label>
+        <input type="text" id="district" name="district" value="<%= filters.district %>" placeholder="e.g. Kampala">
+      </div>
+      <div class="field">
+        <label for="profession">Profession</label>
+        <input type="text" id="profession" name="profession" value="<%= filters.profession %>" placeholder="e.g. Engineer">
+      </div>
+      <div class="field" style="flex-direction: row; align-items: center; gap: var(--space-2);">
+        <input type="checkbox" id="mentor" name="mentor" value="1" <%= filters.mentorOnly ? 'checked' : '' %>>
+        <label for="mentor" style="margin: 0;">Mentors only</label>
+      </div>
+      <button type="submit" class="btn btn--primary" style="width: 100%;">Apply filters</button>
+      <a href="/directory" class="btn btn--ghost" style="width: 100%; margin-top: var(--space-2); text-align: center;">Reset</a>
+    </form>
+  </aside>
+
+  <div>
+    <p style="color: var(--muted); margin-bottom: var(--space-4);">
+      <strong><%= pagination.total %></strong> member<%= pagination.total === 1 ? '' : 's' %> found
+    </p>
+
+    <% if (members.length === 0) { %>
+      <div class="empty-state">
+        <p class="empty-state__title">No alumni match your filters.</p>
+        <p>Try broadening your search.</p>
+        <a href="/directory" class="btn btn--ghost" style="margin-top: var(--space-4);">Clear filters</a>
+      </div>
+    <% } else { %>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4);">
+        <% members.forEach((m) => { %>
+          
+          <article class="card" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div class="card__header">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--gold); color: var(--ink); display: grid; place-items: center; font-weight: 600; flex-shrink: 0;">
+                  <%= (m.first_name || m.display_name || '?')[0].toUpperCase() %>
+                </div>
+                <div style="min-width: 0;">
+                  <strong style="display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    <%= m.display_name || `${m.first_name} ${m.last_name}` %>
+                  </strong>
+                  <p style="font-size: var(--text-xs); color: var(--muted); margin: 0;">
+                    Class of <%= m.graduation_year || '—' %> · <%= m.district || '—' %>
+                  </p>
+                </div>
+              </div>
+              
+              <% if (m.profession) { %>
+                <p style="font-size: var(--text-sm); margin: 0 0 var(--space-2);"><%= m.profession %></p>
+              <% } %>
+              
+              <% if (m.mentor_opt_in) { %>
+                <span class="badge badge--gold">Mentor<% if (m.mentor_field) { %> · <%= m.mentor_field %><% } %></span>
+              <% } %>
+            </div>
+            
+            <!-- Actions -->
+            <div style="margin-top: var(--space-4); display: flex; gap: var(--space-2);">
+              <a href="/directory/<%= m.seed_ref || m.user_id %>" class="btn btn--ghost" style="flex-grow: 1;">View Profile</a>
+              
+              <% if (currentUser) { %>
+                <button type="button" class="btn btn--ghost" data-save="member" data-id="<%= m.user_id %>" data-action="save" style="padding-inline: var(--space-3);" title="Save Profile">☆</button>
+              <% } %>
+            </div>
+          </article>
+          
+        <% }) %>
+      </div>
+
+      <% if (pagination.pages > 1) { %>
+        <nav class="pagination" aria-label="Pagination">
+          <% if (pagination.page > 1) { %>
+            <a href="?<%= new URLSearchParams({ ...filters, page: pagination.page - 1 }).toString() %>">← Prev</a>
+          <% } %>
+          <span class="active"><%= pagination.page %> / <%= pagination.pages %></span>
+          <% if (pagination.page < pagination.pages) { %>
+            <a href="?<%= new URLSearchParams({ ...filters, page: pagination.page + 1 }).toString() %>">Next →</a>
+          <% } %>
+        </nav>
+      <% } %>
+    <% } %>
+  </div>
+</div>
+
+<style>
+  @media (max-width: 900px) {
+    div[style*="grid-template-columns: 260px"] {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>

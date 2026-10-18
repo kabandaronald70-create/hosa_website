@@ -1,0 +1,51 @@
+<p><a href="/directory" class="btn btn--ghost">← Back to directory</a></p>
+
+<article class="card" style="max-width: 800px; margin: var(--space-5) auto;">
+  <header style="display: flex; gap: var(--space-4); align-items: center; margin-bottom: var(--space-5);">
+    <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--gold); color: var(--ink); display: grid; place-items: center; font-size: var(--text-2xl); font-weight: 700;">
+      <%= (member.first_name || '?')[0].toUpperCase() %>
+    </div>
+    <div>
+      <h1 style="margin: 0;"><%= member.display_name || `${member.first_name} ${member.last_name}` %></h1>
+      <p style="margin: var(--space-1) 0 0; color: var(--muted);">
+        Class of <%= member.graduation_year || '—' %>
+        <% if (member.district) { %> · <%= member.district %><% } %>
+      </p>
+      <% if (member.profession) { %>
+        <p style="margin: var(--space-2) 0 0; font-weight: 600;"><%= member.profession %><% if (member.organization) { %> at <%= member.organization %><% } %></p>
+      <% } %>
+    </div>
+  </header>
+
+  <% if (member.mentor_opt_in) { %>
+    <span class="badge badge--gold" style="margin-bottom: var(--space-4);">Available for mentorship<% if (member.mentor_field) { %> · <%= member.mentor_field %><% } %></span>
+  <% } %>
+
+  <% if (member.biography) { %>
+    <h2>About</h2>
+    <p><%= member.biography %></p>
+  <% } %>
+
+  <% if (member.skills) { %>
+    <h2>Skills</h2>
+    <p><%= member.skills %></p>
+  <% } %>
+
+  <% if (member.interests) { %>
+    <h2>Interests</h2>
+    <p><%= member.interests %></p>
+  <% } %>
+
+  <% if (member.career_history) { %>
+    <h2>Career History</h2>
+    <p style="white-space: pre-wrap;"><%= member.career_history %></p>
+  <% } %>
+
+  <% if (member.show_email && member.account_email) { %>
+    <p><strong>Email:</strong> <a href="mailto:<%= member.account_email %>"><%= member.account_email %></a></p>
+  <% } %>
+
+  <% if (member.mentor_opt_in && currentUser) { %>
+    <a href="/dashboard/mentorship/requests/new?mentor=<%= member.user_id %>" class="btn btn--primary" style="margin-top: var(--space-4);">Request mentorship</a>
+  <% } %>
+</article>

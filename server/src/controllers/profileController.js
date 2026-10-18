@@ -18,6 +18,9 @@ import {
   flattenZodError,
 } from "../validators/profileValidators.js";
 import { logger } from "../utils/logger.js";
+import { query } from "../config/db.js";
+import { findUserById } from "../models/userModel.js";
+import { verifyPassword } from "../services/passwordService.js";
 
 // ---------------------------------------------------------------------------
 // Profile edit
@@ -183,6 +186,119 @@ export async function serveAvatar(req, res, next) {
 
     res.set("Cache-Control", "private, max-age=30");
     res.redirect(302, url);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function exportMyData(req, res, next) {
+  try {
+    const userId = req.user.id;
+
+    // Fetch data
+    const userData = await query(
+      `SELECT email, status, created_at, last_login_at FROM users WHERE id = $1`,
+      [userId],
+    );
+
+    const profileData = await query(
+      `SELECT * FROM member_profiles WHERE user_id = $1`,
+      [userId],
+    );
+
+    const savedItems = await query(
+      `SELECT item_type, item_id, created_at FROM saved_items WHERE user_id = $1`,
+      [userId],
+    );
+
+    const rsvps = await query(
+      `SELECT e.title, r.status, r.created_at FROM event_rsvps r JOIN events e ON e.id = r.event_id WHERE r.user_id = $1`,
+      [userId],
+    );
+
+    const user = userData.rows[0];
+    const profile = profileData.rows[0];
+
+    // Helper to format CSV values (wrap in quotes, escape quotes)
+    const csvVal = (val) => {
+      if (val === null || val === undefined) return '""';
+      const str = String(val);
+      return `"${str.replace(/"/g, '""')}"`;
+    };
+
+    // Build the CSV rows
+    let csv = "Section,Field,Value\n";
+
+    // Account section
+    csv += `${csvVal("Account")},${csvVal("Email")},${csvVal(user.email)}\n`;
+    csv += `${csvVal("Account")},${csvVal("Status")},${csvVal(user.status)}\n`;
+    csv += `${csvVal("Account")},${csvVal("Member Since")},${csvVal(user.created_at)}\n`;
+
+    // Profile section
+    csv += `${csvVal("Profile")},${csvVal("First Name")},${csvVal(profile.first_name)}\n`;
+    csv += `${csvVal("Profile")},${csvVal("Last Name")},${csvVal(profile.last_name)}\n`;
+    csv += `${csvVal("Profile")},${csvVal("Graduation Year")},${csvVal(profile.graduation_year)}\n`;
+    csv += `${csvVal("Profile")},${csvVal("Profession")},${csvVal(profile.profession)}\n`;
+    csv += `${csvVal("Profile")},${csvVal("Organization")},${csvVal(profile.organization)}\n`;
+    csv += `${csvVal("Profile")},${csvVal("District")},${csvVal(profile.district)}\n`;
+    csv += `${csvVal("Profile")},${csvVal("Country")},${csvVal(profile.country_code)}\n`;
+    csv += `${csvVal("Profile")},${csvVal("Biography")},${csvVal(profile.biography)}\n`;
+
+    // Saved items section
+    csv += `\n${csvVal("Saved Items")},${csvVal("Type")},${csvVal("Item ID")},${csvVal("Date Saved")}\n`;
+    if (savedItems.rows.length === 0) {
+      csv += `${csvVal("Saved Items")},${csvVal("None")},,\n`;
+    } else {
+      savedItems.rows.forEach((item) => {
+        csv += `${csvVal("Saved Item")},${csvVal(item.item_type)},${csvVal(item.item_id)},${csvVal(item.created_at)}\n`;
+      });
+    }
+
+    // RSVPs section
+    csv += `\n${csvVal("Event RSVPs")},${csvVal("Event")},${csvVal("Status")},${csvVal("Date")}\n`;
+    if (rsvps.rows.length === 0) {
+      csv += `${csvVal("RSVPs")},${csvVal("None")},,\n`;
+    } else {
+      rsvps.rows.forEach((rsvp) => {
+        csv += `${csvVal("RSVP")},${csvVal(rsvp.title)},${csvVal(rsvp.status)},${csvVal(rsvp.created_at)}\n`;
+      });
+    }
+
+    // Send as CSV
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="hosa-my-data.csv"',
+    );
+    res.send(csv);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function deleteMyAccount(req, res, next) {
+  try {
+    const userId = req.user.id;
+    const { password } = req.body;
+
+    // Verify password before deletion
+    const user = await findUserById(userId);
+    const isValid = await verifyPassword(user.password_hash, password);
+
+    if (!isValid) {
+      req.flash("error", "Incorrect password. Account not deleted.");
+      return res.redirect("/dashboard/password"); // Or wherever the form is
+    }
+
+    // Because of ON DELETE CASCADE in the DB, deleting the user removes
+    // their profile, saved items, RSVPs, and sessions automatically.
+    await query(`DELETE FROM users WHERE id = $1`, [userId]);
+
+    req.session.destroy((err) => {
+      if (err) return next(err);
+      res.clearCookie("hosa.sid");
+      res.redirect("/?deleted=true");
+    });
   } catch (err) {
     next(err);
   }

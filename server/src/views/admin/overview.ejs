@@ -1,78 +1,83 @@
-<h1>Admin dashboard</h1>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); flex-wrap: wrap; gap: var(--space-3);">
+  <h1 style="margin: 0;">Admin dashboard</h1>
+</div>
 
-<section aria-labelledby="stats-heading">
-  <h2 id="stats-heading">At a glance</h2>
-  <ul class="stat-grid">
-    <li>
-      <a href="/admin/members">
-        <strong><%= counts.members.total %></strong> members
-      </a>
-    </li>
-    <li>
-      <a href="/admin/members?verified=yes">
-        <strong><%= counts.members.verified %></strong> verified
-      </a>
-    </li>
-    <li>
-      <a href="/admin/members?status=suspended">
-        <strong><%= counts.members.suspended %></strong> suspended
-      </a>
-    </li>
-    <li>
-  <a href="/admin/moderation">
-    <strong><%= counts.pendingStories %></strong> pending stories
-  </a>
-</li>
-<li>
-  <a href="/admin/moderation">
-    <strong><%= counts.pendingOpportunities %></strong> pending opportunities
-  </a>
-</li>
-   <li>
-  <a href="/admin/events?when=upcoming&amp;status=published">
-    <strong><%= counts.upcomingEvents %></strong> upcoming events
-  </a>
-</li>
-   <li>
-  <a href="/admin/audit">
-    <strong><%= counts.auditLast7Days %></strong> admin actions (7d)
-  </a>
-</li>
-  </ul>
+<!-- Stats Grid -->
+<section style="margin-bottom: var(--space-6);">
+  <h2 style="font-size: var(--text-xl); margin-bottom: var(--space-3);">At a glance</h2>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-4);">
+    
+    <a href="/admin/members" class="card" style="text-decoration: none; color: inherit; text-align: center;">
+      <div style="font-size: var(--text-2xl); font-weight: 700; color: var(--green);"><%= counts.members.total %></div>
+      <div style="color: var(--muted); font-size: var(--text-sm);">Total Members</div>
+    </a>
+
+    <a href="/admin/members?verified=yes" class="card" style="text-decoration: none; color: inherit; text-align: center;">
+      <div style="font-size: var(--text-2xl); font-weight: 700; color: var(--success);"><%= counts.members.verified %></div>
+      <div style="color: var(--muted); font-size: var(--text-sm);">Verified</div>
+    </a>
+
+    <a href="/admin/members?status=suspended" class="card" style="text-decoration: none; color: inherit; text-align: center;">
+      <div style="font-size: var(--text-2xl); font-weight: 700; color: var(--danger);"><%= counts.members.suspended %></div>
+      <div style="color: var(--muted); font-size: var(--text-sm);">Suspended</div>
+    </a>
+
+    <a href="/admin/moderation" class="card" style="text-decoration: none; color: inherit; text-align: center;">
+      <div style="font-size: var(--text-2xl); font-weight: 700; color: var(--warning);"><%= counts.pendingStories %></div>
+      <div style="color: var(--muted); font-size: var(--text-sm);">Pending Stories</div>
+    </a>
+
+    <a href="/admin/moderation" class="card" style="text-decoration: none; color: inherit; text-align: center;">
+      <div style="font-size: var(--text-2xl); font-weight: 700; color: var(--warning);"><%= counts.pendingOpportunities %></div>
+      <div style="color: var(--muted); font-size: var(--text-sm);">Pending Jobs</div>
+    </a>
+  </div>
 </section>
 
-<nav aria-label="Admin sections">
-  <h2>Manage</h2>
-  <ul>
-    <li><a href="/admin/members">Members</a></li>
-    <li><a href="/admin/moderation">Moderation queue</a></li>
-    <li><a href="/admin/events">Events</a></li>
-    <li><a href="/admin/audit">Audit log</a></li>
-  </ul>
-</nav>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6);">
+  
+  <!-- Manage Section -->
+  <section>
+    <h2 style="font-size: var(--text-xl); margin-bottom: var(--space-3);">Manage</h2>
+    <div class="card" style="padding: var(--space-2);">
+      <a href="/admin/members" style="display: block; padding: var(--space-3); border-bottom: 1px solid var(--line); text-decoration: none; color: inherit; font-weight: 600;">👥 Members & Verification</a>
+      <a href="/admin/moderation" style="display: block; padding: var(--space-3); border-bottom: 1px solid var(--line); text-decoration: none; color: inherit; font-weight: 600;">✅ Moderation Queue</a>
+      <a href="/admin/events" style="display: block; padding: var(--space-3); border-bottom: 1px solid var(--line); text-decoration: none; color: inherit; font-weight: 600;">📅 Manage Events</a>
+      <a href="/admin/audit" style="display: block; padding: var(--space-3); text-decoration: none; color: inherit; font-weight: 600;">📜 Audit Log</a>
+    </div>
+  </section>
 
-<section aria-labelledby="recent-heading">
-  <h2 id="recent-heading">Recent admin actions</h2>
-  <% if (recentAudits.length === 0) { %>
-    <p><em>No admin actions yet.</em></p>
-  <% } else { %>
-    <table>
-      <thead>
-        <tr><th>When</th><th>Actor</th><th>Action</th><th>Target</th></tr>
-      </thead>
-      <tbody>
-        <% recentAudits.forEach((a) => { %>
-          <tr>
-            <td><%= new Date(a.occurred_at).toLocaleString() %></td>
-            <td><%= a.actor_email || '—' %></td>
-            <td><code><%= a.action %></code></td>
-            <td>
-              <%= a.target_type || '—' %>
-              <% if (a.target_id) { %> <small>(<%= a.target_id.slice(0, 8) %>…)</small><% } %>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  <% } %>
-</section>
+  <!-- Recent Actions -->
+  <section>
+    <h2 style="font-size: var(--text-xl); margin-bottom: var(--space-3);">Recent admin actions</h2>
+    <% if (recentAudits.length === 0) { %>
+      <div class="empty-state" style="padding: var(--space-5);">
+        <p style="margin: 0; color: var(--muted);">No recent admin actions.</p>
+      </div>
+    <% } else { %>
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; font-size: var(--text-sm);">
+          <tbody>
+            <% recentAudits.forEach((a) => { %>
+              <tr style="border-bottom: 1px solid var(--line);">
+                <td style="padding: var(--space-3);">
+                  <strong><%= a.action %></strong><br>
+                  <span style="color: var(--muted); font-size: var(--text-xs);"><%= a.actor_email %> · <%= new Date(a.occurred_at).toLocaleString('en-GB') %></span>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </section>
+
+</div>
+
+<style>
+  @media (max-width: 900px) {
+    div[style*="grid-template-columns: 1fr 1fr"] {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>

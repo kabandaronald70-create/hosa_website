@@ -1,62 +1,101 @@
-<h1>My submissions</h1>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); flex-wrap: wrap; gap: var(--space-3);">
+  <h1 style="margin: 0;">My Submissions</h1>
+  <a href="/dashboard" class="btn btn--ghost">← Back to dashboard</a>
+</div>
 
-<p><a href="/dashboard">← Back to dashboard</a></p>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-6);">
+  <a href="/dashboard/stories/new" class="card" style="text-decoration: none; color: inherit; display: flex; align-items: center; justify-content: space-between;">
+    <div>
+      <h3 style="margin: 0 0 var(--space-1); font-size: var(--text-lg);">Submit an Alumni Story</h3>
+      <p style="margin: 0; font-size: var(--text-sm); color: var(--muted);">Share your journey with the community.</p>
+    </div>
+    <span style="font-size: var(--text-xl); color: var(--gold);">→</span>
+  </a>
+  
+  <a href="/dashboard/opportunities/new" class="card" style="text-decoration: none; color: inherit; display: flex; align-items: center; justify-content: space-between;">
+    <div>
+      <h3 style="margin: 0 0 var(--space-1); font-size: var(--text-lg);">Post an Opportunity</h3>
+      <p style="margin: 0; font-size: var(--text-sm); color: var(--muted);">Share a job, internship, or scholarship.</p>
+    </div>
+    <span style="font-size: var(--text-xl); color: var(--gold);">→</span>
+  </a>
+</div>
 
-<section aria-labelledby="stories-heading">
-  <h2 id="stories-heading">Stories (<%= stories.length %>)</h2>
+<!-- Stories Section -->
+<section style="margin-bottom: var(--space-7);">
+  <h2 style="font-size: var(--text-xl); border-bottom: 2px solid var(--line); padding-bottom: var(--space-2); margin-bottom: var(--space-4);">
+    My Stories <span style="color: var(--muted); font-size: var(--text-base); font-weight: normal;">(<%= stories.length %>)</span>
+  </h2>
 
   <% if (stories.length === 0) { %>
-    <p><em>No stories submitted yet.</em> <a href="/dashboard/stories/new">Submit one →</a></p>
+    <div class="empty-state" style="padding: var(--space-5);">
+      <p style="margin: 0; color: var(--muted);">You haven't submitted any stories yet.</p>
+    </div>
   <% } else { %>
-    <table>
-      <thead>
-        <tr><th>Title</th><th>Status</th><th>Submitted</th><th>Notes</th></tr>
-      </thead>
-      <tbody>
-        <% stories.forEach((s) => { %>
-          <tr>
-            <td><%= s.title %></td>
-            <td><%= s.status %></td>
-            <td><%= new Date(s.created_at).toLocaleString() %></td>
-            <td>
-              <% if (s.status === 'rejected' && s.rejection_reason) { %>
-                <em><%= s.rejection_reason %></em>
-              <% } else if (s.status === 'published' && s.published_at) { %>
-                Published <%= new Date(s.published_at).toLocaleDateString() %>
-              <% } else { %>—<% } %>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+    <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+      <% stories.forEach((s) => { %>
+        <article class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-3);">
+          <div>
+            <h3 style="margin: 0 0 var(--space-1); font-size: var(--text-lg);"><%= s.title %></h3>
+            <p style="margin: 0; color: var(--muted); font-size: var(--text-sm);">
+              Submitted <%= new Date(s.created_at).toLocaleDateString('en-GB') %>
+              <% if (s.status === 'published' && s.published_at) { %>
+                · Published <%= new Date(s.published_at).toLocaleDateString('en-GB') %>
+              <% } %>
+            </p>
+            <% if (s.status === 'rejected' && s.rejection_reason) { %>
+              <div class="alert alert--error" style="margin-top: var(--space-2); margin-bottom: 0; padding: var(--space-2);">
+                <strong>Rejected:</strong> <%= s.rejection_reason %>
+              </div>
+            <% } %>
+          </div>
+          
+          <div>
+            <% if (s.status === 'pending') { %><span class="badge badge--warning">Pending Review</span>
+            <% } else if (s.status === 'published') { %><span class="badge badge--success">Published</span>
+            <% } else if (s.status === 'rejected') { %><span class="badge badge--danger">Rejected</span>
+            <% } else { %><span class="badge badge--muted"><%= s.status %></span><% } %>
+          </div>
+        </article>
+      <% }) %>
+    </div>
   <% } %>
 </section>
 
-<section aria-labelledby="opps-heading" style="margin-top:2rem">
-  <h2 id="opps-heading">Opportunities (<%= opportunities.length %>)</h2>
+<!-- Opportunities Section -->
+<section>
+  <h2 style="font-size: var(--text-xl); border-bottom: 2px solid var(--line); padding-bottom: var(--space-2); margin-bottom: var(--space-4);">
+    My Opportunities <span style="color: var(--muted); font-size: var(--text-base); font-weight: normal;">(<%= opportunities.length %>)</span>
+  </h2>
 
   <% if (opportunities.length === 0) { %>
-    <p><em>No opportunities submitted yet.</em> <a href="/dashboard/opportunities/new">Submit one →</a></p>
+    <div class="empty-state" style="padding: var(--space-5);">
+      <p style="margin: 0; color: var(--muted);">You haven't submitted any opportunities yet.</p>
+    </div>
   <% } else { %>
-    <table>
-      <thead>
-        <tr><th>Title</th><th>Organization</th><th>Status</th><th>Submitted</th><th>Notes</th></tr>
-      </thead>
-      <tbody>
-        <% opportunities.forEach((o) => { %>
-          <tr>
-            <td><%= o.title %></td>
-            <td><%= o.employer || '—' %></td>
-            <td><%= o.status %></td>
-            <td><%= new Date(o.created_at).toLocaleString() %></td>
-            <td>
-              <% if (o.status === 'rejected' && o.rejection_reason) { %>
-                <em><%= o.rejection_reason %></em>
-              <% } else { %>—<% } %>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+    <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+      <% opportunities.forEach((o) => { %>
+        <article class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-3);">
+          <div>
+            <h3 style="margin: 0 0 var(--space-1); font-size: var(--text-lg);"><%= o.title %></h3>
+            <p style="margin: 0; color: var(--muted); font-size: var(--text-sm);">
+              <%= o.employer || 'Unknown Employer' %> · Submitted <%= new Date(o.created_at).toLocaleDateString('en-GB') %>
+            </p>
+            <% if (o.status === 'rejected' && o.rejection_reason) { %>
+              <div class="alert alert--error" style="margin-top: var(--space-2); margin-bottom: 0; padding: var(--space-2);">
+                <strong>Rejected:</strong> <%= o.rejection_reason %>
+              </div>
+            <% } %>
+          </div>
+          
+          <div>
+            <% if (o.status === 'pending') { %><span class="badge badge--warning">Pending Review</span>
+            <% } else if (o.status === 'approved') { %><span class="badge badge--success">Approved</span>
+            <% } else if (o.status === 'rejected') { %><span class="badge badge--danger">Rejected</span>
+            <% } else { %><span class="badge badge--muted"><%= o.status %></span><% } %>
+          </div>
+        </article>
+      <% }) %>
+    </div>
   <% } %>
 </section>

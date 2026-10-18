@@ -1,0 +1,36 @@
+<header style="margin-bottom: var(--space-6);">
+  <h1>Alumni Stories</h1>
+  <p>Journeys from Highway Secondary School to the world.</p>
+</header>
+
+<% if (stories.length === 0) { %>
+  <div class="empty-state">
+    <p class="empty-state__title">No stories published yet.</p>
+  </div>
+<% } else { %>
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-4);">
+    <% stories.forEach((s) => { %>
+      <a href="/stories/<%= s.slug %>" style="text-decoration: none; color: inherit;">
+              <article class="card" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <% if (s.category) { %>
+            <span class="badge badge--gold" style="margin-bottom: var(--space-2);"><%= s.category %></span>
+          <% } %>
+          <h2 style="font-size: var(--text-lg); margin: 0 0 var(--space-2);"><%= s.title %></h2>
+          <% if (s.excerpt) { %>
+            <p style="color: var(--muted); font-size: var(--text-sm);"><%= s.excerpt %></p>
+          <% } %>
+        </div>
+        
+        <div style="margin-top: var(--space-4); display: flex; gap: var(--space-2);">
+          <a href="/stories/<%= s.slug %>" class="btn btn--ghost" style="flex-grow: 1;">Read Story</a>
+          
+          <% if (currentUser) { %>
+            <button type="button" class="btn btn--ghost" data-save="story" data-id="<%= s.slug %>" style="padding-inline: var(--space-3);" title="Save Story">☆</button>
+          <% } %>
+        </div>
+      </article>
+      </a>
+    <% }) %>
+  </div>
+<% } %>

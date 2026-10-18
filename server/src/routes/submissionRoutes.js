@@ -1,6 +1,7 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { requireAuth } from "../middleware/auth.js";
+import { requireVerified } from "../middleware/requireVerified.js"; // ← Added
 import {
   showNewStoryForm,
   submitNewStory,
@@ -26,20 +27,35 @@ const submissionLimiter = rateLimit({
 
 const router = Router();
 
+// Viewing your submissions only needs login (so they can see the empty state)
 router.get("/dashboard/submissions", requireAuth, showMySubmissions);
 
-router.get("/dashboard/stories/new", requireAuth, showNewStoryForm);
+// Submitting stories requires verification
+router.get(
+  "/dashboard/stories/new",
+  requireAuth,
+  requireVerified,
+  showNewStoryForm,
+);
 router.post(
   "/dashboard/stories/new",
   requireAuth,
+  requireVerified,
   submissionLimiter,
   submitNewStory,
 );
 
-router.get("/dashboard/opportunities/new", requireAuth, showNewOpportunityForm);
+// Submitting opportunities requires verification
+router.get(
+  "/dashboard/opportunities/new",
+  requireAuth,
+  requireVerified,
+  showNewOpportunityForm,
+);
 router.post(
   "/dashboard/opportunities/new",
   requireAuth,
+  requireVerified,
   submissionLimiter,
   submitNewOpportunity,
 );

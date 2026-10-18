@@ -1,45 +1,51 @@
-<p><a href="/admin/audit" class="link-button">← Back to audit log</a></p>
+<div
+  style="
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-5);
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  "
+>
+  <h1 style="margin: 0">Audit Entry #<%= entry.id %></h1>
+  <a href="/admin/audit" class="btn btn--ghost">← Back to log</a>
+</div>
 
-<h1>Audit entry #<%= entry.id %></h1>
+<div class="card" style="max-width: 700px">
+  <p>
+    <strong>Action:</strong>
+    <span class="badge badge--muted"><%= entry.action %></span>
+  </p>
+  <p>
+    <strong>When:</strong> <%= new
+    Date(entry.occurred_at).toLocaleString('en-GB') %>
+  </p>
+  <p><strong>Actor:</strong> <%= entry.actor_email || '—' %></p>
+  <p>
+    <strong>Target:</strong> <%= entry.target_type || '—' %> (<%=
+    entry.target_id || '—' %>)
+  </p>
+  <p><strong>IP Address:</strong> <%= entry.ip_address || '—' %></p>
 
-<section aria-labelledby="summary-heading">
-  <h2 id="summary-heading">Summary</h2>
-  <dl>
-    <dt>When</dt><dd><%= new Date(entry.occurred_at).toLocaleString() %></dd>
-    <dt>Actor</dt><dd><%= entry.actor_email || '—' %></dd>
-    <dt>Actor user id</dt><dd><code><%= entry.actor_user_id || '—' %></code></dd>
-    <dt>Action</dt><dd><code><%= entry.action %></code></dd>
-    <dt>Target type</dt><dd><%= entry.target_type || '—' %></dd>
-    <dt>Target id</dt><dd><code><%= entry.target_id || '—' %></code></dd>
-    <dt>IP address</dt><dd><%= entry.ip_address || '—' %></dd>
-  </dl>
-</section>
+  <hr
+    style="
+      border: 0;
+      border-top: 1px solid var(--line);
+      margin: var(--space-4) 0;
+    "
+  />
 
-<section aria-labelledby="metadata-heading">
-  <h2 id="metadata-heading">Metadata</h2>
-  <% const keys = Object.keys(entry.metadata || {}); %>
-  <% if (keys.length === 0) { %>
-    <p><em>No metadata recorded.</em></p>
-  <% } else { %>
-    <dl>
-      <% keys.forEach((k) => { %>
-        <dt><%= k %></dt>
-        <dd>
-          <%
-            const v = entry.metadata[k];
-          %>
-          <% if (v && typeof v === 'object') { %>
-            <pre><%= JSON.stringify(v, null, 2) %></pre>
-          <% } else { %>
-            <%= v %>
-          <% } %>
-        </dd>
-      <% }) %>
-    </dl>
-  <% } %>
-</section>
-
-<section aria-labelledby="ua-heading">
-  <h2 id="ua-heading">User agent</h2>
-  <p><small><%= entry.user_agent || '—' %></small></p>
-</section>
+  <h3 style="margin-top: 0">Metadata</h3>
+  <pre
+    style="
+      background: var(--ivory);
+      padding: var(--space-3);
+      border-radius: var(--radius-sm);
+      font-size: var(--text-sm);
+      overflow-x: auto;
+    "
+  >
+<%= JSON.stringify(entry.metadata, null, 2) %></pre
+  >
+</div>

@@ -3,16 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="<%= csrfToken %>">
   <title><%= typeof title !== 'undefined' ? title : 'HOSA' %></title>
+  
   <link rel="preload" href="/fonts/manrope-400.ttf" as="font" type="font/ttf" crossorigin>
-<link rel="preload" href="/fonts/manrope-600.ttf" as="font" type="font/ttf" crossorigin>
-<link rel="preload" href="/fonts/fraunces-600.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="/fonts/manrope-600.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="/fonts/fraunces-600.ttf" as="font" type="font/ttf" crossorigin>
+  
   <link rel="stylesheet" href="/styles/base.css">
   <link rel="stylesheet" href="/styles/components.css">
   <link rel="stylesheet" href="/styles/layouts.css">
 </head>
 <body>
   <a href="#main-content" class="skip-link">Skip to main content</a>
+  
   <%- include('../partials/topbar') %>
 
   <main id="main-content" class="container" style="padding-top: var(--space-6); min-height: 60vh;">
@@ -28,6 +32,7 @@
 
   <%- include('../partials/footer') %>
 
+  <!-- Mobile Menu Toggle -->
   <script>
     (function () {
       const toggle = document.getElementById('topbar-menu-toggle');
@@ -40,5 +45,8 @@
       }
     })();
   </script>
+  
+  <!-- Public Interactivity (Save & RSVP) -->
+  <script src="/js/public.js"></script>
 </body>
 </html>

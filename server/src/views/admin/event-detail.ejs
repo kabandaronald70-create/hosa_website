@@ -1,68 +1,82 @@
-<p><a href="/admin/events" class="link-button">← Back to events</a></p>
+<div
+  style="
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-5);
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  "
+>
+  <div>
+    <h1 style="margin: 0">Manage Event</h1>
+    <p style="color: var(--muted); margin: var(--space-1) 0 0">
+      <%= event.title %>
+    </p>
+  </div>
+  <a href="/admin/events" class="btn btn--ghost">← Back to events</a>
+</div>
 
-<h1><%= event.title %></h1>
-<p><code><%= event.slug %></code></p>
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-5)">
+  <div class="card">
+    <h2 style="font-size: var(--text-lg); margin-top: 0">Details</h2>
+    <p><strong>Status:</strong> <%= event.status %></p>
+    <p>
+      <strong>Starts:</strong> <%= new
+      Date(event.starts_at).toLocaleString('en-GB') %>
+    </p>
+    <p><strong>Venue:</strong> <%= event.venue || '—' %></p>
+    <p><strong>Description:</strong></p>
+    <p style="white-space: pre-wrap; color: var(--muted)">
+      <%= event.description %>
+    </p>
 
-<section aria-labelledby="details-heading">
-  <h2 id="details-heading">Details</h2>
-  <dl>
-    <dt>Status</dt><dd><strong><%= event.status %></strong></dd>
-    <dt>Starts</dt><dd><%= new Date(event.starts_at).toLocaleString() %> (<%= event.timezone %>)</dd>
-    <dt>Ends</dt><dd><%= event.ends_at ? new Date(event.ends_at).toLocaleString() : '—' %></dd>
-    <dt>Venue</dt><dd><%= event.venue || '—' %></dd>
-    <dt>District</dt><dd><%= event.district || '—' %></dd>
-    <dt>Capacity</dt><dd><%= event.capacity ?? '—' %></dd>
-    <dt>Registration deadline</dt>
-    <dd><%= event.registration_deadline ? new Date(event.registration_deadline).toLocaleString() : '—' %></dd>
-    <dt>Published at</dt>
-    <dd><%= event.published_at ? new Date(event.published_at).toLocaleString() : '—' %></dd>
-    <dt>Created</dt><dd><%= new Date(event.created_at).toLocaleString() %></dd>
-    <dt>Updated</dt><dd><%= new Date(event.updated_at).toLocaleString() %></dd>
-  </dl>
-</section>
+    <div style="margin-top: var(--space-4)">
+      <a
+        href="/admin/events/<%= event.id %>/edit"
+        class="btn btn--primary btn--sm"
+        >Edit Details</a
+      >
+    </div>
+  </div>
 
-<section aria-labelledby="rsvp-heading">
-  <h2 id="rsvp-heading">RSVP summary</h2>
-  <ul>
-    <li><strong><%= rsvps.going %></strong> going</li>
-    <li><strong><%= rsvps.maybe %></strong> maybe</li>
-    <li><strong><%= rsvps.cancelled %></strong> cancelled</li>
-  </ul>
-</section>
+  <div>
+    <div class="card" style="margin-bottom: var(--space-4)">
+      <h2 style="font-size: var(--text-lg); margin-top: 0">RSVP Summary</h2>
+      <p><strong><%= rsvps.going %></strong> going</p>
+      <p><strong><%= rsvps.maybe %></strong> maybe</p>
+      <p><strong><%= rsvps.cancelled %></strong> cancelled</p>
+    </div>
 
-<section aria-labelledby="desc-heading">
-  <h2 id="desc-heading">Description</h2>
-  <p><%= event.description %></p>
-  <% if (event.accessibility) { %>
-    <h3>Accessibility</h3>
-    <p><%= event.accessibility %></p>
-  <% } %>
-  <% if (event.internal_notes) { %>
-    <h3>Internal notes</h3>
-    <p><%= event.internal_notes %></p>
-  <% } %>
-</section>
-
-<section aria-labelledby="actions-heading">
-  <h2 id="actions-heading">Actions</h2>
-
-  <p><a href="/admin/events/<%= event.id %>/edit" class="btn">Edit</a></p>
-
-  <% const statuses = [
-       ['published', 'Publish'],
-       ['draft',     'Move to draft'],
-       ['cancelled', 'Cancel'],
-       ['archived',  'Archive'],
-     ];
-     statuses.filter(([s]) => s !== event.status).forEach(([s, label]) => { %>
-    <form method="post" action="/admin/events/<%= event.id %>/status" style="display:inline">
-      <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
-      <input type="hidden" name="status" value="<%= s %>">
-      <button type="submit"
-        <%- (s === 'cancelled' || s === 'archived')
-              ? `onclick="return confirm('${label} this event?')"`
-              : '' %>> <%= label %>
-      </button>
-    </form>
-  <% }) %>
-</section>
+    <div class="card">
+      <h2 style="font-size: var(--text-lg); margin-top: 0">Actions</h2>
+      <form
+        method="post"
+        action="/admin/events/<%= event.id %>/status"
+        style="margin-bottom: var(--space-2)"
+      >
+        <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>" />
+        <input
+          type="hidden"
+          name="status"
+          value="<%= event.status === 'published' ? 'draft' : 'published' %>"
+        />
+        <button type="submit" class="btn btn--ghost" style="width: 100%">
+          <%= event.status === 'published' ? 'Unpublish' : 'Publish' %>
+        </button>
+      </form>
+      <form method="post" action="/admin/events/<%= event.id %>/status">
+        <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>" />
+        <input type="hidden" name="status" value="cancelled" />
+        <button
+          type="submit"
+          class="btn btn--danger"
+          style="width: 100%"
+          onclick="return confirm('Cancel this event?');"
+        >
+          Cancel Event
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

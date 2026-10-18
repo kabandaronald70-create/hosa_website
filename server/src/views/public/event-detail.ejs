@@ -1,0 +1,23 @@
+<p><a href="/events" class="btn btn--ghost">← All events</a></p>
+
+<article class="card" style="max-width: 800px; margin: var(--space-5) auto;">
+  <h1><%= event.title %></h1>
+  <p style="color: var(--muted);">
+    <%= new Date(event.starts_at).toLocaleString('en-GB', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', timeZoneName: 'short',
+    }) %>
+  </p>
+
+  <% if (event.venue) { %>
+    <p><strong>Venue:</strong> <%= event.venue %></p>
+  <% } %>
+
+  <p style="white-space: pre-wrap; margin-top: var(--space-4);"><%= event.description %></p>
+
+  <% if (currentUser) { %>
+    <a href="/dashboard" class="btn btn--primary" style="margin-top: var(--space-4);">Manage RSVP</a>
+  <% } else { %>
+    <p style="margin-top: var(--space-4);"><a href="/login" class="btn btn--primary">Log in to RSVP</a></p>
+  <% } %>
+</article>

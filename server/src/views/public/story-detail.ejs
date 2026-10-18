@@ -1,0 +1,13 @@
+<p><a href="/stories" class="btn btn--ghost">← All stories</a></p>
+
+<article class="card" style="max-width: 800px; margin: var(--space-5) auto;">
+  <% if (story.category) { %><span class="badge badge--gold"><%= story.category %></span><% } %>
+  <h1 style="margin-top: var(--space-3);"><%= story.title %></h1>
+  <% if (story.published_at) { %>
+    <p style="color: var(--muted); font-size: var(--text-sm);"><%= new Date(story.published_at).toLocaleDateString('en-GB') %></p>
+  <% } %>
+  <% if (story.excerpt) { %>
+    <p style="font-style: italic; border-left: 4px solid var(--gold); padding-left: var(--space-4);"><%= story.excerpt %></p>
+  <% } %>
+  <div style="white-space: pre-wrap; margin-top: var(--space-4);"><%= story.body %></div>
+</article>

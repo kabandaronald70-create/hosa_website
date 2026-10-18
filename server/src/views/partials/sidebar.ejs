@@ -1,4 +1,4 @@
-<% const path = typeof currentPath !== 'undefined' ? currentPath : ''; %>
+<% const activePath = typeof currentPath !== 'undefined' ? currentPath : ''; %>
 <% const roles = typeof currentUserRoles !== 'undefined' ? currentUserRoles : []; %>
 <% const isAdmin = roles.includes('admin') || roles.includes('super_admin'); %>
 <% const isMod = roles.includes('moderator'); %>
@@ -21,43 +21,54 @@
 
   <div class="sidebar__group">
     <p class="sidebar__group-title">My HOSA</p>
-    <a href="/dashboard" class="sidebar__link" <%= path === '/dashboard' ? 'aria-current="page"' : '' %>>
-      <span class="sidebar__link-icon">🏠</span> Dashboard
+    
+    <a href="/dashboard" class="sidebar__link" <%= activePath === '/dashboard' ? 'aria-current="page"' : '' %>>
+      <span class="sidebar__link-icon">🏠</span> Alumni Dashboard
     </a>
-    <a href="/dashboard/profile" class="sidebar__link" <%= path === '/dashboard/profile' ? 'aria-current="page"' : '' %>>
+    
+    <a href="/dashboard/profile" class="sidebar__link" <%= activePath === '/dashboard/profile' ? 'aria-current="page"' : '' %>>
       <span class="sidebar__link-icon">👤</span> My Profile
     </a>
-    <a href="/dashboard/saved" class="sidebar__link" <%= path === '/dashboard/saved' ? 'aria-current="page"' : '' %>>
+    
+    <a href="/dashboard/saved" class="sidebar__link" <%= activePath === '/dashboard/saved' ? 'aria-current="page"' : '' %>>
       <span class="sidebar__link-icon">⭐</span> Saved
     </a>
-    <a href="/dashboard/mentorship/requests" class="sidebar__link" <%= path.startsWith('/dashboard/mentorship') ? 'aria-current="page"' : '' %>>
+    
+    <a href="/dashboard/mentorship/requests" class="sidebar__link" <%= activePath.startsWith('/dashboard/mentorship') ? 'aria-current="page"' : '' %>>
       <span class="sidebar__link-icon">🤝</span> Mentorship
     </a>
-    <a href="/dashboard/submissions" class="sidebar__link" <%= path === '/dashboard/submissions' ? 'aria-current="page"' : '' %>>
+    
+    <a href="/dashboard/submissions" class="sidebar__link" <%= activePath === '/dashboard/submissions' ? 'aria-current="page"' : '' %>>
       <span class="sidebar__link-icon">📝</span> My Submissions
     </a>
-    <a href="/notifications" class="sidebar__link" <%= path === '/notifications' ? 'aria-current="page"' : '' %>>
+    
+    <a href="/notifications" class="sidebar__link" <%= activePath === '/notifications' ? 'aria-current="page"' : '' %>>
       <span class="sidebar__link-icon">🔔</span> Notifications
     </a>
-    <a href="/dashboard/password" class="sidebar__link" <%= path === '/dashboard/password' ? 'aria-current="page"' : '' %>>
+    
+    <a href="/dashboard/password" class="sidebar__link" <%= activePath === '/dashboard/password' ? 'aria-current="page"' : '' %>>
       <span class="sidebar__link-icon">⚙</span> Account & Privacy
     </a>
   </div>
 
   <% if (isAdmin || isMod) { %>
     <hr class="sidebar__divider">
-    <div class="sidebar__group">
+    <div class="sidebar__group sidebar__group--admin">
       <p class="sidebar__group-title">Admin</p>
-      <a href="/admin" class="sidebar__link" <%= path === '/admin' ? 'aria-current="page"' : '' %>>
+      
+      <a href="/admin" class="sidebar__link" <%= activePath === '/admin' ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">📊</span> Admin Dashboard
       </a>
-      <a href="/admin/moderation" class="sidebar__link" <%= path === '/admin/moderation' ? 'aria-current="page"' : '' %>>
+      
+      <a href="/admin/moderation" class="sidebar__link" <%= activePath.startsWith('/admin/moderation') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">✅</span> Moderation Queue
       </a>
-      <a href="/admin/members" class="sidebar__link" <%= path === '/admin/members' ? 'aria-current="page"' : '' %>>
+      
+      <a href="/admin/members" class="sidebar__link" <%= activePath.startsWith('/admin/members') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">👥</span> Members & Verification
       </a>
-      <a href="/admin/events" class="sidebar__link" <%= path === '/admin/events' ? 'aria-current="page"' : '' %>>
+      
+      <a href="/admin/events" class="sidebar__link" <%= activePath.startsWith('/admin/events') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">📅</span> Manage Events
       </a>
     </div>
@@ -67,7 +78,7 @@
     <hr class="sidebar__divider">
     <div class="sidebar__group">
       <p class="sidebar__group-title">Super Admin</p>
-      <a href="/admin/audit" class="sidebar__link" <%= path === '/admin/audit' ? 'aria-current="page"' : '' %>>
+      <a href="/admin/audit" class="sidebar__link" <%= activePath.startsWith('/admin/audit') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">📜</span> Audit Log
       </a>
     </div>

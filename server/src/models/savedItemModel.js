@@ -40,13 +40,14 @@ export async function listMySavedItems(userId) {
 /** Enrich saved items with display data — grouped by type. */
 export async function listMySavedEnriched(userId) {
   const base = await listMySavedItems(userId);
+
   const eventsIds = base
     .filter((r) => r.item_type === "event")
     .map((r) => r.item_id);
-  const storySlugs = base
+  const storyIds = base
     .filter((r) => r.item_type === "story")
     .map((r) => r.item_id);
-  const oppSlugs = base
+  const oppIds = base
     .filter((r) => r.item_type === "opportunity")
     .map((r) => r.item_id);
   const memberIds = base
@@ -57,73 +58,60 @@ export async function listMySavedEnriched(userId) {
     eventsIds.length === 0
       ? { rows: [] }
       : query(
-          `SELECT slug AS id, title, starts_at AS sub, venue AS sub2
-         FROM events
-        WHERE slug = ANY($1::text[])
-          AND status = 'published'`,
+          `SELECT id, slug, title, starts_at AS sub, venue AS sub2
+       FROM events
+       WHERE id::text = ANY($1::text[]) OR slug = ANY($1::text[])`,
           [eventsIds],
         ),
-    storySlugs.length === 0
+    storyIds.length === 0
       ? { rows: [] }
       : query(
-          `SELECT COALESCE(external_ref, slug) AS id, title, published_at AS sub, category AS sub2
-         FROM stories
-        WHERE slug = ANY($1::text[]) OR external_ref = ANY($1::text[])`,
-          [storySlugs],
+          `SELECT id, slug, external_ref, title, published_at AS sub, category AS sub2
+       FROM stories
+       WHERE id::text = ANY($1::text[]) OR slug = ANY($1::text[]) OR external_ref = ANY($1::text[])`,
+          [storyIds],
         ),
-    oppSlugs.length === 0
+    oppIds.length === 0
       ? { rows: [] }
       : query(
-          `SELECT slug AS id, title, deadline AS sub, employer AS sub2
-         FROM opportunities
-        WHERE slug = ANY($1::text[])
-          AND status = 'approved'`,
-          [oppSlugs],
+          `SELECT id, slug, external_ref, title, deadline AS sub, employer AS sub2
+       FROM opportunities
+       WHERE id::text = ANY($1::text[]) OR slug = ANY($1::text[]) OR external_ref = ANY($1::text[])`,
+          [oppIds],
         ),
     memberIds.length === 0
       ? { rows: [] }
       : query(
-          `SELECT mp.user_id::text AS id,
-              COALESCE(mp.display_name, mp.first_name || ' ' || mp.last_name) AS title,
-              mp.profession AS sub, mp.district AS sub2
-         FROM member_profiles mp
-        WHERE mp.user_id::text = ANY($1::text[])
-          AND mp.public_visibility = TRUE`,
+          `SELECT user_id AS id, seed_ref, 
+              COALESCE(display_name, first_name || ' ' || last_name) AS title,
+              profession AS sub, district AS sub2
+       FROM member_profiles
+       WHERE user_id::text = ANY($1::text[]) OR seed_ref = ANY($1::text[])`,
           [memberIds],
         ),
   ]);
 
-  const index = (rows) => {
-    const m = new Map();
-    for (const r of rows) m.set(String(r.id), r);
-    return m;
+  const findMatch = (rows, savedId) => {
+    return rows.find(
+      (r) =>
+        String(r.id) === String(savedId) ||
+        String(r.slug) === String(savedId) ||
+        String(r.external_ref) === String(savedId) ||
+        String(r.seed_ref) === String(savedId),
+    );
+  };
+
+  const processGroup = (type, rows) => {
+    return base
+      .filter((r) => r.item_type === type)
+      .map((r) => ({ saved: r, data: findMatch(rows, r.item_id) }))
+      .filter((x) => x.data);
   };
 
   return {
-    events: base
-      .filter((r) => r.item_type === "event")
-      .map((r) => ({
-        saved: r,
-        data: index(events.rows).get(String(r.item_id)),
-      }))
-      .filter((x) => x.data),
-    stories: base
-      .filter((r) => r.item_type === "story")
-      .map((r) => ({
-        saved: r,
-        data: index(stories.rows).get(String(r.item_id)),
-      }))
-      .filter((x) => x.data),
-    opportunities: base
-      .filter((r) => r.item_type === "opportunity")
-      .map((r) => ({ saved: r, data: index(opps.rows).get(String(r.item_id)) }))
-      .filter((x) => x.data),
-    members: base
-      .filter((r) => r.item_type === "member")
-      .map((r) => ({
-        saved: r,
-        data: index(members.rows).get(String(r.item_id)),
-      }))
-      .filter((x) => x.data),
+    events: processGroup("event", events.rows),
+    stories: processGroup("story", stories.rows),
+    opportunities: processGroup("opportunity", opps.rows),
+    members: processGroup("member", members.rows),
   };
 }

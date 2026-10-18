@@ -33,7 +33,7 @@ export const env = Object.freeze({
   isDev: NODE_ENV !== "production",
 
   PORT: toInt("PORT", 3000),
-  APP_ORIGIN: optional("APP_ORIGIN", "http://localhost:5173"),
+  APP_ORIGIN: optional("APP_ORIGIN", "http://localhost:3000"),
 
   db: {
     host: optional("PGHOST", "localhost"),
@@ -62,6 +62,10 @@ export const env = Object.freeze({
     avatarBucket: optional("SUPABASE_AVATAR_BUCKET", "avatars"),
     signedUrlTtlSeconds: toInt("SUPABASE_SIGNED_URL_TTL_SECONDS", 60),
   },
+
+  resendApiKey: optional("RESEND_API_KEY", null),
+  emailFrom: optional("EMAIL_FROM", "HOSA <onboarding@resend.dev>"),
+  appOrigin: optional("APP_ORIGIN", "http://localhost:3000"),
 
   log: {
     level: optional("LOG_LEVEL", NODE_ENV === "production" ? "info" : "debug"),

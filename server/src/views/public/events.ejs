@@ -1,0 +1,64 @@
+<header style="margin-bottom: var(--space-6);">
+  <h1>Upcoming Events</h1>
+  <p>Reunions, AGMs, career days, and fundraising activities.</p>
+</header>
+
+<% if (events.length === 0) { %>
+  <div class="empty-state">
+    <p class="empty-state__title">No upcoming events.</p>
+    <p>Check back soon.</p>
+  </div>
+<% } else { %>
+  <div class="stack">
+    <% events.forEach((e) => { %>
+      <article class="card" style="display: grid; grid-template-columns: auto 1fr auto; gap: var(--space-4); align-items: center;">
+        
+        <!-- Date Block -->
+        <div style="background: var(--gold); color: var(--ink); border-radius: var(--radius-sm); padding: var(--space-3); text-align: center; min-width: 80px;">
+          <div style="font-size: var(--text-lg); font-weight: 700; line-height: 1;"><%= new Date(e.starts_at).getDate() %></div>
+          <div style="font-size: var(--text-xs); text-transform: uppercase;"><%= new Date(e.starts_at).toLocaleString('en', { month: 'short' }) %></div>
+        </div>
+
+        <!-- Event Details -->
+        <div>
+          <h2 style="margin: 0 0 var(--space-2); font-size: var(--text-lg);"><%= e.title %></h2>
+          <p style="color: var(--muted); margin: 0; font-size: var(--text-sm);">
+            <%= new Date(e.starts_at).toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit' }) %>
+            · <%= e.venue || 'Venue TBD' %>
+          </p>
+          <p style="margin: var(--space-2) 0 0; color: var(--muted); font-size: var(--text-sm);">
+            <%= e.description ? e.description.slice(0, 160) + '…' : '' %>
+          </p>
+        </div>
+
+               <!-- Actions -->
+        <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+          <a href="/events/<%= e.slug %>" class="btn btn--ghost btn--sm">Details</a>
+          
+          <% if (currentUser) { %>
+            <div style="display: flex; gap: var(--space-2);">
+              <button type="button" class="btn btn--primary btn--sm" style="flex-grow: 1;" data-rsvp="<%= e.slug %>" data-rsvped="false">RSVP</button>
+              <button type="button" class="btn btn--ghost btn--sm" data-save="event" data-id="<%= e.slug %>" style="padding-inline: var(--space-2);">☆</button>
+            </div>
+          <% } else { %>
+            <a href="/login" class="btn btn--primary btn--sm">RSVP</a>
+          <% } %>
+        </div>
+        
+      </article>
+    <% }) %>
+  </div>
+<% } %>
+
+<style>
+  @media (max-width: 768px) {
+    article.card[style*="grid-template-columns"] {
+      grid-template-columns: auto 1fr !important;
+    }
+    article.card[style*="grid-template-columns"] > div:last-child {
+      grid-column: 1 / -1;
+      flex-direction: row !important;
+      justify-content: flex-end;
+    }
+  }
+</style>

@@ -1,94 +1,103 @@
-<h1>Dashboard</h1>
+<h1>Alumni Dashboard</h1>
 
-<p class="dashboard-greeting">
+<!-- Profile Summary Card -->
+<div class="card" style="display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6);">
   <% if (currentProfile && currentProfile.avatar_path) { %>
-    <img
-      src="/dashboard/avatar/me?v=<%= currentProfile.updated_at ? new Date(currentProfile.updated_at).getTime() : Date.now() %>"
-      alt=""
-      width="64"
-      height="64"
-      class="dashboard-greeting__avatar">
-  <% } %>
-  <span class="dashboard-greeting__text">
-    Welcome,
-    <strong><%= currentProfile?.display_name || currentProfile?.first_name || currentUser.email %></strong>.
-  </span>
-</p>
-
-<section aria-labelledby="completion-heading">
-  <h2 id="completion-heading">Profile completion</h2>
-  <p><strong><%= completion.pct %>%</strong> complete.</p>
-  <% if (completion.missing.length > 0) { %>
-    <p>Still missing:
-      <em><%= completion.missing.map(s => s.replace(/_/g, ' ')).join(', ') %></em>
-    </p>
+    <img src="/dashboard/avatar/me" alt="" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover;">
   <% } else { %>
-    <p>Your profile looks complete. 🎉</p>
+    <div style="width: 72px; height: 72px; border-radius: 50%; background: var(--gold); color: var(--ink); display: grid; place-items: center; font-size: var(--text-2xl); font-weight: 700;">
+      <%= (currentProfile?.first_name || currentUser.email)[0].toUpperCase() %>
+    </div>
   <% } %>
-</section>
-
-<section aria-labelledby="contribute-heading">
-  <h2 id="contribute-heading">Contribute</h2>
-  <ul>
-    <li><a href="/dashboard/stories/new">Submit an alumni story</a></li>
-    <li><a href="/dashboard/opportunities/new">Post a job, internship, or scholarship</a></li>
-    <li><a href="/dashboard/submissions">View my submissions</a></li>
-  </ul>
-</section>
-
-<% if (typeof rsvps !== 'undefined' && rsvps.length > 0) { %>
-  <section aria-labelledby="rsvps-heading">
-    <h2 id="rsvps-heading">My upcoming RSVPs</h2>
-    <ul>
-      <% rsvps.forEach((r) => { %>
-        <li>
-          <strong><%= r.title %></strong>
-          — <%= new Date(r.starts_at).toLocaleDateString() %>
-          at <%= r.venue || '—' %>
-          <em>(<%= r.status %>)</em>
-        </li>
-      <% }) %>
-    </ul>
-  </section>
-<% } %>
-
-<% if (typeof activeMentorship !== 'undefined' && activeMentorship > 0) { %>
-  <section aria-labelledby="mentorship-heading">
-    <h2 id="mentorship-heading">Mentorship</h2>
-    <p>
-      You have <strong><%= activeMentorship %></strong> active mentorship
-      request<%= activeMentorship === 1 ? '' : 's' %>.
-      <a href="/dashboard/mentorship/requests">View them →</a>
+  <div>
+    <h2 style="margin: 0 0 var(--space-1);">Welcome, <%= currentProfile?.display_name || currentProfile?.first_name || currentUser.email %></h2>
+    <p style="color: var(--muted); margin: 0;">
+      Class of <%= currentProfile?.graduation_year || '—' %> · <%= currentProfile?.profession || 'Update your profession' %>
     </p>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-5); margin-bottom: var(--space-6);">
+  <!-- Profile Completion -->
+  <section class="card">
+    <h2 style="font-size: var(--text-lg); margin-top: 0;">Profile Completion</h2>
+    <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
+      <div style="font-size: var(--text-2xl); font-weight: 700; color: var(--green);"><%= completion.pct %>%</div>
+      <div style="flex-grow: 1; background: var(--line); height: 8px; border-radius: 4px; overflow: hidden;">
+        <div style="background: var(--success); height: 100%; width: <%= completion.pct %>%;"></div>
+      </div>
+    </div>
+    <% if (completion.missing.length > 0) { %>
+      <p style="font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-3);">Missing: <%= completion.missing.join(', ') %></p>
+      <a href="/dashboard/profile" class="btn btn--ghost">Complete Profile</a>
+    <% } else { %>
+      <p style="font-size: var(--text-sm); color: var(--success);">Your profile looks complete! 🎉</p>
+    <% } %>
   </section>
-<% } %>
 
-<section aria-labelledby="saved-heading">
-  <h2 id="saved-heading">Saved items</h2>
-  <p><a href="/dashboard/saved">View my saved items →</a></p>
+  <!-- Account Status -->
+  <section class="card">
+    <h2 style="font-size: var(--text-lg); margin-top: 0;">Account</h2>
+    <p style="font-size: var(--text-sm); margin-bottom: var(--space-1);"><strong>Email:</strong> <%= currentUser.email %></p>
+    <p style="font-size: var(--text-sm); margin-bottom: var(--space-1);"><strong>Roles:</strong> <%= currentUserRoles.join(', ') %></p>
+    <p style="font-size: var(--text-sm); margin-bottom: var(--space-3);"><strong>Status:</strong> 
+      <% if (currentUser.status === 'active') { %><span class="badge badge--success">Active</span><% } else { %><span class="badge badge--warning"><%= currentUser.status %></span><% } %>
+    </p>
+    <a href="/dashboard/password" class="btn btn--ghost">Change Password</a>
+  </section>
+</div>
+
+<!-- Contribute Section -->
+<section style="margin-bottom: var(--space-6);">
+  <h2>Contribute to HOSA</h2>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4); margin-top: var(--space-4);">
+    <a href="/dashboard/stories/new" class="card" style="text-decoration: none; color: inherit; text-align: center; padding: var(--space-4);">
+      <div style="font-size: var(--text-2xl); margin-bottom: var(--space-2);">📝</div>
+      <strong>Submit a Story</strong>
+    </a>
+    <a href="/dashboard/opportunities/new" class="card" style="text-decoration: none; color: inherit; text-align: center; padding: var(--space-4);">
+      <div style="font-size: var(--text-2xl); margin-bottom: var(--space-2);">💼</div>
+      <strong>Post a Job / Internship</strong>
+    </a>
+    <a href="/dashboard/submissions" class="card" style="text-decoration: none; color: inherit; text-align: center; padding: var(--space-4);">
+      <div style="font-size: var(--text-2xl); margin-bottom: var(--space-2);">📂</div>
+      <strong>My Submissions</strong>
+    </a>
+  </div>
 </section>
 
-<section aria-labelledby="account-heading">
-  <h2 id="account-heading">Account</h2>
-  <dl>
-    <dt>Email</dt>
-    <dd><%= currentUser.email %></dd>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-5);">
+  <!-- Upcoming RSVPs -->
+  <section class="card">
+    <h2 style="font-size: var(--text-lg); margin-top: 0;">My Upcoming RSVPs</h2>
+    <% if (!rsvps || rsvps.length === 0) { %>
+      <p style="color: var(--muted); font-size: var(--text-sm);">You have no upcoming events. <a href="/events">Browse events</a>.</p>
+    <% } else { %>
+      <ul style="padding-left: var(--space-4); font-size: var(--text-sm); margin: 0;">
+        <% rsvps.forEach((r) => { %>
+          <li style="margin-bottom: var(--space-2);">
+            <strong><%= r.title %></strong><br>
+            <span style="color: var(--muted);"><%= new Date(r.starts_at).toLocaleDateString('en-GB') %> · <%= r.status %></span>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </section>
 
-    <dt>Roles</dt>
-    <dd><%= currentUserRoles.join(', ') || '(none)' %></dd>
+  <!-- Mentorship -->
+  <section class="card">
+    <h2 style="font-size: var(--text-lg); margin-top: 0;">Mentorship</h2>
+    <% if (activeMentorship > 0) { %>
+      <p style="font-size: var(--text-sm);">You have <strong><%= activeMentorship %></strong> active mentorship request(s).</p>
+      <a href="/dashboard/mentorship/requests" class="btn btn--primary">View Requests</a>
+    <% } else { %>
+      <p style="color: var(--muted); font-size: var(--text-sm);">You have no active mentorship requests.</p>
+      <a href="/directory" class="btn btn--ghost">Find a Mentor</a>
+    <% } %>
+  </section>
+</div>
 
-    <dt>Status</dt>
-    <dd><%= currentUser.status %></dd>
-
-    <dt>Member since</dt>
-    <dd><%= new Date(currentUser.created_at).toLocaleString() %></dd>
-  </dl>
-</section>
-
-<section aria-labelledby="actions-heading">
-  <h2 id="actions-heading">Actions</h2>
-  <ul>
-    <li><a href="/dashboard/profile">Edit profile</a></li>
-    <li><a href="/dashboard/password">Change password</a></li>
-  </ul>
+<!-- Saved Items shortcut -->
+<section style="margin-top: var(--space-6); text-align: center;">
+  <a href="/dashboard/saved" class="btn btn--accent">View My Saved Items ⭐</a>
 </section>

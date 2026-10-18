@@ -1,65 +1,108 @@
-<h1><%= isNew ? 'New event' : 'Edit event' %></h1>
+<div
+  style="
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-5);
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  "
+>
+  <h1 style="margin: 0"><%= isNew ? 'New event' : 'Edit event' %></h1>
+  <a href="/admin/events" class="btn btn--ghost">← Back to events</a>
+</div>
 
-<% if (Object.keys(fieldErrors).length > 0) { %>
-  <div class="errors" role="alert">
-    <strong>Please fix the following:</strong>
-    <ul>
-      <% Object.entries(fieldErrors).forEach(([k, msg]) => { %>
-        <li><%= k.replace(/_/g, ' ') %>: <%= msg %></li>
-      <% }) %>
-    </ul>
-  </div>
-<% } %>
+<div class="card" style="max-width: 800px">
+  <form
+    method="post"
+    action="<%= isNew ? '/admin/events/new' : `/admin/events/${event.id}/update` %>"
+    novalidate
+  >
+    <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>" />
 
-<form method="post" action="<%= isNew ? '/admin/events/new' : `/admin/events/${event.id}/update` %>" novalidate>
-  <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+    <div class="field">
+      <label for="title">Title</label>
+      <input
+        id="title"
+        name="title"
+        type="text"
+        required
+        maxlength="200"
+        value="<%= values.title || '' %>"
+      />
+    </div>
 
-  <label for="title">Title</label>
-  <input id="title" name="title" type="text" required maxlength="200"
-         value="<%= values.title || '' %>">
-  <% if (fieldErrors.title) { %><p class="field-error"><%= fieldErrors.title %></p><% } %>
+    <div class="field">
+      <label for="description">Description</label>
+      <textarea id="description" name="description" rows="5" maxlength="5000">
+<%= values.description || '' %></textarea
+      >
+    </div>
 
-  <label for="description">Description</label>
-  <textarea id="description" name="description" rows="5" maxlength="5000"><%= values.description || '' %></textarea>
+    <div
+      style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4)"
+    >
+      <div class="field">
+        <label for="starts_at">Starts at</label>
+        <input
+          id="starts_at"
+          name="starts_at"
+          type="datetime-local"
+          required
+          value="<%= values.starts_at || '' %>"
+        />
+      </div>
+      <div class="field">
+        <label for="ends_at">Ends at (optional)</label>
+        <input
+          id="ends_at"
+          name="ends_at"
+          type="datetime-local"
+          value="<%= values.ends_at || '' %>"
+        />
+      </div>
+    </div>
 
-  <label for="starts_at">Starts at</label>
-  <input id="starts_at" name="starts_at" type="datetime-local" required
-         value="<%= values.starts_at || '' %>">
-  <% if (fieldErrors.starts_at) { %><p class="field-error"><%= fieldErrors.starts_at %></p><% } %>
+    <div
+      style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4)"
+    >
+      <div class="field">
+        <label for="venue">Venue</label>
+        <input
+          id="venue"
+          name="venue"
+          type="text"
+          maxlength="300"
+          value="<%= values.venue || '' %>"
+        />
+      </div>
+      <div class="field">
+        <label for="district">District</label>
+        <input
+          id="district"
+          name="district"
+          type="text"
+          maxlength="120"
+          value="<%= values.district || '' %>"
+        />
+      </div>
+    </div>
 
-  <label for="ends_at">Ends at (optional)</label>
-  <input id="ends_at" name="ends_at" type="datetime-local"
-         value="<%= values.ends_at || '' %>">
-  <% if (fieldErrors.ends_at) { %><p class="field-error"><%= fieldErrors.ends_at %></p><% } %>
+    <div class="field">
+      <label for="capacity">Capacity (optional)</label>
+      <input
+        id="capacity"
+        name="capacity"
+        type="number"
+        min="1"
+        value="<%= values.capacity || '' %>"
+      />
+    </div>
 
-  <label for="timezone">Timezone</label>
-  <input id="timezone" name="timezone" type="text" maxlength="80"
-         value="<%= values.timezone || 'Africa/Kampala' %>">
-
-  <label for="venue">Venue</label>
-  <input id="venue" name="venue" type="text" maxlength="300"
-         value="<%= values.venue || '' %>">
-
-  <label for="district">District</label>
-  <input id="district" name="district" type="text" maxlength="120"
-         value="<%= values.district || '' %>">
-
-  <label for="capacity">Capacity (optional)</label>
-  <input id="capacity" name="capacity" type="number" min="1" max="100000"
-         value="<%= values.capacity ?? '' %>">
-
-  <label for="registration_deadline">Registration deadline (optional)</label>
-  <input id="registration_deadline" name="registration_deadline" type="datetime-local"
-         value="<%= values.registration_deadline || '' %>">
-  <% if (fieldErrors.registration_deadline) { %><p class="field-error"><%= fieldErrors.registration_deadline %></p><% } %>
-
-  <label for="accessibility">Accessibility notes</label>
-  <textarea id="accessibility" name="accessibility" rows="2" maxlength="1000"><%= values.accessibility || '' %></textarea>
-
-  <label for="internal_notes">Internal notes (admins only)</label>
-  <textarea id="internal_notes" name="internal_notes" rows="3" maxlength="2000"><%= values.internal_notes || '' %></textarea>
-
-  <p><button type="submit"><%= isNew ? 'Create event (as draft)' : 'Save changes' %></button></p>
-</form>
-
-<p><a href="/admin/events">← Back to events</a></p>
+    <div style="margin-top: var(--space-5)">
+      <button type="submit" class="btn btn--primary">
+        <%= isNew ? 'Create Event' : 'Save Changes' %>
+      </button>
+    </div>
+  </form>
+</div>

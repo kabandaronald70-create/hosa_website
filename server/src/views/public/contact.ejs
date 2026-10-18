@@ -1,18 +1,66 @@
-<div style="max-width: 600px; margin: 0 auto">
+<div style="max-width: 800px; margin: 0 auto">
   <h1>Contact Us</h1>
-  <p>We'd love to hear from you. Reach the HOSA committee at:</p>
+  <p
+    style="
+      font-size: var(--text-lg);
+      color: var(--muted);
+      margin-bottom: var(--space-6);
+    "
+  >
+    We'd love to hear from you. Reach the HOSA committee at:
+  </p>
 
-  <div class="card" style="margin-block: var(--space-5)">
-    <p>
-      <strong>General enquiries</strong><br />
-      <a href="mailto:support@hosa-uganda.org">support@hosa-uganda.org</a>
-    </p>
-    <p>
-      <strong>Privacy & data requests</strong><br />
-      <a href="mailto:privacy@hosa-uganda.org">privacy@hosa-uganda.org</a>
-    </p>
-    <p>
-      <strong>Postal address</strong><br />
+  <div
+    style="
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--space-4);
+    "
+  >
+    <div class="card">
+      <h3 style="font-size: var(--text-lg); margin-top: 0">
+        General Enquiries
+      </h3>
+      <p
+        style="
+          font-size: var(--text-sm);
+          color: var(--muted);
+          margin-bottom: var(--space-2);
+        "
+      >
+        Membership, events, and general questions.
+      </p>
+      <a
+        href="mailto:support@hosa-uganda.org"
+        class="btn btn--ghost"
+        style="width: 100%"
+        >support@hosa-uganda.org</a
+      >
+    </div>
+
+    <div class="card">
+      <h3 style="font-size: var(--text-lg); margin-top: 0">Privacy & Data</h3>
+      <p
+        style="
+          font-size: var(--text-sm);
+          color: var(--muted);
+          margin-bottom: var(--space-2);
+        "
+      >
+        Account deletion, data export, or privacy concerns.
+      </p>
+      <a
+        href="mailto:privacy@hosa-uganda.org"
+        class="btn btn--ghost"
+        style="width: 100%"
+        >privacy@hosa-uganda.org</a
+      >
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: var(--space-5); text-align: center">
+    <h3 style="font-size: var(--text-lg); margin-top: 0">Postal Address</h3>
+    <p style="color: var(--muted); margin: 0">
       HOSA Committee<br />
       Highway Secondary School<br />
       P.O. Box — Kiganda Town Council<br />
@@ -20,8 +68,8 @@
     </p>
   </div>
 
-  <p>
-    For questions about membership, see <a href="/help">Help & FAQ</a>. For
-    information about HOSA's mission, see <a href="/about">About</a>.
+  <p style="margin-top: var(--space-6); text-align: center">
+    For questions about how to use the site, check out our
+    <a href="/help">Help & FAQ</a> page.
   </p>
 </div>

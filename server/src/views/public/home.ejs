@@ -1,0 +1,67 @@
+<!-- Hero Section -->
+<section style="background: linear-gradient(rgba(15, 76, 58, 0.5), rgba(15, 76, 58, 0.5)), url('/images/hero--11.webp') center/cover no-repeat; color: var(--ivory); padding: var(--space-8) var(--space-5); border-radius: var(--radius-md); text-align: center; margin-bottom: var(--space-6);">
+  <h1 style="color: var(--ivory); font-size: var(--text-3xl); margin-bottom: var(--space-3); text-shadow: 0 2px 4px rgba(0,0,0,0.6);">
+    Once Highway, always family.
+  </h1>
+  <p style="font-size: var(--text-lg); color: var(--ivory); max-width: 600px; margin: 0 auto var(--space-5); text-shadow: 0 1px 3px rgba(0,0,0,0.6);">
+    Reconnect with fellow alumni of Highway Secondary School. Mentor the next generation. Give back to the school that shaped us.
+  </p>
+
+  <div style="display: flex; justify-content: center; gap: var(--space-3); flex-wrap: wrap;">
+    <% if (currentUser) { %>
+      <!-- Signed-in user CTA -->
+      <a href="/dashboard" class="btn btn--accent">Go to Alumni Dashboard</a>
+    <% } else { %>
+      <!-- Visitor CTA -->
+      <a href="/register" class="btn btn--accent">Join HOSA</a>
+    <% } %>
+    <a href="/directory" class="btn btn--ghost" style="color: var(--ivory); border-color: var(--ivory);">Browse directory</a>
+  </div>
+</section>
+
+<!-- Honest Stats Strip -->
+<% if (stats && (stats.members > 0 || stats.events > 0 || stats.jobs > 0)) { %>
+  <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-6);">
+    <% if (stats.members > 0) { %>
+      <div class="card" style="text-align: center;">
+        <div style="font-size: var(--text-2xl); font-weight: 700; color: var(--green);"><%= stats.members %></div>
+        <div style="color: var(--muted); font-size: var(--text-sm);">Alumni</div>
+      </div>
+    <% } %>
+    <% if (stats.events > 0) { %>
+      <div class="card" style="text-align: center;">
+        <div style="font-size: var(--text-2xl); font-weight: 700; color: var(--green);"><%= stats.events %></div>
+        <div style="color: var(--muted); font-size: var(--text-sm);">Upcoming Events</div>
+      </div>
+    <% } %>
+    <% if (stats.jobs > 0) { %>
+      <div class="card" style="text-align: center;">
+        <div style="font-size: var(--text-2xl); font-weight: 700; color: var(--green);"><%= stats.jobs %></div>
+        <div style="color: var(--muted); font-size: var(--text-sm);">Open Opportunities</div>
+      </div>
+    <% } %>
+  </section>
+<% } %>
+
+<!-- Explore HOSA Cards -->
+<section style="margin-bottom: var(--space-6);">
+  <h2 style="text-align: center; margin-bottom: var(--space-5); font-size: var(--text-2xl);">Explore HOSA</h2>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-4);">
+    <a href="/directory" class="card" style="text-decoration: none; color: inherit;">
+      <h3 style="font-size: var(--text-lg); margin-bottom: var(--space-2);">Directory</h3>
+      <p style="color: var(--muted); font-size: var(--text-sm); margin: 0;">Find former classmates and connect with alumni across professions.</p>
+    </a>
+    <a href="/events" class="card" style="text-decoration: none; color: inherit;">
+      <h3 style="font-size: var(--text-lg); margin-bottom: var(--space-2);">Events</h3>
+      <p style="color: var(--muted); font-size: var(--text-sm); margin: 0;">Reunions, AGMs, career days, and fundraising activities.</p>
+    </a>
+    <a href="/jobs" class="card" style="text-decoration: none; color: inherit;">
+      <h3 style="font-size: var(--text-lg); margin-bottom: var(--space-2);">Jobs</h3>
+      <p style="color: var(--muted); font-size: var(--text-sm); margin: 0;">Internships, scholarships, and opportunities from our network.</p>
+    </a>
+    <a href="/mentorship" class="card" style="text-decoration: none; color: inherit;">
+      <h3 style="font-size: var(--text-lg); margin-bottom: var(--space-2);">Mentorship</h3>
+      <p style="color: var(--muted); font-size: var(--text-sm); margin: 0;">Get guidance from experienced alumni in your field of interest.</p>
+    </a>
+  </div>
+</section>

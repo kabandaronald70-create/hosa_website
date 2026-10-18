@@ -25,8 +25,14 @@ export async function addSaved(req, res, next) {
 export async function removeSaved(req, res, next) {
   try {
     await removeSavedItem(req.user.id, req.params.id);
+
+    // Always return JSON for the AJAX request from public.js
+    if (req.headers.accept?.includes("application/json") || req.xhr) {
+      return res.json({ ok: true });
+    }
+
     req.flash("success", "Removed from saved items.");
-    res.redirect("back");
+    res.redirect("/dashboard/saved");
   } catch (err) {
     next(err);
   }

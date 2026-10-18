@@ -1,9 +1,12 @@
-<h1>Edit profile</h1>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); flex-wrap: wrap; gap: var(--space-3);">
+  <h1 style="margin: 0;">Edit profile</h1>
+  <a href="/dashboard" class="btn btn--ghost">← Back to dashboard</a>
+</div>
 
 <% if (Object.keys(fieldErrors).length > 0) { %>
-  <div class="errors" role="alert">
+  <div class="alert alert--error" role="alert">
     <strong>Please fix the following:</strong>
-    <ul>
+    <ul style="margin: var(--space-2) 0 0 var(--space-4); padding: 0;">
       <% Object.entries(fieldErrors).forEach(([k, msg]) => { %>
         <li><%= k.replace(/_/g, ' ') %>: <%= msg %></li>
       <% }) %>
@@ -11,156 +14,158 @@
   </div>
 <% } %>
 
-<!-- ------------------------------------------------------------------ -->
-<!-- Avatar: its own form because it needs multipart/form-data encoding. -->
-<!-- ------------------------------------------------------------------ -->
-<form method="post" action="/dashboard/avatar" enctype="multipart/form-data">
-  <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+<div style="max-width: 800px;">
 
-  <fieldset>
-    <legend>Profile photo</legend>
+  <!-- Avatar Section (Separate Form) -->
+  <div class="card" style="margin-bottom: var(--space-5);">
+    <h2 style="font-size: var(--text-lg); margin-top: 0;">Profile photo</h2>
+    
+    <div style="display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-4);">
+      <% if (values.avatar_path) { %>
+        <img src="/dashboard/avatar/me" alt="Your current profile photo" style="width: 96px; height: 96px; border-radius: 50%; object-fit: cover; border: 2px solid var(--line);">
+      <% } else { %>
+        <div style="width: 96px; height: 96px; border-radius: 50%; background: var(--gold); color: var(--ink); display: grid; place-items: center; font-size: var(--text-2xl); font-weight: 700;">?</div>
+      <% } %>
+      
+      <form id="avatar-form" method="post" action="/dashboard/avatar" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: var(--space-2);">
+        <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+        <p style="margin: 0; font-size: var(--text-sm); color: var(--muted);">Max 2MB. JPEG, PNG, or WebP.</p>
+        <div style="display: flex; gap: var(--space-2);">
+          <input type="file" name="avatar" accept="image/jpeg,image/png,image/webp" required style="font-size: var(--text-sm);">
+          <button type="submit" class="btn btn--primary btn--sm">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-    <% if (values.avatar_path) { %>
-      <p>
-        <img
-  src="/dashboard/avatar/me?v=<%= values.updated_at ? new Date(values.updated_at).getTime() : Date.now() %>"
-  alt="Your current profile photo"
-  width="96"
-  height="96"
-  class="profile-avatar">
-      </p>
-      <p><small>Signed URL is generated per request &mdash; the image link changes each time.</small></p>
-    <% } else { %>
-      <p><em>No photo yet.</em></p>
-    <% } %>
-
-    <label for="avatar">Upload a new photo (JPEG, PNG, or WebP, max 2 MB)</label>
-    <input id="avatar" name="avatar" type="file"
-           accept="image/jpeg,image/png,image/webp">
-
-    <p><button type="submit">Upload photo</button></p>
-  </fieldset>
-</form>
-
-<% if (values.avatar_path) { %>
-  <form method="post" action="/dashboard/avatar/delete">
+  <!-- Main Profile Form -->
+  <form method="post" action="/dashboard/profile" novalidate>
     <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
-    <p><button type="submit">Remove current photo</button></p>
+
+    <div class="card" style="margin-bottom: var(--space-5);">
+      <h2 style="font-size: var(--text-lg); margin-top: 0;">Basic details</h2>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+        <div class="field">
+          <label for="first_name">First name</label>
+          <input id="first_name" name="first_name" type="text" required maxlength="80" value="<%= values.first_name || '' %>">
+          <% if (fieldErrors.first_name) { %><span class="field-error"><%= fieldErrors.first_name %></span><% } %>
+        </div>
+        <div class="field">
+          <label for="last_name">Last name</label>
+          <input id="last_name" name="last_name" type="text" required maxlength="80" value="<%= values.last_name || '' %>">
+          <% if (fieldErrors.last_name) { %><span class="field-error"><%= fieldErrors.last_name %></span><% } %>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="display_name">Display name (optional)</label>
+        <input id="display_name" name="display_name" type="text" maxlength="120" value="<%= values.display_name || '' %>">
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+        <div class="field">
+          <label for="graduation_year">Graduation year</label>
+          <input id="graduation_year" name="graduation_year" type="number" min="1950" max="2100" value="<%= values.graduation_year || '' %>">
+          <% if (fieldErrors.graduation_year) { %><span class="field-error"><%= fieldErrors.graduation_year %></span><% } %>
+        </div>
+        <div class="field">
+          <label for="profession">Profession</label>
+          <input id="profession" name="profession" type="text" maxlength="120" value="<%= values.profession || '' %>">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="organization">Organization</label>
+        <input id="organization" name="organization" type="text" maxlength="120" value="<%= values.organization || '' %>">
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+        <div class="field">
+          <label for="district">District</label>
+          <input id="district" name="district" type="text" maxlength="120" value="<%= values.district || '' %>">
+        </div>
+        <div class="field">
+          <label for="country_code">Country code (e.g. UG)</label>
+          <input id="country_code" name="country_code" type="text" maxlength="2" value="<%= values.country_code || '' %>">
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: var(--space-5);">
+      <h2 style="font-size: var(--text-lg); margin-top: 0;">About you</h2>
+      
+      <div class="field">
+        <label for="biography">Biography</label>
+        <textarea id="biography" name="biography" rows="4" maxlength="2000"><%= values.biography || '' %></textarea>
+      </div>
+      
+      <div class="field">
+        <label for="skills">Skills</label>
+        <textarea id="skills" name="skills" rows="2" maxlength="500"><%= values.skills || '' %></textarea>
+      </div>
+      
+      <div class="field">
+        <label for="career_history">Career History</label>
+        <textarea id="career_history" name="career_history" rows="4" maxlength="4000"><%= values.career_history || '' %></textarea>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: var(--space-5);">
+      <h2 style="font-size: var(--text-lg); margin-top: 0;">Privacy & Mentorship</h2>
+      
+      <div class="field" style="flex-direction: row; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+        <input type="checkbox" id="mentor_opt_in" name="mentor_opt_in" value="on" <%= values.mentor_opt_in ? 'checked' : '' %> style="min-height: auto;">
+        <label for="mentor_opt_in" style="margin: 0; font-weight: normal;">I am willing to mentor current students</label>
+      </div>
+
+      <div class="field" style="flex-direction: row; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+        <input type="checkbox" id="public_visibility" name="public_visibility" value="on" <%= values.public_visibility !== false ? 'checked' : '' %> style="min-height: auto;">
+        <label for="public_visibility" style="margin: 0; font-weight: normal;">Show my profile in the public directory</label>
+      </div>
+
+      <div class="field" style="flex-direction: row; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+        <input type="checkbox" id="show_email" name="show_email" value="on" <%= values.show_email ? 'checked' : '' %> style="min-height: auto;">
+        <label for="show_email" style="margin: 0; font-weight: normal;">Show my email in the directory</label>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn--primary" style="width: 100%; padding: var(--space-3); font-size: var(--text-lg); margin-bottom: var(--space-6);">Save profile</button>
   </form>
-<% } %>
 
-<!-- ------------------------------------------------------------------ -->
-<!-- Profile fields: separate form, default urlencoded encoding.         -->
-<!-- ------------------------------------------------------------------ -->
-<form method="post" action="/dashboard/profile" novalidate>
-  <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+  <!-- Remove Avatar (if it exists) -->
+  <% if (values.avatar_path) { %>
+    <form method="post" action="/dashboard/avatar/delete" style="margin-bottom: var(--space-6);">
+      <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+      <button type="submit" class="btn btn--ghost" style="color: var(--danger); border-color: var(--danger); width: 100%;" onclick="return confirm('Remove your profile photo?')">Remove current profile photo</button>
+    </form>
+  <% } %>
 
-  <fieldset>
-    <legend>Name</legend>
+  <!-- Danger Zone -->
+  <div class="card" style="border-color: var(--danger); background: #fffaf9; margin-bottom: var(--space-6);">
+    <h2 style="font-size: var(--text-lg); margin-top: 0; color: var(--danger);">Danger Zone</h2>
+    
+    <div style="margin-bottom: var(--space-5);">
+      <p style="font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-2);">Download a copy of your data in JSON format.</p>
+      <a href="/dashboard/export-data" class="btn btn--ghost">Download My Data</a>
+    </div>
 
-    <label for="first_name">First name</label>
-    <input id="first_name" name="first_name" type="text" required maxlength="80"
-           value="<%= values.first_name || '' %>">
-    <% if (fieldErrors.first_name) { %><p class="field-error"><%= fieldErrors.first_name %></p><% } %>
+    <div>
+      <p style="font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-2);">Once you delete your account, there is no going back. All your data will be erased.</p>
+      
+      <button type="button" class="btn btn--danger" onclick="document.getElementById('delete-account-form').style.display='block'; this.style.display='none';">Delete My Account</button>
+      
+      <div id="delete-account-form" style="display: none; margin-top: var(--space-3); padding: var(--space-4); background: var(--white); border: 1px solid var(--danger); border-radius: var(--radius-sm);">
+        <form method="post" action="/dashboard/delete-account">
+          <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+          <div class="field">
+            <label for="delete_password">Confirm your password to delete</label>
+            <input id="delete_password" name="password" type="password" required>
+          </div>
+          <button type="submit" class="btn btn--danger" style="width: 100%;">Permanently Delete Account</button>
+        </form>
+      </div>
+    </div>
+  </div>
 
-    <label for="last_name">Last name</label>
-    <input id="last_name" name="last_name" type="text" required maxlength="80"
-           value="<%= values.last_name || '' %>">
-    <% if (fieldErrors.last_name) { %><p class="field-error"><%= fieldErrors.last_name %></p><% } %>
-
-    <label for="display_name">Display name (optional)</label>
-    <input id="display_name" name="display_name" type="text" maxlength="120"
-           value="<%= values.display_name || '' %>">
-  </fieldset>
-
-  <fieldset>
-    <legend>Alumni details</legend>
-
-    <label for="graduation_year">Graduation year</label>
-    <input id="graduation_year" name="graduation_year" type="number"
-           min="1950" max="2100" inputmode="numeric"
-           value="<%= values.graduation_year ?? '' %>">
-    <% if (fieldErrors.graduation_year) { %><p class="field-error"><%= fieldErrors.graduation_year %></p><% } %>
-
-    <label for="profession">Profession</label>
-    <input id="profession" name="profession" type="text" maxlength="120"
-           value="<%= values.profession || '' %>">
-
-    <label for="organization">Organization</label>
-    <input id="organization" name="organization" type="text" maxlength="120"
-           value="<%= values.organization || '' %>">
-  </fieldset>
-
-  <fieldset>
-    <legend>Location &amp; contact</legend>
-
-    <label for="district">District</label>
-    <input id="district" name="district" type="text" maxlength="120"
-           value="<%= values.district || '' %>">
-
-    <label for="country_code">Country code (2 letters)</label>
-    <input id="country_code" name="country_code" type="text" maxlength="2"
-           pattern="[A-Za-z]{2}" value="<%= values.country_code || '' %>">
-    <% if (fieldErrors.country_code) { %><p class="field-error"><%= fieldErrors.country_code %></p><% } %>
-
-    <label for="phone">Phone (optional)</label>
-    <input id="phone" name="phone" type="tel" maxlength="40"
-           value="<%= values.phone || '' %>">
-
-    <label for="preferred_contact">Preferred contact</label>
-    <select id="preferred_contact" name="preferred_contact">
-      <option value="" <%= !values.preferred_contact ? 'selected' : '' %>>&mdash;</option>
-      <option value="email" <%= values.preferred_contact === 'email' ? 'selected' : '' %>>Email</option>
-      <option value="phone" <%= values.preferred_contact === 'phone' ? 'selected' : '' %>>Phone</option>
-      <option value="none"  <%= values.preferred_contact === 'none'  ? 'selected' : '' %>>None</option>
-    </select>
-  </fieldset>
-
-  <fieldset>
-    <legend>About you</legend>
-
-    <label for="biography">Biography</label>
-    <textarea id="biography" name="biography" rows="5" maxlength="2000"><%= values.biography || '' %></textarea>
-
-    <label for="skills">Skills</label>
-    <textarea id="skills" name="skills" rows="3" maxlength="500"><%= values.skills || '' %></textarea>
-
-    <label for="interests">Interests</label>
-    <textarea id="interests" name="interests" rows="3" maxlength="500"><%= values.interests || '' %></textarea>
-
-    <label for="career_history">Career history</label>
-    <textarea id="career_history" name="career_history" rows="6" maxlength="4000"><%= values.career_history || '' %></textarea>
-  </fieldset>
-
-  <fieldset>
-    <legend>Visibility &amp; mentoring</legend>
-
-    <label>
-      <input type="checkbox" name="mentor_opt_in" value="on"
-             <%= values.mentor_opt_in ? 'checked' : '' %>>
-      I'm willing to mentor current students
-    </label>
-
-    <label>
-      <input type="checkbox" name="public_visibility" value="on"
-             <%= values.public_visibility !== false ? 'checked' : '' %>>
-      Show my profile in the public directory
-    </label>
-
-    <label>
-      <input type="checkbox" name="show_email" value="on"
-             <%= values.show_email ? 'checked' : '' %>>
-      Show my email in the directory
-    </label>
-
-    <label>
-      <input type="checkbox" name="show_phone" value="on"
-             <%= values.show_phone ? 'checked' : '' %>>
-      Show my phone in the directory
-    </label>
-  </fieldset>
-
-  <p><button type="submit">Save profile</button></p>
-</form>
-
-<p><a href="/dashboard">Back to dashboard</a></p>
+</div>

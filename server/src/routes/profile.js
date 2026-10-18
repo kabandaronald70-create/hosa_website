@@ -10,6 +10,8 @@ import {
   uploadAvatar,
   removeAvatar,
   serveAvatar,
+  exportMyData,
+  deleteMyAccount,
 } from "../controllers/profileController.js";
 
 const router = Router();
@@ -37,5 +39,7 @@ router.get("/dashboard/avatar/:userId", requireAuth, serveAvatar);
 // Password
 router.get("/dashboard/password", requireAuth, showChangePassword);
 router.post("/dashboard/password", requireAuth, submitChangePassword);
+router.get("/dashboard/export-data", requireAuth, exportMyData);
+router.post("/dashboard/delete-account", requireAuth, deleteMyAccount);
 
 export default router;

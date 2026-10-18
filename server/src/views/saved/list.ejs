@@ -1,35 +1,62 @@
-<h1>Saved items</h1>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); flex-wrap: wrap; gap: var(--space-3);">
+  <h1 style="margin: 0;">Saved items</h1>
+  <a href="/dashboard" class="btn btn--ghost">← Back to dashboard</a>
+</div>
 
-<p><a href="/dashboard">← Back to dashboard</a></p>
-
-<%
-  function renderGroup(title, items, basePath) {
+<% 
+  function renderGroup(title, items, type) { 
 %>
-  <section aria-labelledby="saved-<%= title.toLowerCase() %>-heading">
-    <h2 id="saved-<%= title.toLowerCase() %>-heading"><%= title %> (<%= items.length %>)</h2>
+  <section style="margin-bottom: var(--space-7);">
+    <h2 style="font-size: var(--text-xl); border-bottom: 2px solid var(--line); padding-bottom: var(--space-2); margin-bottom: var(--space-4);">
+      <%= title %> <span style="color: var(--muted); font-size: var(--text-base); font-weight: normal;">(<%= items.length %>)</span>
+    </h2>
+    
     <% if (items.length === 0) { %>
-      <p><em>Nothing saved yet.</em></p>
+      <div class="empty-state" style="padding: var(--space-5);">
+        <p style="margin: 0; color: var(--muted);">Nothing saved yet.</p>
+      </div>
     <% } else { %>
-      <ul>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-4);">
         <% items.forEach(({ saved, data }) => { %>
-          <li>
-            <strong><%= data.title %></strong>
-            <% if (data.sub) { %> — <%= data.sub %><% } %>
-            <% if (data.sub2) { %> · <%= data.sub2 %><% } %>
-            <form method="post" action="/dashboard/saved/<%= saved.id %>/delete" style="display:inline">
-              <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
-              <button type="submit">Remove</button>
-            </form>
-          </li>
+          <article class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <h3 style="font-size: var(--text-lg); margin-top: 0; margin-bottom: var(--space-2);"><%= data.title %></h3>
+              <% if (data.sub) { %>
+                <p style="color: var(--muted); font-size: var(--text-sm); margin: 0;"><%= data.sub %></p>
+              <% } %>
+              <% if (data.sub2) { %>
+                <p style="color: var(--muted); font-size: var(--text-sm); margin: 0;"><%= data.sub2 %></p>
+              <% } %>
+            </div>
+            
+            <div style="margin-top: var(--space-4); display: flex; gap: var(--space-2);">
+              <% if (type === 'event') { %>
+  <a href="/events/<%= data.slug || data.id %>" class="btn btn--ghost" style="flex-grow: 1;">View</a>
+<% } else if (type === 'story') { %>
+  <a href="/stories/<%= data.slug || data.id %>" class="btn btn--ghost" style="flex-grow: 1;">Read</a>
+<% } else if (type === 'opportunity') { %>
+  <a href="/jobs" class="btn btn--ghost" style="flex-grow: 1;">View</a>
+<% } else if (type === 'member') { %>
+  <a href="/directory/<%= data.seed_ref || data.id %>" class="btn btn--ghost" style="flex-grow: 1;">View Profile</a>
+<% } %>
+              
+                            <button type="button" class="btn btn--danger" 
+                      data-save="<%= type %>" 
+                      data-id="<%= data.id %>" 
+                      data-saved-id="<%= saved.id %>" 
+                      style="padding-inline: var(--space-3);" 
+                      title="Remove">
+                ✕
+              </button>
+            </div>
+          </article>
         <% }) %>
-      </ul>
+      </div>
     <% } %>
   </section>
-<%
-  }
-%>
+<% } %>
 
-<% renderGroup('Events', grouped.events, '/events'); %>
-<% renderGroup('Stories', grouped.stories, '/stories'); %>
-<% renderGroup('Opportunities', grouped.opportunities, '/jobs'); %>
-<% renderGroup('Members', grouped.members, '/directory'); %>
+<% renderGroup('Events', grouped.events, 'event'); %>
+<% renderGroup('Stories', grouped.stories, 'story'); %>
+<% renderGroup('Opportunities', grouped.opportunities, 'opportunity'); %>
+<% renderGroup('Members', grouped.members, 'member'); %>

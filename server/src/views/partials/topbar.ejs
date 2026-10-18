@@ -9,14 +9,14 @@
       <span>HOSA</span>
     </a>
 
-    <nav class="topbar__nav" id="topbar-nav" aria-label="Primary">
-      <a href="/">Home</a>
-      <a href="/directory">Directory</a>
-      <a href="/events">Events</a>
-      <a href="/stories">Stories</a>
-      <a href="/jobs">Jobs</a>
-      <a href="/mentorship">Mentorship</a>
-      <a href="/about">About</a>
+        <nav class="topbar__nav" id="topbar-nav" aria-label="Primary">
+      <a href="/" class="<%= currentPath === '/' ? 'active' : '' %>" <%= currentPath === '/' ? 'aria-current="page"' : '' %>>Home</a>
+      <a href="/directory" class="<%= currentPath.startsWith('/directory') ? 'active' : '' %>" <%= currentPath.startsWith('/directory') ? 'aria-current="page"' : '' %>>Directory</a>
+      <a href="/events" class="<%= currentPath.startsWith('/events') ? 'active' : '' %>" <%= currentPath.startsWith('/events') ? 'aria-current="page"' : '' %>>Events</a>
+      <a href="/stories" class="<%= currentPath.startsWith('/stories') ? 'active' : '' %>" <%= currentPath.startsWith('/stories') ? 'aria-current="page"' : '' %>>Stories</a>
+      <a href="/jobs" class="<%= currentPath.startsWith('/jobs') ? 'active' : '' %>" <%= currentPath.startsWith('/jobs') ? 'aria-current="page"' : '' %>>Jobs</a>
+      <a href="/mentorship" class="<%= currentPath.startsWith('/mentorship') ? 'active' : '' %>" <%= currentPath.startsWith('/mentorship') ? 'aria-current="page"' : '' %>>Mentorship</a>
+      <a href="/about" class="<%= currentPath.startsWith('/about') ? 'active' : '' %>" <%= currentPath.startsWith('/about') ? 'aria-current="page"' : '' %>>About</a>
     </nav>
 
     <div class="topbar__actions">

@@ -13,7 +13,8 @@
     "migrate": "node db/migrate.js",
     "import:json": "node db/import-json.js",
     "test": "vitest run",
-    "test:integration": "vitest run --config vitest.integration.config.js"
+    "test:integration": "vitest run --config vitest.integration.config.js",
+    "kill": "powershell -Command \"Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force }\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
@@ -33,6 +34,7 @@
     "pg": "^8.13.1",
     "pino": "^9.5.0",
     "pino-http": "^10.3.0",
+    "resend": "^6.34.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {

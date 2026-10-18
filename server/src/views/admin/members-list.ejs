@@ -1,77 +1,112 @@
-<h1>Members</h1>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); flex-wrap: wrap; gap: var(--space-3);">
+  <h1 style="margin: 0;">Members</h1>
+  <a href="/admin" class="btn btn--ghost">← Back to admin</a>
+</div>
 
-<form method="get" action="/admin/members">
-  <fieldset>
-    <legend>Filter</legend>
+<!-- Filter Card -->
+<div class="card" style="margin-bottom: var(--space-5);">
+  <form method="get" action="/admin/members" style="display: flex; gap: var(--space-3); align-items: flex-end; flex-wrap: wrap;">
+    
+    <div class="field" style="margin: 0; flex-grow: 1; min-width: 200px;">
+      <label for="q">Search</label>
+      <input id="q" name="q" type="search" value="<%= filters.q %>" placeholder="Email or name">
+    </div>
 
-    <label for="q">Search</label>
-    <input id="q" name="q" type="search" value="<%= filters.q %>" placeholder="email or name">
+    <div class="field" style="margin: 0;">
+      <label for="status">Status</label>
+      <select id="status" name="status">
+        <option value="" <%= !filters.status ? 'selected' : '' %>>Any</option>
+        <option value="active" <%= filters.status === 'active' ? 'selected' : '' %>>Active</option>
+        <option value="suspended" <%= filters.status === 'suspended' ? 'selected' : '' %>>Suspended</option>
+        <option value="deactivated" <%= filters.status === 'deactivated' ? 'selected' : '' %>>Deactivated</option>
+      </select>
+    </div>
 
-    <label for="status">Status</label>
-    <select id="status" name="status">
-      <option value=""       <%= !filters.status ? 'selected' : '' %>>Any</option>
-      <option value="active"      <%= filters.status === 'active' ? 'selected' : '' %>>Active</option>
-      <option value="suspended"   <%= filters.status === 'suspended' ? 'selected' : '' %>>Suspended</option>
-      <option value="deactivated" <%= filters.status === 'deactivated' ? 'selected' : '' %>>Deactivated</option>
-    </select>
+    <div class="field" style="margin: 0;">
+      <label for="role">Role</label>
+      <select id="role" name="role">
+        <option value="" <%= !filters.role ? 'selected' : '' %>>Any</option>
+        <option value="member" <%= filters.role === 'member' ? 'selected' : '' %>>Member</option>
+        <option value="mentor" <%= filters.role === 'mentor' ? 'selected' : '' %>>Mentor</option>
+        <option value="moderator" <%= filters.role === 'moderator' ? 'selected' : '' %>>Moderator</option>
+        <option value="admin" <%= filters.role === 'admin' ? 'selected' : '' %>>Admin</option>
+      </select>
+    </div>
 
-    <label for="role">Role</label>
-    <select id="role" name="role">
-      <option value=""           <%= !filters.role ? 'selected' : '' %>>Any</option>
-      <option value="member"     <%= filters.role === 'member' ? 'selected' : '' %>>Member</option>
-      <option value="mentor"     <%= filters.role === 'mentor' ? 'selected' : '' %>>Mentor</option>
-      <option value="moderator"  <%= filters.role === 'moderator' ? 'selected' : '' %>>Moderator</option>
-      <option value="admin"      <%= filters.role === 'admin' ? 'selected' : '' %>>Admin</option>
-    </select>
+    <div class="field" style="margin: 0;">
+      <label for="verified">Verified</label>
+      <select id="verified" name="verified">
+        <option value="" <%= !filters.verified ? 'selected' : '' %>>Any</option>
+        <option value="yes" <%= filters.verified === 'yes' ? 'selected' : '' %>>Yes</option>
+        <option value="no" <%= filters.verified === 'no' ? 'selected' : '' %>>No</option>
+      </select>
+    </div>
 
-    <label for="verified">Verified</label>
-    <select id="verified" name="verified">
-      <option value=""    <%= !filters.verified ? 'selected' : '' %>>Any</option>
-      <option value="yes" <%= filters.verified === 'yes' ? 'selected' : '' %>>Verified</option>
-      <option value="no"  <%= filters.verified === 'no'  ? 'selected' : '' %>>Not verified</option>
-    </select>
+    <button type="submit" class="btn btn--primary" style="height: 44px;">Filter</button>
+    <a href="/admin/members" class="btn btn--ghost" style="height: 44px; line-height: 44px;">Reset</a>
+  </form>
+</div>
 
-    <p><button type="submit">Apply filters</button>
-       <a href="/admin/members">Reset</a></p>
-  </fieldset>
-</form>
+<!-- Results -->
+<p style="color: var(--muted); margin-bottom: var(--space-3);">
+  Showing <strong><%= result.total %></strong> member<%= result.total === 1 ? '' : 's' %> — page <%= result.page %> of <%= result.pages %>.
+</p>
 
-<p><%= result.total %> member<%= result.total === 1 ? '' : 's' %> — page <%= result.page %> of <%= result.pages %>.</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Email</th>
-      <th>Name</th>
-      <th>Class</th>
-      <th>Status</th>
-      <th>Roles</th>
-      <th>Verified</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <% result.rows.forEach((m) => { %>
+<div class="card" style="padding: 0; overflow-x: auto;">
+  <table class="data-table">
+    <thead>
       <tr>
-        <td><%= m.email %></td>
-        <td><%= m.display_name || `${m.first_name} ${m.last_name}` %></td>
-        <td><%= m.graduation_year ?? '—' %></td>
-        <td><%= m.status %></td>
-        <td><%= m.roles.join(', ') || '—' %></td>
-        <td><%= m.verified_at ? '✓' : '—' %></td>
-        <td><a href="/admin/members/<%= m.id %>">Open</a></td>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Class</th>
+        <th>Status</th>
+        <th>Roles</th>
+        <th>Verified</th>
+        <th></th>
       </tr>
-    <% }) %>
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      <% result.rows.forEach((m) => { %>
+        <tr>
+          <td data-label="Name">
+            <strong><%= m.display_name || `${m.first_name} ${m.last_name}` %></strong>
+          </td>
+          <td data-label="Email"><%= m.email %></td>
+          <td data-label="Class"><%= m.graduation_year ?? '—' %></td>
+          
+          <td data-label="Status">
+            <% if (m.status === 'active') { %><span class="badge badge--success">Active</span>
+            <% } else if (m.status === 'suspended') { %><span class="badge badge--danger">Suspended</span>
+            <% } else { %><span class="badge badge--muted"><%= m.status %></span><% } %>
+          </td>
+          
+          <td data-label="Roles">
+            <%= m.roles.join(', ') || '—' %>
+          </td>
+          
+          <td data-label="Verified">
+            <% if (m.verified_at) { %><span class="badge badge--success">✓ Yes</span>
+            <% } else { %><span class="badge badge--warning">No</span><% } %>
+          </td>
+          
+          <td style="text-align: right;">
+            <a href="/admin/members/<%= m.id %>" class="btn btn--ghost btn--sm">Manage</a>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
 
+<!-- Pagination -->
 <% if (result.pages > 1) { %>
-  <nav aria-label="Pagination">
+  <div class="pagination">
     <% if (result.page > 1) { %>
-      <a href="?<%= new URLSearchParams({ ...filters, page: String(result.page - 1) }).toString() %>">← Previous</a>
+      <a href="?<%= new URLSearchParams({ ...filters, page: result.page - 1 }).toString() %>">← Prev</a>
     <% } %>
+    <span class="active"><%= result.page %> / <%= result.pages %></span>
     <% if (result.page < result.pages) { %>
-      <a href="?<%= new URLSearchParams({ ...filters, page: String(result.page + 1) }).toString() %>">Next →</a>
+      <a href="?<%= new URLSearchParams({ ...filters, page: result.page + 1 }).toString() %>">Next →</a>
     <% } %>
-  </nav>
+  </div>
 <% } %>

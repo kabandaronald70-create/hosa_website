@@ -1,0 +1,57 @@
+<header style="margin-bottom: var(--space-6); display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: var(--space-4);">
+  <div>
+    <h1>Jobs & Internships</h1>
+    <p>Opportunities from the HOSA network.</p>
+  </div>
+  <a href="/dashboard/opportunities/new" class="btn btn--accent">Post an opportunity</a>
+</header>
+
+<div class="alert alert--info">
+  <strong>Safety note:</strong> HOSA does not guarantee listings. Never pay to apply.
+</div>
+
+<% if (opportunities.length === 0) { %>
+  <div class="empty-state">
+    <p class="empty-state__title">No opportunities published yet.</p>
+  </div>
+<% } else { %>
+  <div class="stack">
+    <% opportunities.forEach((o) => { %>
+      <article class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: start; gap: var(--space-3); flex-wrap: wrap;">
+            <div>
+              <h2 style="font-size: var(--text-lg); margin: 0;"><%= o.title %></h2>
+              <p style="color: var(--muted); margin: var(--space-1) 0 0; font-size: var(--text-sm);">
+                <%= o.employer || o.organization || '' %>
+                <% if (o.location) { %> · <%= o.location %><% } %>
+              </p>
+            </div>
+            <% if (o.type_label) { %>
+              <span class="badge badge--gold"><%= o.type_label %></span>
+            <% } %>
+          </div>
+          
+          <p style="margin: var(--space-3) 0; font-size: var(--text-sm);"><%= o.description %></p>
+          
+          <% if (o.deadline) { %>
+            <p style="color: var(--warning); font-size: var(--text-sm); margin: 0;">
+              <strong>Deadline:</strong> <%= new Date(o.deadline).toLocaleDateString('en-GB') %>
+            </p>
+          <% } %>
+        </div>
+
+        <!-- Actions -->
+        <div style="margin-top: var(--space-4); display: flex; gap: var(--space-2);">
+          <% if (o.application_url) { %>
+            <a href="<%= o.application_url %>" class="btn btn--primary" target="_blank" rel="noopener" style="flex-grow: 1;">Apply →</a>
+          <% } %>
+          
+          <% if (currentUser) { %>
+            <button type="button" class="btn btn--ghost" data-save="opportunity" data-id="<%= o.id %>" data-action="save" style="padding-inline: var(--space-3);" title="Save Job">☆</button>
+          <% } %>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+<% } %>

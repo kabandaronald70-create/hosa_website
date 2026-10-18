@@ -246,17 +246,26 @@
   border-left: 3px solid transparent;
   transition:
     background-color var(--motion-fast),
-    border-color var(--motion-fast);
+    border-color var(--motion-fast),
+    color var(--motion-fast);
 }
 
 .sidebar__link:hover {
   background: var(--gold-100);
 }
 
+/* This makes the active link stand out more */
 .sidebar__link[aria-current="page"] {
-  background: var(--gold-100);
+  background: var(--green);
+  color: var(--white);
   border-left-color: var(--gold);
   font-weight: 600;
+}
+
+/* Indent links inside the Admin group */
+.sidebar__group--admin .sidebar__link {
+  padding-left: var(--space-5);
+  font-size: 0.85rem;
 }
 
 .sidebar__link-icon {

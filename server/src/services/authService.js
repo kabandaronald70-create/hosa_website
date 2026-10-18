@@ -5,6 +5,7 @@ import {
   getProfileForUser,
   touchLastLogin,
 } from "../models/userModel.js";
+import { query } from "../config/db.js";
 import {
   hashPassword,
   verifyPassword,
@@ -84,4 +85,11 @@ export async function getSessionUser(userId) {
   const profile = await getProfileForUser(userId);
   const roles = await getRolesForUser(userId);
   return { profile, roles };
+}
+
+export async function markUserVerified(userId) {
+  await query(
+    `UPDATE users SET status = 'active', email_verified_at = now() WHERE id = $1`,
+    [userId],
+  );
 }

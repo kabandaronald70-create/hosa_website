@@ -113,3 +113,10 @@ export async function createMember({
 export async function touchLastLogin(userId) {
   await query(`UPDATE users SET last_login_at = now() WHERE id = $1`, [userId]);
 }
+
+export async function updateUserPassword(userId, newPasswordHash) {
+  await query(`UPDATE users SET password_hash = $1 WHERE id = $2`, [
+    newPasswordHash,
+    userId,
+  ]);
+}
