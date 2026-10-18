@@ -1,0 +1,82 @@
+<% const path = typeof currentPath !== 'undefined' ? currentPath : ''; %>
+<% const roles = typeof currentUserRoles !== 'undefined' ? currentUserRoles : []; %>
+<% const isAdmin = roles.includes('admin') || roles.includes('super_admin'); %>
+<% const isMod = roles.includes('moderator'); %>
+<% const isSuper = roles.includes('super_admin'); %>
+
+<aside class="sidebar">
+  <div class="sidebar__user">
+    <% if (currentProfile && currentProfile.avatar_path) { %>
+      <img src="/dashboard/avatar/me" alt="" class="sidebar__avatar" style="object-fit:cover;padding:0;">
+    <% } else { %>
+      <div class="sidebar__avatar">
+        <%= (currentProfile?.first_name || currentUser.email)[0].toUpperCase() %>
+      </div>
+    <% } %>
+    <div class="sidebar__user-info">
+      <p class="sidebar__user-name"><%= currentProfile?.display_name || currentProfile?.first_name || currentUser.email %></p>
+      <p class="sidebar__user-meta">Class of <%= currentProfile?.graduation_year || '—' %></p>
+    </div>
+  </div>
+
+  <div class="sidebar__group">
+    <p class="sidebar__group-title">My HOSA</p>
+    <a href="/dashboard" class="sidebar__link" <%= path === '/dashboard' ? 'aria-current="page"' : '' %>>
+      <span class="sidebar__link-icon">🏠</span> Dashboard
+    </a>
+    <a href="/dashboard/profile" class="sidebar__link" <%= path === '/dashboard/profile' ? 'aria-current="page"' : '' %>>
+      <span class="sidebar__link-icon">👤</span> My Profile
+    </a>
+    <a href="/dashboard/saved" class="sidebar__link" <%= path === '/dashboard/saved' ? 'aria-current="page"' : '' %>>
+      <span class="sidebar__link-icon">⭐</span> Saved
+    </a>
+    <a href="/dashboard/mentorship/requests" class="sidebar__link" <%= path.startsWith('/dashboard/mentorship') ? 'aria-current="page"' : '' %>>
+      <span class="sidebar__link-icon">🤝</span> Mentorship
+    </a>
+    <a href="/dashboard/submissions" class="sidebar__link" <%= path === '/dashboard/submissions' ? 'aria-current="page"' : '' %>>
+      <span class="sidebar__link-icon">📝</span> My Submissions
+    </a>
+    <a href="/notifications" class="sidebar__link" <%= path === '/notifications' ? 'aria-current="page"' : '' %>>
+      <span class="sidebar__link-icon">🔔</span> Notifications
+    </a>
+    <a href="/dashboard/password" class="sidebar__link" <%= path === '/dashboard/password' ? 'aria-current="page"' : '' %>>
+      <span class="sidebar__link-icon">⚙</span> Account & Privacy
+    </a>
+  </div>
+
+  <% if (isAdmin || isMod) { %>
+    <hr class="sidebar__divider">
+    <div class="sidebar__group">
+      <p class="sidebar__group-title">Admin</p>
+      <a href="/admin" class="sidebar__link" <%= path === '/admin' ? 'aria-current="page"' : '' %>>
+        <span class="sidebar__link-icon">📊</span> Admin Dashboard
+      </a>
+      <a href="/admin/moderation" class="sidebar__link" <%= path === '/admin/moderation' ? 'aria-current="page"' : '' %>>
+        <span class="sidebar__link-icon">✅</span> Moderation Queue
+      </a>
+      <a href="/admin/members" class="sidebar__link" <%= path === '/admin/members' ? 'aria-current="page"' : '' %>>
+        <span class="sidebar__link-icon">👥</span> Members & Verification
+      </a>
+      <a href="/admin/events" class="sidebar__link" <%= path === '/admin/events' ? 'aria-current="page"' : '' %>>
+        <span class="sidebar__link-icon">📅</span> Manage Events
+      </a>
+    </div>
+  <% } %>
+
+  <% if (isSuper) { %>
+    <hr class="sidebar__divider">
+    <div class="sidebar__group">
+      <p class="sidebar__group-title">Super Admin</p>
+      <a href="/admin/audit" class="sidebar__link" <%= path === '/admin/audit' ? 'aria-current="page"' : '' %>>
+        <span class="sidebar__link-icon">📜</span> Audit Log
+      </a>
+    </div>
+  <% } %>
+
+  <form method="post" action="/logout">
+    <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+    <button type="submit" class="sidebar__logout">
+      <span class="sidebar__link-icon">↩</span> Log out
+    </button>
+  </form>
+</aside>

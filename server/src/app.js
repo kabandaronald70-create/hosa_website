@@ -6,6 +6,7 @@ import path from "node:path";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import expressLayouts from "express-ejs-layouts";
+import { setCurrentPath } from "./middleware/setCurrentPath.js";
 
 import { env } from "./config/env.js";
 import { buildSessionMiddleware } from "./config/session.js";
@@ -89,6 +90,7 @@ export function createApp() {
   app.use(requestLogger);
 
   app.use(currentUser);
+  app.use(setCurrentPath);
   app.use(flash);
   app.use(csrf);
 

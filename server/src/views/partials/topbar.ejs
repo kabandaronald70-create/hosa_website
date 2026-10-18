@@ -1,0 +1,47 @@
+<header class="topbar">
+  <div class="topbar__inner">
+    <button type="button" class="topbar__menu-toggle" aria-label="Toggle navigation" aria-expanded="false" id="topbar-menu-toggle">
+      ☰
+    </button>
+
+    <a href="/" class="topbar__brand">
+      <img src="/images/web-app-manifest-192x192.png" alt="">
+      <span>HOSA</span>
+    </a>
+
+    <nav class="topbar__nav" id="topbar-nav" aria-label="Primary">
+      <a href="/">Home</a>
+      <a href="/directory">Directory</a>
+      <a href="/events">Events</a>
+      <a href="/stories">Stories</a>
+      <a href="/jobs">Jobs</a>
+      <a href="/mentorship">Mentorship</a>
+      <a href="/about">About</a>
+    </nav>
+
+    <div class="topbar__actions">
+      <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
+        <a href="/notifications" class="notif-link" aria-label="Notifications">
+          🔔
+          <% if (typeof unreadNotifications !== 'undefined' && unreadNotifications > 0) { %>
+            <span class="notif-badge"><%= unreadNotifications %></span>
+          <% } %>
+        </a>
+
+        <a href="/dashboard" class="topbar__user">
+          <% if (currentProfile && currentProfile.avatar_path) { %>
+            <img src="/dashboard/avatar/me" alt="" class="topbar__user-avatar" style="object-fit:cover;padding:0;">
+          <% } else { %>
+            <span class="topbar__user-avatar">
+              <%= (currentProfile?.first_name || currentUser.email)[0].toUpperCase() %>
+            </span>
+          <% } %>
+          <span><%= currentProfile?.first_name || currentUser.email %></span>
+        </a>
+      <% } else { %>
+        <a href="/login" class="btn btn--ghost" style="color: var(--ivory); border-color: var(--ivory);">Log in</a>
+        <a href="/register" class="btn btn--accent">Join HOSA</a>
+      <% } %>
+    </div>
+  </div>
+</header>

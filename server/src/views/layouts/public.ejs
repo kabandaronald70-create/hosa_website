@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= typeof title !== 'undefined' ? title : 'HOSA' %></title>
+  <link rel="preload" href="/fonts/manrope-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/manrope-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/fraunces-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/styles/base.css">
+  <link rel="stylesheet" href="/styles/components.css">
+  <link rel="stylesheet" href="/styles/layouts.css">
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  <%- include('../partials/topbar') %>
+
+  <main id="main-content" class="container" style="padding-top: var(--space-6); min-height: 60vh;">
+    <% if (typeof flash !== 'undefined' && flash.success) { %>
+      <div class="alert alert--success" role="status" aria-live="polite"><%= flash.success %></div>
+    <% } %>
+    <% if (typeof flash !== 'undefined' && flash.error) { %>
+      <div class="alert alert--error" role="alert"><%= flash.error %></div>
+    <% } %>
+
+    <%- body %>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script>
+    (function () {
+      const toggle = document.getElementById('topbar-menu-toggle');
+      const nav = document.getElementById('topbar-nav');
+      if (toggle && nav) {
+        toggle.addEventListener('click', () => {
+          const open = nav.classList.toggle('is-open');
+          toggle.setAttribute('aria-expanded', String(open));
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

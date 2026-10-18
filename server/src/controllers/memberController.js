@@ -23,6 +23,7 @@ export async function showDashboard(req, res, next) {
       completion,
       rsvps,
       activeMentorship,
+      layout: "layouts/app",
     });
   } catch (err) {
     next(err);
