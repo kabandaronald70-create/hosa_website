@@ -3,17 +3,55 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="<%= csrfToken %>">
   <title><%= typeof title !== 'undefined' ? title : 'HOSA' %></title>
+  
   <link rel="preload" href="/fonts/manrope-400.ttf" as="font" type="font/ttf" crossorigin>
-<link rel="preload" href="/fonts/manrope-600.ttf" as="font" type="font/ttf" crossorigin>
-<link rel="preload" href="/fonts/fraunces-600.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="/fonts/manrope-600.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="/fonts/fraunces-600.ttf" as="font" type="font/ttf" crossorigin>
+  
   <link rel="stylesheet" href="/styles/base.css">
   <link rel="stylesheet" href="/styles/components.css">
   <link rel="stylesheet" href="/styles/layouts.css">
 </head>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const btnTopnav = document.getElementById('btn-topnav');
+    const btnSidebar = document.getElementById('btn-sidebar');
+    const topnav = document.getElementById('topbar-nav');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    if (btnTopnav && topnav) {
+      btnTopnav.addEventListener('click', () => {
+        topnav.classList.toggle('is-open');
+        if (sidebar) sidebar.classList.remove('is-open');
+      });
+    }
+
+    if (btnSidebar && sidebar) {
+      btnSidebar.addEventListener('click', () => {
+        sidebar.classList.add('is-open');
+        if (overlay) overlay.classList.add('is-visible');
+        if (topnav) topnav.classList.remove('is-open');
+      });
+    }
+
+    if (overlay) {
+      overlay.addEventListener('click', () => {
+        sidebar.classList.remove('is-open');
+        overlay.classList.remove('is-visible');
+      });
+    }
+  });
+</script>
 <body>
   <a href="#main-content" class="skip-link">Skip to main content</a>
+  
   <%- include('../partials/topbar') %>
+
+  <!-- Mobile Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
   <div class="app-layout">
     <%- include('../partials/sidebar') %>
@@ -32,16 +70,36 @@
 
   <script>
     (function () {
-      const toggle = document.getElementById('topbar-menu-toggle');
+      // 1. Mobile Top Nav Toggle (Public)
+      const menuToggle = document.getElementById('topbar-menu-toggle');
       const nav = document.getElementById('topbar-nav');
-      if (toggle && nav) {
-        toggle.addEventListener('click', () => {
+      if (menuToggle && nav) {
+        menuToggle.addEventListener('click', () => {
           const open = nav.classList.toggle('is-open');
-          toggle.setAttribute('aria-expanded', String(open));
+          menuToggle.setAttribute('aria-expanded', String(open));
+        });
+      }
+
+      // 2. Mobile Sidebar Toggle (App)
+      const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+
+      if (sidebarToggleBtn && sidebar && overlay) {
+        sidebarToggleBtn.addEventListener('click', () => {
+          sidebar.classList.toggle('is-open');
+          overlay.classList.toggle('is-visible');
+        });
+
+        // Close sidebar when clicking the dark overlay
+        overlay.addEventListener('click', () => {
+          sidebar.classList.remove('is-open');
+          overlay.classList.remove('is-visible');
         });
       }
     })();
   </script>
-    <script src="/js/public.js"></script>
+  
+  <script src="/js/public.js"></script>
 </body>
 </html>

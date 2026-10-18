@@ -84,6 +84,9 @@ export function createApp() {
   app.use(expressLayouts);
   app.set("layout", "layouts/base");
 
+  // Make env available to all EJS views
+  app.locals.env = env;
+
   // Mount all routes
   app.use(routes);
 

@@ -1,0 +1,113 @@
+<header style="margin-bottom: var(--space-6);">
+  <h1>HOSA Archive</h1>
+  <p>A look back at our past events, stories, and milestones.</p>
+</header>
+
+<div style="display: grid; grid-template-columns: 1fr; gap: var(--space-6);">
+  
+  <!-- Past Events Section -->
+  <section>
+    <h2 style="font-size: var(--text-xl); border-bottom: 2px solid var(--line); padding-bottom: var(--space-2); margin-bottom: var(--space-4);">
+      Past Events
+    </h2>
+    
+    <% if (pastEvents.length === 0) { %>
+      <div class="empty-state">
+        <p class="empty-state__title">No past events.</p>
+        <p>The archive will populate as events conclude.</p>
+      </div>
+    <% } else { %>
+      <div class="stack">
+        <% pastEvents.forEach((e) => { %>
+          <a href="/events/<%= e.slug %>" style="text-decoration: none; color: inherit;">
+            <article class="card" style="display: grid; grid-template-columns: auto 1fr; gap: var(--space-4);">
+              <div style="background: var(--ivory); border: 1px solid var(--line); color: var(--muted); border-radius: var(--radius-sm); padding: var(--space-3); text-align: center; min-width: 80px;">
+                <div style="font-size: var(--text-lg); font-weight: 700; line-height: 1;"><%= new Date(e.starts_at).getDate() %></div>
+                <div style="font-size: var(--text-xs); text-transform: uppercase;"><%= new Date(e.starts_at).toLocaleString('en', { month: 'short' }) %></div>
+                <div style="font-size: var(--text-xs);"><%= new Date(e.starts_at).getFullYear() %></div>
+              </div>
+              <div>
+                <h3 style="margin: 0 0 var(--space-1); font-size: var(--text-lg);"><%= e.title %></h3>
+                <p style="color: var(--muted); margin: 0; font-size: var(--text-sm);">
+                  <%= e.venue || 'Venue TBD' %>
+                </p>
+                <p style="margin: var(--space-2) 0 0; color: var(--muted); font-size: var(--text-sm);">
+                  <%= e.description ? e.description.slice(0, 120) + '…' : '' %>
+                </p>
+              </div>
+            </article>
+          </a>
+        <% }) %>
+      </div>
+    <% } %>
+  </section>
+
+  <!-- Older Stories Section -->
+  <section>
+    <h2 style="font-size: var(--text-xl); border-bottom: 2px solid var(--line); padding-bottom: var(--space-2); margin-bottom: var(--space-4);">
+      Older Stories
+    </h2>
+    
+    <% if (stories.length === 0) { %>
+      <div class="empty-state">
+        <p class="empty-state__title">No archived stories.</p>
+      </div>
+    <% } else { %>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-4);">
+        <% stories.forEach((s) => { %>
+          <a href="/stories/<%= s.slug %>" style="text-decoration: none; color: inherit;">
+            <article class="card" style="height: 100%;">
+              <% if (s.category) { %>
+                <span class="badge badge--muted" style="margin-bottom: var(--space-2);"><%= s.category %></span>
+              <% } %>
+              <h3 style="font-size: var(--text-lg); margin: 0 0 var(--space-2);"><%= s.title %></h3>
+              <% if (s.excerpt) { %>
+                <p style="color: var(--muted); font-size: var(--text-sm);"><%= s.excerpt %></p>
+              <% } %>
+            </article>
+          </a>
+        <% }) %>
+      </div>
+    <% } %>
+  </section>
+
+  <!-- Document Library Section -->
+  <section>
+    <h2 style="font-size: var(--text-xl); border-bottom: 2px solid var(--line); padding-bottom: var(--space-2); margin-bottom: var(--space-4);">
+      HOSA Documents & Resources
+    </h2>
+    
+    <% if (!currentUser) { %>
+      <!-- Locked for guests -->
+      <div class="card" style="text-align: center; background: var(--ivory); padding: var(--space-8) var(--space-4); border: 1px dashed var(--line);">
+        <p style="font-size: 32px; margin: 0 0 var(--space-2);">🔒</p>
+        <p style="font-size: var(--text-lg); font-weight: 600; margin: 0 0 var(--space-2);">Member Only</p>
+        <p style="color: var(--muted); margin-bottom: var(--space-4);">
+          Log in to view and download official HOSA documents, newsletters, and reports.
+        </p>
+        <a href="/login" class="btn btn--primary">Log In</a>
+      </div>
+    <% } else if (!documents || documents.length === 0) { %>
+      <div class="empty-state">
+        <p class="empty-state__title">No documents uploaded yet.</p>
+      </div>
+    <% } else { %>
+      <!-- Signed in: Show documents -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4);">
+        <% documents.forEach((doc) => { %>
+          <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <h3 style="font-size: var(--text-base); margin: 0 0 var(--space-1);"><%= doc.title %></h3>
+              <p style="font-size: var(--text-xs); color: var(--muted); margin: 0 0 var(--space-2);"><%= doc.file_name %></p>
+              <% if (doc.description) { %>
+                <p style="font-size: var(--text-sm); color: var(--ink);"><%= doc.description %></p>
+              <% } %>
+            </div>
+            <a href="<%= doc.file_path %>" download class="btn btn--primary btn--sm" style="margin-top: var(--space-3); width: 100%;">Download</a>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </section>
+
+</div>

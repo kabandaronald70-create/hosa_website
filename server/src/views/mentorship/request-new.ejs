@@ -1,14 +1,17 @@
-<h1>Request mentorship</h1>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); flex-wrap: wrap; gap: var(--space-3);">
+  <h1 style="margin: 0;">Request mentorship</h1>
+  <a href="/directory" class="btn btn--ghost">← Back to directory</a>
+</div>
 
-<p>
+<p style="font-size: var(--text-lg); color: var(--muted); margin-bottom: var(--space-5);">
   You're requesting mentorship from
   <strong><%= mentor.display_name || mentor.first_name + ' ' + mentor.last_name %></strong>
   <% if (mentor.mentor_field) { %>in <em><%= mentor.mentor_field %></em><% } %>.
 </p>
 
 <% if (Object.keys(fieldErrors).length > 0) { %>
-  <div class="errors" role="alert">
-    <ul>
+  <div class="alert alert--error" role="alert">
+    <ul style="margin: var(--space-2) 0 0 var(--space-4); padding: 0;">
       <% Object.entries(fieldErrors).forEach(([k, msg]) => { %>
         <li><%= k.replace(/_/g, ' ') %>: <%= msg %></li>
       <% }) %>
@@ -16,20 +19,25 @@
   </div>
 <% } %>
 
-<form method="post" action="/dashboard/mentorship/requests/new" novalidate>
-  <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
-  <input type="hidden" name="mentor_id" value="<%= mentor.user_id %>">
+<div class="card" style="max-width: 600px;">
+  <form method="post" action="/dashboard/mentorship/requests/new" novalidate>
+    <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+    <input type="hidden" name="mentor_id" value="<%= mentor.user_id %>">
 
-  <label for="field_of_interest">What area are you seeking mentorship in?</label>
-  <input id="field_of_interest" name="field_of_interest" type="text" maxlength="200" required
-         value="<%= values.field_of_interest || '' %>">
-  <% if (fieldErrors.field_of_interest) { %><p class="field-error"><%= fieldErrors.field_of_interest %></p><% } %>
+    <div class="field">
+      <label for="field_of_interest">What area are you seeking mentorship in?</label>
+      <input id="field_of_interest" name="field_of_interest" type="text" maxlength="200" required value="<%= values.field_of_interest || '' %>">
+      <% if (fieldErrors.field_of_interest) { %><span class="field-error"><%= fieldErrors.field_of_interest %></span><% } %>
+    </div>
 
-  <label for="goals">What are your goals? (at least 20 characters)</label>
-  <textarea id="goals" name="goals" rows="6" maxlength="2000" required><%= values.goals || '' %></textarea>
-  <% if (fieldErrors.goals) { %><p class="field-error"><%= fieldErrors.goals %></p><% } %>
+    <div class="field">
+      <label for="goals">What are your goals? (at least 20 characters)</label>
+      <textarea id="goals" name="goals" rows="6" maxlength="2000" required><%= values.goals || '' %></textarea>
+      <% if (fieldErrors.goals) { %><span class="field-error"><%= fieldErrors.goals %></span><% } %>
+    </div>
 
-  <p><button type="submit">Send request</button></p>
-</form>
-
-<p><a href="/directory">← Back to directory</a></p>
+    <div style="margin-top: var(--space-5);">
+      <button type="submit" class="btn btn--primary" style="width: 100%;">Send request</button>
+    </div>
+  </form>
+</div>

@@ -7,6 +7,14 @@
     We've encountered an error. Our team has been notified. Please try again in
     a moment.
   </p>
+
+  <!-- Debug Info (Only visible in Development) -->
+  <% if (typeof errorMessage !== "undefined" && errorMessage) { %>
+    <div class="alert alert--error" style="text-align: left; margin-top: var(--space-5); font-family: monospace; font-size: var(--text-sm); max-width: 600px; margin-inline: auto; overflow-wrap: break-word;">
+      <strong>Debug Info:</strong> <%= errorMessage %>
+    </div>
+  <% } %>
+
   <p style="margin-top: var(--space-6)">
     <a href="/" class="btn btn--primary">Go back home</a>
   </p>

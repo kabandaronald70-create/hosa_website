@@ -3,28 +3,36 @@
   <p>Find and connect with former students of Highway Secondary School.</p>
 </header>
 
-<div style="display: grid; grid-template-columns: 260px 1fr; gap: var(--space-6);">
-  <aside class="card" style="align-self: start; position: sticky; top: calc(var(--topbar-h) + var(--space-4));">
-    <h2 style="font-size: var(--text-lg);">Filters</h2>
+<div class="directory-layout">
+  <aside class="card filter-sidebar" style="align-self: start;">
+    <h2 style="font-size: var(--text-lg); margin-bottom: var(--space-3);">Filters</h2>
+    
     <form method="GET" action="/directory">
-      <div class="field">
-        <label for="q">Search by name</label>
-        <input type="search" id="q" name="q" value="<%= filters.q %>" placeholder="e.g. Sarah">
+      <!-- 2-column grid for filters on mobile, 1-column on desktop -->
+      <div class="filter-grid">
+        <div class="field" style="margin-bottom: 0;">
+          <label for="q">Search by name</label>
+          <input type="search" id="q" name="q" value="<%= filters.q %>" placeholder="e.g. Sarah">
+        </div>
+        <div class="field" style="margin-bottom: 0;">
+          <label for="district">District</label>
+          <input type="text" id="district" name="district" value="<%= filters.district %>" placeholder="e.g. Kampala">
+        </div>
+        <div class="field" style="margin-bottom: 0;">
+          <label for="profession">Profession</label>
+          <input type="text" id="profession" name="profession" value="<%= filters.profession %>" placeholder="e.g. Engineer">
+        </div>
+        <div class="field" style="flex-direction: row; align-items: center; gap: var(--space-2); margin-bottom: 0; padding-top: var(--space-4);">
+          <input type="checkbox" id="mentor" name="mentor" value="1" <%= filters.mentorOnly ? 'checked' : '' %> style="min-height: auto;">
+          <label for="mentor" style="margin: 0; font-weight: normal;">Mentors only</label>
+        </div>
       </div>
-      <div class="field">
-        <label for="district">District</label>
-        <input type="text" id="district" name="district" value="<%= filters.district %>" placeholder="e.g. Kampala">
+
+      <!-- Buttons span across both columns on mobile -->
+      <div class="filter-actions">
+        <button type="submit" class="btn btn--primary" style="width: 100%;">Apply</button>
+        <a href="/directory" class="btn btn--ghost" style="width: 100%; text-align: center;">Reset</a>
       </div>
-      <div class="field">
-        <label for="profession">Profession</label>
-        <input type="text" id="profession" name="profession" value="<%= filters.profession %>" placeholder="e.g. Engineer">
-      </div>
-      <div class="field" style="flex-direction: row; align-items: center; gap: var(--space-2);">
-        <input type="checkbox" id="mentor" name="mentor" value="1" <%= filters.mentorOnly ? 'checked' : '' %>>
-        <label for="mentor" style="margin: 0;">Mentors only</label>
-      </div>
-      <button type="submit" class="btn btn--primary" style="width: 100%;">Apply filters</button>
-      <a href="/directory" class="btn btn--ghost" style="width: 100%; margin-top: var(--space-2); text-align: center;">Reset</a>
     </form>
   </aside>
 
@@ -97,9 +105,44 @@
 </div>
 
 <style>
-  @media (max-width: 900px) {
-    div[style*="grid-template-columns: 260px"] {
-      grid-template-columns: 1fr !important;
+  /* Base layout: 2 columns on desktop, 1 column on mobile */
+  .directory-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  /* Filter grid: stacked on desktop, 2 columns on mobile */
+  .filter-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  /* Filter actions: stacked on desktop, 2 columns on mobile */
+  .filter-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+  }
+
+  @media (min-width: 900px) {
+    .directory-layout {
+      grid-template-columns: 260px 1fr;
+    }
+    .filter-sidebar {
+      position: sticky;
+      top: calc(var(--topbar-h) + var(--space-4));
+    }
+  }
+
+  @media (max-width: 899px) {
+    .filter-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .filter-actions {
+      grid-template-columns: 1fr 1fr;
     }
   }
 </style>

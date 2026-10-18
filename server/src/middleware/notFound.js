@@ -3,7 +3,7 @@ export function notFound(req, res) {
     return res.status(404).json({ error: "Not found" });
   }
   res.status(404).render("public/404", {
-    title: "Page Not Found",
+    title: "Page Not Found — HOSA",
     layout: "layouts/public",
   });
 }

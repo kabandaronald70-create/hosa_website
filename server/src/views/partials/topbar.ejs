@@ -1,33 +1,56 @@
+<% 
+  const isAppPage = currentPath.startsWith('/dashboard') || 
+                    currentPath.startsWith('/admin') || 
+                    currentPath.startsWith('/super') || 
+                    currentPath === '/notifications';
+%>
 <header class="topbar">
   <div class="topbar__inner">
-    <button type="button" class="topbar__menu-toggle" aria-label="Toggle navigation" aria-expanded="false" id="topbar-menu-toggle">
-      ☰
-    </button>
-
-    <a href="/" class="topbar__brand">
-      <img src="/images/web-app-manifest-192x192.png" alt="">
-      <span>HOSA</span>
+    
+    <!-- School Badge & Title -->
+        <a href="/" class="topbar__brand">
+      <img src="/images/web-app-manifest-192x192.png" alt="HOSA Crest" style="height: 48px; width: auto;">
+      <span class="topbar__title">
+        HOSA-KIGANDA
+      </span>
     </a>
 
-        <nav class="topbar__nav" id="topbar-nav" aria-label="Primary">
-      <a href="/" class="<%= currentPath === '/' ? 'active' : '' %>" <%= currentPath === '/' ? 'aria-current="page"' : '' %>>Home</a>
-      <a href="/directory" class="<%= currentPath.startsWith('/directory') ? 'active' : '' %>" <%= currentPath.startsWith('/directory') ? 'aria-current="page"' : '' %>>Directory</a>
-      <a href="/events" class="<%= currentPath.startsWith('/events') ? 'active' : '' %>" <%= currentPath.startsWith('/events') ? 'aria-current="page"' : '' %>>Events</a>
-      <a href="/stories" class="<%= currentPath.startsWith('/stories') ? 'active' : '' %>" <%= currentPath.startsWith('/stories') ? 'aria-current="page"' : '' %>>Stories</a>
-      <a href="/jobs" class="<%= currentPath.startsWith('/jobs') ? 'active' : '' %>" <%= currentPath.startsWith('/jobs') ? 'aria-current="page"' : '' %>>Jobs</a>
-      <a href="/mentorship" class="<%= currentPath.startsWith('/mentorship') ? 'active' : '' %>" <%= currentPath.startsWith('/mentorship') ? 'aria-current="page"' : '' %>>Mentorship</a>
-      <a href="/about" class="<%= currentPath.startsWith('/about') ? 'active' : '' %>" <%= currentPath.startsWith('/about') ? 'aria-current="page"' : '' %>>About</a>
+    <!-- Desktop Navigation -->
+    <nav class="topbar__nav" id="topbar-nav" aria-label="Primary">
+      <a href="/" class="<%= currentPath === '/' ? 'active' : '' %>">Home</a>
+      <a href="/directory" class="<%= currentPath.startsWith('/directory') ? 'active' : '' %>">Directory</a>
+      <a href="/events" class="<%= currentPath.startsWith('/events') ? 'active' : '' %>">Events</a>
+      <a href="/stories" class="<%= currentPath.startsWith('/stories') ? 'active' : '' %>">Stories</a>
+      <a href="/jobs" class="<%= currentPath.startsWith('/jobs') ? 'active' : '' %>">Jobs</a>
+      <a href="/mentorship" class="<%= currentPath.startsWith('/mentorship') ? 'active' : '' %>">Mentorship</a>
+      <a href="/about" class="<%= currentPath.startsWith('/about') ? 'active' : '' %>">About</a>
     </nav>
 
+    <!-- Right Side Actions -->
     <div class="topbar__actions">
-      <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
-        <a href="/notifications" class="notif-link" aria-label="Notifications">
-          🔔
-          <% if (typeof unreadNotifications !== 'undefined' && unreadNotifications > 0) { %>
-            <span class="notif-badge"><%= unreadNotifications %></span>
+      
+      <!-- Announcement Icon -->
+      <a href="/announcements" class="notif-link" aria-label="Announcements" title="Announcements">
+        <span class="icon-wrapper">
+          📢
+          <% if (typeof activeAnnouncements !== 'undefined' && activeAnnouncements > 0) { %>
+            <span class="notif-badge"><%= activeAnnouncements %></span>
           <% } %>
+        </span>
+      </a>
+
+      <% if (isAuthenticated) { %>
+        <!-- Notification Icon -->
+        <a href="/notifications" class="notif-link" aria-label="Notifications" title="Notifications">
+          <span class="icon-wrapper">
+            🔔
+            <% if (typeof unreadNotifications !== 'undefined' && unreadNotifications > 0) { %>
+              <span class="notif-badge"><%= unreadNotifications %></span>
+            <% } %>
+          </span>
         </a>
 
+        <!-- User Avatar -->
         <a href="/dashboard" class="topbar__user">
           <% if (currentProfile && currentProfile.avatar_path) { %>
             <img src="/dashboard/avatar/me" alt="" class="topbar__user-avatar" style="object-fit:cover;padding:0;">
@@ -36,12 +59,26 @@
               <%= (currentProfile?.first_name || currentUser.email)[0].toUpperCase() %>
             </span>
           <% } %>
-          <span><%= currentProfile?.first_name || currentUser.email %></span>
+          <span class="topbar__user-name"><%= currentProfile?.first_name || currentUser.email %></span>
         </a>
       <% } else { %>
         <a href="/login" class="btn btn--ghost" style="color: var(--ivory); border-color: var(--ivory);">Log in</a>
         <a href="/register" class="btn btn--accent">Join HOSA</a>
       <% } %>
+
+      <!-- Mobile Toggles (Only visible on mobile via CSS) -->
+      <div class="mobile-toggles">
+        <button type="button" class="mobile-toggle-btn" id="btn-topnav">
+          <span>Topbar</span> ☰
+        </button>
+        <% if (isAppPage) { %>
+          <button type="button" class="mobile-toggle-btn" id="btn-sidebar">
+            <span>Sidebar</span> ☰
+          </button>
+        <% } %>
+      </div>
+
     </div>
+
   </div>
 </header>

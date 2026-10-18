@@ -18,6 +18,7 @@ export function errorHandler(err, req, res, next) {
     logger.error({ err, url: req.originalUrl }, "Unhandled error");
   }
 
+  // JSON response for API routes
   if (
     req.path.startsWith("/api/") ||
     req.accepts(["html", "json"]) === "json"
@@ -33,9 +34,11 @@ export function errorHandler(err, req, res, next) {
     return res.status(status).json(payload);
   }
 
-  // HTML requests get the styled 500 page
+  // HTML response for browser routes
+  // Render the styled 500 page and pass a helpful error message in dev mode
   return res.status(status).render("public/500", {
     title: "Something went wrong",
     layout: "layouts/public",
+    errorMessage: env.isDev && isServerError ? err.message : null,
   });
 }
