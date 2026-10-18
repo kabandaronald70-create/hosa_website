@@ -1,15 +1,9 @@
 {
-  "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "eslint": "^10.11.0",
-    "vite": "^8.3.1"
-  },
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "lint": "eslint js"
-  },
+  "name": "hosa-website",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "HOSA — Highway Old Students' Association frontend (Vite + vanilla JS).",
   "engines": {
     "node": ">=20"
   }
