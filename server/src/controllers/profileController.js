@@ -30,6 +30,7 @@ export async function showEditProfile(req, res, next) {
       title: "Edit profile — HOSA",
       values: profile || {},
       fieldErrors: {},
+      layout: "layouts/app", // ← Added layout
     });
   } catch (err) {
     next(err);
@@ -45,6 +46,7 @@ export async function submitEditProfile(req, res, next) {
       title: "Edit profile — HOSA",
       values: { ...req.body, __from_form: true },
       fieldErrors,
+      layout: "layouts/app", // ← Added layout
     });
   }
 
@@ -66,6 +68,7 @@ export async function showChangePassword(req, res) {
   res.render("profile/password", {
     title: "Change password — HOSA",
     fieldErrors: {},
+    layout: "layouts/app", // ← Added layout
   });
 }
 
@@ -77,6 +80,7 @@ export async function submitChangePassword(req, res, next) {
     return res.status(400).render("profile/password", {
       title: "Change password — HOSA",
       fieldErrors,
+      layout: "layouts/app", // ← Added layout
     });
   }
 
@@ -98,6 +102,7 @@ export async function submitChangePassword(req, res, next) {
       return res.status(401).render("profile/password", {
         title: "Change password — HOSA",
         fieldErrors: { current_password: "Current password is incorrect." },
+        layout: "layouts/app", // ← Added layout
       });
     }
     logger.error({ err }, "Password change failed");

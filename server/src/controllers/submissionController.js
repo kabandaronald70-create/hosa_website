@@ -18,6 +18,7 @@ export function showNewStoryForm(req, res) {
     title: "Submit a story — HOSA",
     values: {},
     fieldErrors: {},
+    layout: "layouts/app", // ← Added
   });
 }
 
@@ -29,6 +30,7 @@ export async function submitNewStory(req, res, next) {
       title: "Submit a story — HOSA",
       values: req.body,
       fieldErrors,
+      layout: "layouts/app", // ← Added
     });
   }
 
@@ -59,6 +61,7 @@ export function showNewOpportunityForm(req, res) {
     title: "Submit an opportunity — HOSA",
     values: {},
     fieldErrors: {},
+    layout: "layouts/app", // ← Added
   });
 }
 
@@ -70,6 +73,7 @@ export async function submitNewOpportunity(req, res, next) {
       title: "Submit an opportunity — HOSA",
       values: req.body,
       fieldErrors,
+      layout: "layouts/app", // ← Added
     });
   }
 
@@ -108,6 +112,7 @@ export async function showMySubmissions(req, res, next) {
       title: "My submissions — HOSA",
       stories,
       opportunities,
+      layout: "layouts/app", // ← Added
     });
   } catch (err) {
     next(err);

@@ -53,6 +53,7 @@ export async function showAdminOverview(req, res, next) {
       title: "Admin — HOSA",
       counts,
       recentAudits,
+      layout: "layouts/app", // ← Added
     });
   } catch (err) {
     next(err);
@@ -101,6 +102,7 @@ export async function showMembersList(req, res, next) {
       title: "Members — Admin",
       result,
       filters: { q, status, role, verified: verifiedRaw || "" },
+      layout: "layouts/app", // ← Added
     });
   } catch (err) {
     next(err);
@@ -114,11 +116,13 @@ export async function showMemberDetail(req, res, next) {
       return res.status(404).render("admin/member-detail", {
         title: "Member not found",
         member: null,
+        layout: "layouts/app", // ← Added
       });
     }
     res.render("admin/member-detail", {
       title: `Member: ${member.email} — Admin`,
       member,
+      layout: "layouts/app", // ← Added
     });
   } catch (err) {
     next(err);
@@ -130,7 +134,9 @@ export async function actionVerifyMember(req, res, next) {
     const { id } = req.params;
     const member = await getMemberForAdmin(id);
     if (!member)
-      return res.status(404).render("error", { message: "Member not found" });
+      return res
+        .status(404)
+        .render("admin/member-detail", { member: null, layout: "layouts/app" });
 
     await setMemberVerified(id, true);
     await auditLog({
@@ -140,8 +146,6 @@ export async function actionVerifyMember(req, res, next) {
       targetId: id,
       metadata: { email: member.email },
     });
-
-    // BUG FIXED: Removed the accidental story notification block here
 
     req.flash("success", `Verified ${member.email}.`);
     res.redirect(`/admin/members/${id}`);
@@ -155,7 +159,9 @@ export async function actionUnverifyMember(req, res, next) {
     const { id } = req.params;
     const member = await getMemberForAdmin(id);
     if (!member)
-      return res.status(404).render("error", { message: "Member not found" });
+      return res
+        .status(404)
+        .render("admin/member-detail", { member: null, layout: "layouts/app" });
 
     await setMemberVerified(id, false);
     await auditLog({
@@ -165,8 +171,6 @@ export async function actionUnverifyMember(req, res, next) {
       targetId: id,
       metadata: { email: member.email },
     });
-
-    // BUG FIXED: Removed the accidental story notification block here
 
     req.flash("success", `Removed verification from ${member.email}.`);
     res.redirect(`/admin/members/${id}`);
@@ -180,7 +184,6 @@ export async function actionSuspendMember(req, res, next) {
     const { id } = req.params;
     const reason = (req.body.reason || "").trim().slice(0, 500);
 
-    // Never let an admin suspend themselves — a footgun for both security and UX.
     if (id === req.user.id) {
       req.flash("error", "You cannot suspend your own account.");
       return res.redirect(`/admin/members/${id}`);
@@ -188,7 +191,9 @@ export async function actionSuspendMember(req, res, next) {
 
     const member = await getMemberForAdmin(id);
     if (!member)
-      return res.status(404).render("error", { message: "Member not found" });
+      return res
+        .status(404)
+        .render("admin/member-detail", { member: null, layout: "layouts/app" });
 
     await setUserStatus(id, "suspended");
     await auditLog({
@@ -198,8 +203,6 @@ export async function actionSuspendMember(req, res, next) {
       targetId: id,
       metadata: { email: member.email, reason: reason || null },
     });
-
-    // BUG FIXED: Removed the accidental opportunity notification block here
 
     req.flash("success", `Suspended ${member.email}.`);
     res.redirect(`/admin/members/${id}`);
@@ -213,7 +216,9 @@ export async function actionReactivateMember(req, res, next) {
     const { id } = req.params;
     const member = await getMemberForAdmin(id);
     if (!member)
-      return res.status(404).render("error", { message: "Member not found" });
+      return res
+        .status(404)
+        .render("admin/member-detail", { member: null, layout: "layouts/app" });
 
     await setUserStatus(id, "active");
     await auditLog({
@@ -244,6 +249,7 @@ export async function showModerationQueue(req, res, next) {
       title: "Moderation — Admin",
       stories,
       opportunities,
+      layout: "layouts/app", // ← Added
     });
   } catch (err) {
     next(err);
@@ -256,8 +262,10 @@ export async function actionApproveStory(req, res, next) {
   try {
     const { id } = req.params;
     const story = await getStoryForModeration(id);
-    if (!story)
-      return res.status(404).render("error", { message: "Story not found" });
+    if (!story) {
+      req.flash("error", "Story not found.");
+      return res.redirect("/admin/moderation");
+    }
 
     await setStoryStatus(id, "published", { moderatorId: req.user.id });
     await auditLog({
@@ -268,7 +276,6 @@ export async function actionApproveStory(req, res, next) {
       metadata: { title: story.title, slug: story.slug },
     });
 
-    // --- NOTIFICATION ADDED HERE ---
     if (story.author_user_id) {
       await notifyStoryApproved({
         userId: story.author_user_id,
@@ -292,8 +299,10 @@ export async function actionRejectStory(req, res, next) {
       return res.redirect("/admin/moderation");
     }
     const story = await getStoryForModeration(id);
-    if (!story)
-      return res.status(404).render("error", { message: "Story not found" });
+    if (!story) {
+      req.flash("error", "Story not found.");
+      return res.redirect("/admin/moderation");
+    }
 
     await setStoryStatus(id, "rejected", { reason, moderatorId: req.user.id });
     await auditLog({
@@ -304,7 +313,6 @@ export async function actionRejectStory(req, res, next) {
       metadata: { title: story.title, reason },
     });
 
-    // --- NOTIFICATION ADDED HERE ---
     if (story.author_user_id) {
       await notifyStoryRejected({
         userId: story.author_user_id,
@@ -326,10 +334,10 @@ export async function actionApproveOpportunity(req, res, next) {
   try {
     const { id } = req.params;
     const opp = await getOpportunityForModeration(id);
-    if (!opp)
-      return res
-        .status(404)
-        .render("error", { message: "Opportunity not found" });
+    if (!opp) {
+      req.flash("error", "Opportunity not found.");
+      return res.redirect("/admin/moderation");
+    }
 
     await setOpportunityStatus(id, "approved", { moderatorId: req.user.id });
     await auditLog({
@@ -340,7 +348,6 @@ export async function actionApproveOpportunity(req, res, next) {
       metadata: { title: opp.title, slug: opp.slug },
     });
 
-    // --- NOTIFICATION ADDED HERE ---
     if (opp.submitted_by) {
       await notifyOpportunityApproved({
         userId: opp.submitted_by,
@@ -364,10 +371,10 @@ export async function actionRejectOpportunity(req, res, next) {
       return res.redirect("/admin/moderation");
     }
     const opp = await getOpportunityForModeration(id);
-    if (!opp)
-      return res
-        .status(404)
-        .render("error", { message: "Opportunity not found" });
+    if (!opp) {
+      req.flash("error", "Opportunity not found.");
+      return res.redirect("/admin/moderation");
+    }
 
     await setOpportunityStatus(id, "rejected", {
       reason,
@@ -381,7 +388,6 @@ export async function actionRejectOpportunity(req, res, next) {
       metadata: { title: opp.title, reason },
     });
 
-    // --- NOTIFICATION ADDED HERE ---
     if (opp.submitted_by) {
       await notifyOpportunityRejected({
         userId: opp.submitted_by,
@@ -422,6 +428,7 @@ export async function showEventsList(req, res, next) {
       title: "Events — Admin",
       result,
       filters: { q, status, when },
+      layout: "layouts/app", // ← Added
     });
   } catch (err) {
     next(err);
@@ -431,13 +438,20 @@ export async function showEventsList(req, res, next) {
 export async function showEventDetail(req, res, next) {
   try {
     const event = await getEventById(req.params.id);
-    if (!event)
-      return res.status(404).render("error", { message: "Event not found" });
+    if (!event) {
+      return res.status(404).render("admin/event-detail", {
+        title: "Event not found",
+        event: null,
+        rsvps: { going: 0, maybe: 0, cancelled: 0 },
+        layout: "layouts/app",
+      });
+    }
     const rsvps = await getEventRsvpCounts(event.id);
     res.render("admin/event-detail", {
       title: `Event: ${event.title}`,
       event,
       rsvps,
+      layout: "layouts/app", // ← Added
     });
   } catch (err) {
     next(err);
@@ -451,6 +465,7 @@ export function showNewEventForm(req, res) {
     values: { timezone: "Africa/Kampala" },
     fieldErrors: {},
     isNew: true,
+    layout: "layouts/app", // ← Added
   });
 }
 
@@ -465,6 +480,7 @@ export async function actionCreateEvent(req, res, next) {
       values: req.body,
       fieldErrors,
       isNew: true,
+      layout: "layouts/app", // ← Added
     });
   }
 
@@ -490,8 +506,14 @@ export async function actionCreateEvent(req, res, next) {
 export async function showEditEventForm(req, res, next) {
   try {
     const event = await getEventById(req.params.id);
-    if (!event)
-      return res.status(404).render("error", { message: "Event not found" });
+    if (!event) {
+      return res.status(404).render("admin/event-detail", {
+        title: "Event not found",
+        event: null,
+        rsvps: { going: 0, maybe: 0, cancelled: 0 },
+        layout: "layouts/app",
+      });
+    }
 
     // Prefill values formatted for <input type="datetime-local">.
     const localFor = (d) => {
@@ -512,6 +534,7 @@ export async function showEditEventForm(req, res, next) {
       },
       fieldErrors: {},
       isNew: false,
+      layout: "layouts/app", // ← Added
     });
   } catch (err) {
     next(err);
@@ -529,14 +552,17 @@ export async function actionUpdateEvent(req, res, next) {
       values: req.body,
       fieldErrors,
       isNew: false,
+      layout: "layouts/app", // ← Added
     });
   }
 
   try {
     const fields = normalizeEventFields(parsed.data);
     const updated = await updateEvent(req.params.id, fields);
-    if (!updated)
-      return res.status(404).render("error", { message: "Event not found" });
+    if (!updated) {
+      req.flash("error", "Event not found.");
+      return res.redirect("/admin/events");
+    }
 
     await auditLog({
       req,
@@ -557,8 +583,10 @@ export async function actionSetEventStatus(req, res, next) {
     const { id } = req.params;
     const nextStatus = req.body.status;
     const event = await getEventById(id);
-    if (!event)
-      return res.status(404).render("error", { message: "Event not found" });
+    if (!event) {
+      req.flash("error", "Event not found.");
+      return res.redirect("/admin/events");
+    }
 
     const updated = await setEventStatus(id, nextStatus);
 
@@ -622,6 +650,7 @@ export async function showAuditLog(req, res, next) {
       filters,
       actions,
       targetTypes,
+      layout: "layouts/app", // ← Added
     });
   } catch (err) {
     next(err);
@@ -631,14 +660,15 @@ export async function showAuditLog(req, res, next) {
 export async function showAuditDetail(req, res, next) {
   try {
     const entry = await getAuditLogById(req.params.id);
-    if (!entry)
-      return res
-        .status(404)
-        .render("error", { message: "Audit entry not found" });
+    if (!entry) {
+      req.flash("error", "Audit entry not found.");
+      return res.redirect("/admin/audit");
+    }
     entry.metadata = redactMetadata(entry.metadata);
     res.render("admin/audit-detail", {
       title: `Audit #${entry.id}`,
       entry,
+      layout: "layouts/app", // ← Added
     });
   } catch (err) {
     next(err);

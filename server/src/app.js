@@ -35,6 +35,15 @@ const SERVER_OWNED_PREFIXES = [
   "/logout",
   "/dashboard",
   "/styles/",
+  "/fonts/",
+  "/notifications",
+  "/about",
+  "/privacy",
+  "/terms",
+  "/help",
+  "/contact",
+  "/mentorship",
+  "/styleguide",
 ];
 
 function isServerOwnedPath(p) {
@@ -124,10 +133,26 @@ export function createApp() {
 
   // SPA fallback: any GET that isn't server-owned and isn't a static file
   // gets dist/index.html so client-side routing can take over.
+  // SPA fallback: serve index.html for known SPA entry points only.
+  // Any unknown path (like /this-does-not-exist) will fall through to
+  // the notFound middleware below and render the styled 404 page.
+  //
+  // The SPA handles everything under "#/..." (hash-based routing), but the
+  // initial navigation to the site is always "/" (the root).
+  // We also allow a few top-level paths that the SPA might want to own.
+  const SPA_TOP_LEVEL_ROUTES = ["/"];
+
   app.all(/^(?!\/api\/).*/, (req, res, next) => {
-    // Only GET and HEAD fall through to the SPA. Everything else 404s.
     if (req.method !== "GET" && req.method !== "HEAD") return next();
     if (isServerOwnedPath(req.path)) return next();
+
+    // Only serve the SPA index.html for known top-level routes.
+    const isSpaRoute = SPA_TOP_LEVEL_ROUTES.includes(req.path);
+
+    if (!isSpaRoute) {
+      return next(); // Let notFound handle it
+    }
+
     if (!existsSync(SPA_INDEX)) {
       return res
         .status(404)

@@ -9,6 +9,7 @@ import notificationRoutes from "./notificationRoutes.js";
 import memberRoutes from "./member.js";
 import apiPublicRoutes from "./apiPublic.js";
 import adminRoutes from "./admin.js";
+import publicRoutes from "./publicRoutes.js";
 
 const router = Router();
 
@@ -21,6 +22,7 @@ router.use(submissionRoutes);
 router.use(interactiveRoutes);
 router.use(notificationRoutes);
 router.use(memberRoutes);
+router.use(publicRoutes);
 router.use(adminRoutes);
 
 export default router;

@@ -15,6 +15,7 @@ export async function showNotifications(req, res, next) {
       title: "Notifications — HOSA",
       items,
       unread,
+      layout: "layouts/app", // ← Added
     });
   } catch (err) {
     next(err);

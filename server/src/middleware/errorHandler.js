@@ -1,7 +1,6 @@
 import { env } from "../config/env.js";
 import { logger } from "../utils/logger.js";
 
-// eslint-disable-next-line no-unused-vars
 export function errorHandler(err, req, res, next) {
   // Translate multer errors into user-facing messages.
   if (err && err.code === "LIMIT_FILE_SIZE") {
@@ -19,20 +18,24 @@ export function errorHandler(err, req, res, next) {
     logger.error({ err, url: req.originalUrl }, "Unhandled error");
   }
 
-  const payload = {
-    error: isServerError
-      ? "Internal Server Error"
-      : err.message || "Request failed",
-  };
-  if (env.isDev && isServerError) {
-    payload.stack = err.stack;
-  }
-
   if (
     req.path.startsWith("/api/") ||
     req.accepts(["html", "json"]) === "json"
   ) {
+    const payload = {
+      error: isServerError
+        ? "Internal Server Error"
+        : err.message || "Request failed",
+    };
+    if (env.isDev && isServerError) {
+      payload.stack = err.stack;
+    }
     return res.status(status).json(payload);
   }
-  res.status(status).type("text/plain").send(payload.error);
+
+  // HTML requests get the styled 500 page
+  return res.status(status).render("public/500", {
+    title: "Something went wrong",
+    layout: "layouts/public",
+  });
 }

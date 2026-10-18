@@ -23,6 +23,7 @@ export function showNewRequestForm(req, res, next) {
         mentor,
         values: {},
         fieldErrors: {},
+        layout: "layouts/app", // ← Added
       });
     })
     .catch(next);
@@ -56,6 +57,7 @@ export async function submitNewRequest(req, res, next) {
         mentor,
         values: req.body,
         fieldErrors,
+        layout: "layouts/app", // ← Added
       });
     }
 
@@ -84,6 +86,7 @@ export async function showMyRequests(req, res, next) {
       title: "Mentorship requests",
       sent,
       received,
+      layout: "layouts/app", // ← Added
     });
   } catch (err) {
     next(err);

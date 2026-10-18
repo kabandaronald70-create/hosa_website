@@ -38,6 +38,7 @@ export async function showMySaved(req, res, next) {
     res.render("saved/list", {
       title: "Saved items",
       grouped,
+      layout: "layouts/app", // ← Added
     });
   } catch (err) {
     next(err);
