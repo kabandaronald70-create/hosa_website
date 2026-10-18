@@ -73,15 +73,34 @@
       content="https://hosa-websiterk.onrender.com/images/web-app-manifest-512x512.png"
     />
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Source+Sans+3:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Fonts -->
+    <style>
+      @font-face {
+        font-family: "Fraunces";
+        src: url("/fonts/fraunces-600.ttf") format("truetype");
+        font-weight: 600;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: "Manrope";
+        src: url("/fonts/manrope-400.ttf") format("truetype");
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: "Manrope";
+        src: url("/fonts/manrope-600.ttf") format("truetype");
+        font-weight: 600;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
 
     <!-- Styles -->
+    <link rel="stylesheet" href="/styles/tokens.css" />
+    <link rel="stylesheet" href="/styles/redesign.css" />
     <link rel="stylesheet" href="/styles/main.css" />
     <link rel="stylesheet" href="/styles/components.css" />
     <link rel="stylesheet" href="/styles/responsive.css" />
@@ -94,15 +113,32 @@
 
     <header class="site-header">
       <div class="container header__inner">
-        <a href="#/" class="logo" aria-label="HOSA home">
+        <a
+          href="#/"
+          class="logo"
+          aria-label="HOSA home"
+          style="
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+          "
+        >
           <img
             src="/images/web-app-manifest-192x192.png"
             alt=""
             class="logo__mark"
-            width="32"
-            height="32"
+            style="height: 36px; width: auto"
           />
-          <span class="logo__text">HOSA - KIGANDA</span>
+          <span
+            class="logo__text"
+            style="
+              font-family: var(--font-heading);
+              font-size: 1.25rem;
+              font-weight: 600;
+            "
+            >HOSA</span
+          >
         </a>
 
         <button
@@ -111,24 +147,113 @@
           aria-expanded="false"
           aria-controls="primary-nav"
           aria-label="Toggle navigation"
+          style="color: var(--ivory)"
         >
           <span aria-hidden="true">☰</span>
         </button>
 
-        <nav id="primary-nav" class="primary-nav" aria-label="Main navigation">
-          <ul>
-            <li><a href="#/" data-route="home">Home</a></li>
-            <li><a href="#/directory" data-route="directory">Directory</a></li>
-            <li><a href="#/events" data-route="events">Events</a></li>
-            <li><a href="#/jobs" data-route="jobs">Jobs</a></li>
-            <li><a href="#/stories" data-route="stories">Stories</a></li>
-
-            <!-- UPDATED: Point to backend EJS pages instead of deleted SPA routes -->
-            <li><a href="/dashboard/mentorship/requests/new">Mentorship</a></li>
-            <li><a href="/dashboard/saved">Saved</a></li>
-            <li><a href="/login">Log In</a></li>
+        <nav
+          id="primary-nav"
+          class="primary-nav"
+          aria-label="Main navigation"
+          style="flex-grow: 1"
+        >
+          <ul
+            style="
+              display: flex;
+              gap: 1.5rem;
+              list-style: none;
+              margin: 0;
+              padding: 0;
+            "
+          >
+            <li>
+              <a
+                href="#/"
+                data-route="home"
+                style="
+                  color: var(--ivory);
+                  text-decoration: none;
+                  font-size: 0.875rem;
+                "
+                >Home</a
+              >
+            </li>
+            <li>
+              <a
+                href="#/directory"
+                data-route="directory"
+                style="
+                  color: var(--ivory);
+                  text-decoration: none;
+                  font-size: 0.875rem;
+                "
+                >Directory</a
+              >
+            </li>
+            <li>
+              <a
+                href="#/events"
+                data-route="events"
+                style="
+                  color: var(--ivory);
+                  text-decoration: none;
+                  font-size: 0.875rem;
+                "
+                >Events</a
+              >
+            </li>
+            <li>
+              <a
+                href="#/jobs"
+                data-route="jobs"
+                style="
+                  color: var(--ivory);
+                  text-decoration: none;
+                  font-size: 0.875rem;
+                "
+                >Jobs</a
+              >
+            </li>
+            <li>
+              <a
+                href="#/stories"
+                data-route="stories"
+                style="
+                  color: var(--ivory);
+                  text-decoration: none;
+                  font-size: 0.875rem;
+                "
+                >Stories</a
+              >
+            </li>
+            <li>
+              <a
+                href="/about"
+                style="
+                  color: var(--ivory);
+                  text-decoration: none;
+                  font-size: 0.875rem;
+                "
+                >About</a
+              >
+            </li>
           </ul>
         </nav>
+
+        <div
+          class="header-actions"
+          style="display: flex; gap: 1rem; align-items: center"
+        >
+          <!-- These links route to the EJS backend -->
+          <a
+            href="/login"
+            class="btn btn--ghost"
+            style="color: var(--ivory) !important; border-color: var(--ivory)"
+            >Log in</a
+          >
+          <a href="/register" class="btn btn--accent">Join HOSA</a>
+        </div>
       </div>
     </header>
 

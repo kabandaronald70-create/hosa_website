@@ -1,0 +1,129 @@
+/* ==========================================================================
+   HOSA SPA Redesign Overrides
+   This file bridges the old Vite SPA styles with the new EJS Design System.
+   ========================================================================== */
+
+/* 1. Force the new fonts */
+body,
+p,
+span,
+div,
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-body) !important;
+  color: var(--ink);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.hero__title {
+  font-family: var(--font-heading) !important;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* 2. Force the ivory background */
+body {
+  background-color: var(--ivory);
+}
+
+/* 3. Update the SPA Header to match the EJS Top Bar */
+.site-header {
+  background-color: var(--green);
+  box-shadow: var(--shadow-md);
+  border-bottom: none;
+}
+
+.site-header a,
+.site-header .logo__text,
+.site-header .primary-nav a {
+  color: var(--ivory) !important;
+}
+
+.site-header .primary-nav a:hover,
+.site-header .primary-nav a.active {
+  color: var(--gold) !important;
+}
+
+/* 4. Update Cards */
+.card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition:
+    box-shadow var(--motion-normal),
+    transform var(--motion-normal);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+/* 5. Update Buttons */
+.btn,
+.btn--primary,
+.btn--ghost {
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body) !important;
+  font-weight: 600;
+  transition: all var(--motion-fast);
+}
+
+.btn--primary {
+  background: var(--green);
+  color: var(--white) !important;
+  border: 1px solid var(--green);
+}
+
+.btn--primary:hover {
+  background: var(--green-700);
+  border-color: var(--green-700);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--green) !important;
+  border: 1px solid var(--green);
+}
+
+.btn--ghost:hover {
+  background: var(--gold-100);
+  border-color: var(--gold);
+  color: var(--ink) !important;
+}
+
+.btn--accent {
+  background: var(--gold);
+  color: var(--ink) !important;
+  border: 1px solid var(--gold);
+}
+
+/* 6. Fix the page titles */
+.hero {
+  background-color: var(--green-700);
+  background-image:
+    linear-gradient(rgba(15, 76, 58, 0.7), rgba(15, 76, 58, 0.8)),
+    url("/images/hero.jpg");
+  background-size: cover;
+  background-position: center;
+  color: var(--ivory);
+}
+
+.hero h1,
+.hero p {
+  color: var(--ivory);
+}
+
+/* 7. Update the Badges */
+.badge {
+  border-radius: var(--radius-full);
+  font-family: var(--font-body) !important;
+}
