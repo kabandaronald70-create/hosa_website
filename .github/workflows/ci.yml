@@ -19,12 +19,8 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-
-      - name: Install frontend dependencies
-        run: npm ci
-
-      - name: Build the SPA
-        run: npm run build
+          # Point the cache to the server folder since that's where the lockfile is
+          cache-dependency-path: server/package-lock.json
 
       - name: Install backend dependencies
         working-directory: server
@@ -40,3 +36,5 @@ jobs:
           CSRF_SECRET: ci-csrf-secret-48-chars-minimum-length-for-validation
           SUPABASE_URL: https://ci-test.supabase.co
           SUPABASE_SERVICE_ROLE_KEY: ci-fake-service-role-key
+          RESEND_API_KEY: ci-fake-resend-key
+          EMAIL_FROM: HOSA <test@example.com>
