@@ -29,37 +29,6 @@
   <link rel="stylesheet" href="/styles/components.css">
   <link rel="stylesheet" href="/styles/layouts.css">
 </head>
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const btnTopnav = document.getElementById('btn-topnav');
-    const btnSidebar = document.getElementById('btn-sidebar');
-    const topnav = document.getElementById('topbar-nav');
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
-
-    if (btnTopnav && topnav) {
-      btnTopnav.addEventListener('click', () => {
-        topnav.classList.toggle('is-open');
-        if (sidebar) sidebar.classList.remove('is-open');
-      });
-    }
-
-    if (btnSidebar && sidebar) {
-      btnSidebar.addEventListener('click', () => {
-        sidebar.classList.add('is-open');
-        if (overlay) overlay.classList.add('is-visible');
-        if (topnav) topnav.classList.remove('is-open');
-      });
-    }
-
-    if (overlay) {
-      overlay.addEventListener('click', () => {
-        sidebar.classList.remove('is-open');
-        overlay.classList.remove('is-visible');
-      });
-    }
-  });
-</script>
 <body>
   <a href="#main-content" class="skip-link">Skip to main content</a>
   
@@ -78,21 +47,22 @@
 
   <%- include('../partials/footer') %>
 
-  <!-- Mobile Menu Toggle -->
+  <!-- Scripts (Placed at the bottom for performance) -->
   <script>
-    (function () {
-      const toggle = document.getElementById('topbar-menu-toggle');
-      const nav = document.getElementById('topbar-nav');
-      if (toggle && nav) {
-        toggle.addEventListener('click', () => {
-          const open = nav.classList.toggle('is-open');
-          toggle.setAttribute('aria-expanded', String(open));
+    document.addEventListener('DOMContentLoaded', () => {
+      // Public Top Nav Toggle
+      const btnTopnav = document.getElementById('btn-topnav');
+      const topnav = document.getElementById('topbar-nav');
+      
+      if (btnTopnav && topnav) {
+        btnTopnav.addEventListener('click', (e) => {
+          e.preventDefault();
+          topnav.classList.toggle('is-open');
         });
       }
-    })();
+    });
   </script>
   
-  <!-- Public Interactivity (Save & RSVP) -->
   <script src="/js/public.js"></script>
 </body>
 </html>
