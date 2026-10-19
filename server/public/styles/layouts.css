@@ -507,10 +507,19 @@ img {
 }
 
 @media (max-width: 899px) {
-  /* Topbar Mobile */
+  /* Topbar Mobile Layout */
   .topbar__inner {
     display: flex;
     justify-content: space-between;
+    padding-inline: var(--space-2);
+  }
+
+  .topbar__brand img {
+    height: 32px; /* Shrink logo */
+  }
+
+  .topbar__title {
+    font-size: var(--text-base);
   }
 
   .topbar__nav {
@@ -525,14 +534,38 @@ img {
     gap: var(--space-3);
     box-shadow: var(--shadow-md);
     width: 100%;
+    z-index: 999;
   }
 
   .topbar__nav.is-open {
     display: flex;
   }
 
+  .topbar__actions {
+    gap: var(--space-2); /* Tighter icon spacing */
+  }
+
+  .notif-link {
+    font-size: 1.1rem;
+  }
+
+  .notif-badge {
+    min-width: 16px;
+    height: 16px;
+    font-size: 9px;
+    top: -4px;
+    right: -6px;
+  }
+
+  .topbar__user-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
   .mobile-toggles {
     display: flex;
+    margin-left: var(--space-2);
   }
 
   .topbar__user-name {
