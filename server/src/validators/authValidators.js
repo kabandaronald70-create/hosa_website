@@ -5,7 +5,7 @@ export const registerSchema = z
     email: z.string().trim().email("Enter a valid email address.").max(254),
     password: z
       .string()
-      .min(10, "Password must be at least 10 characters.")
+      .min(5, "Password must be at least 5 characters.")
       .max(200, "Password is too long."),
     confirm_password: z.string(),
     first_name: z.string().trim().min(1, "First name is required.").max(80),

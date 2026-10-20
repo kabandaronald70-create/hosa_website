@@ -65,14 +65,14 @@
 
       <div class="field">
         <label for="password">Password</label>
-        <input id="password" name="password" type="password" autocomplete="new-password" required minlength="10" maxlength="200">
-        <span class="field-hint">At least 10 characters.</span>
+        <input id="password" name="password" type="password" autocomplete="new-password" required minlength="5" maxlength="200">
+        <span class="field-hint">At least 5 characters.</span>
         <% if (fieldErrors.password) { %><span class="field-error"><%= fieldErrors.password %></span><% } %>
       </div>
 
       <div class="field">
         <label for="confirm_password">Confirm password</label>
-        <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required minlength="10" maxlength="200">
+        <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required minlength="5" maxlength="200">
         <% if (fieldErrors.confirm_password) { %><span class="field-error"><%= fieldErrors.confirm_password %></span><% } %>
       </div>
 

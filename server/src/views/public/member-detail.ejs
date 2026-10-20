@@ -41,8 +41,12 @@
     <p style="white-space: pre-wrap;"><%= member.career_history %></p>
   <% } %>
 
-  <% if (member.show_email && member.account_email) { %>
+  <% if (member.account_email) { %>
     <p><strong>Email:</strong> <a href="mailto:<%= member.account_email %>"><%= member.account_email %></a></p>
+  <% } %>
+
+  <% if (member.phone) { %>
+    <p><strong>Phone:</strong> <%= member.phone %></p>
   <% } %>
 
   <% if (member.mentor_opt_in && currentUser) { %>

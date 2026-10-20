@@ -10,7 +10,7 @@ Authentication + minimal identity. Never exposed to public reads.
 - `email` (as entered)
 - `email_normalized` (lowercased/trimmed; UNIQUE)
 - `password_hash` (argon2id, Phase 2)
-- `email_verified_at`, `status`, `created_at`, `updated_at`, `last_login_at`
+- `status`, `created_at`, `updated_at`, `last_login_at`, `membership_approved_at`
 
 ### `roles`
 
@@ -33,4 +33,4 @@ Mentor list: partial index on `mentor_opt_in = TRUE`.
 
 events, event_rsvps, opportunities, opportunity_categories, stories,
 mentorship_requests, mentor_profiles, saved_items, notifications,
-announcements, reports, audit_logs, password_reset_tokens, email_verification_tokens.
+announcements, reports, audit_logs.

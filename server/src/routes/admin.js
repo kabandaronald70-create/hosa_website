@@ -25,6 +25,7 @@ import {
   showEditEventForm,
   actionUpdateEvent,
   actionSetEventStatus,
+  actionApproveMembership,
   showAuditLog,
   showAuditDetail,
   exportAuditCsv,
@@ -43,6 +44,7 @@ router.post("/admin/members/:id/verify", actionVerifyMember);
 router.post("/admin/members/:id/unverify", actionUnverifyMember);
 router.post("/admin/members/:id/suspend", actionSuspendMember);
 router.post("/admin/members/:id/reactivate", actionReactivateMember);
+router.post("/admin/members/:id/approve-membership", actionApproveMembership);
 
 // Moderation
 router.get("/admin/moderation", showModerationQueue);
@@ -71,6 +73,7 @@ router.get("/admin/audit", showAuditLog);
 router.get("/admin/audit/export.csv", exportAuditCsv);
 router.get("/admin/audit/:id", showAuditDetail);
 
+// Announcements
 router.get("/admin/announcements", showAdminAnnouncements);
 router.post("/admin/announcements", submitAnnouncement);
 router.post("/admin/announcements/:id/delete", removeAnnouncement);

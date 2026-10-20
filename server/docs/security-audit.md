@@ -64,18 +64,20 @@ platform. It is written for maintainers, graders, and future contributors.
 
 These are deliberate scope decisions, not oversights.
 
-### Email verification — not implemented
+### Email verification — removed
 
-No transactional email provider is configured. Users become active on
-registration. **Risk:** an attacker can register with an email they don't own.
-**Mitigation:** all sensitive actions require a current password; email is not
-used for authentication.
-**Roadmap:** integrate Resend (or SendGrid) + `email_verification_tokens` table.
+Transactional email is intentionally not part of the system: no provider is
+configured and there are no verification or password-reset emails. Users become
+active on registration. **Risk:** an attacker can register with an email they
+don't own. **Mitigation:** email is never used for authentication; access to
+private/alumni pages requires an administrator to approve the membership
+(`users.membership_approved_at`), and unapproved users are held on
+`/pending-approval`.
 
 ### Password reset — not implemented
 
-Same reason. Users must contact an admin to reset a forgotten password.
-**Roadmap:** same email integration.
+Users must contact an admin to reset a forgotten password. There is no
+self-service reset flow and no reset tokens are issued.
 
 ### Notifications — in-app only (planned)
 

@@ -22,9 +22,9 @@ describe("Password Service", () => {
     expect(await verifyPassword(hash, "wrong password")).toBe(false);
   });
 
-  it("rejects passwords shorter than 10 characters", () => {
-    const err = validatePasswordStrength("short");
-    expect(err).toMatch(/at least 10 characters/);
+  it("rejects passwords shorter than 5 characters", () => {
+    const err = validatePasswordStrength("abcd");
+    expect(err).toMatch(/at least 5 characters/);
   });
 
   it("accepts a strong password", () => {

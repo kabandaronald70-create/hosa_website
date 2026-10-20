@@ -38,12 +38,20 @@ export const profileSchema = z.object({
   public_visibility: z
     .preprocess((v) => v === "on" || v === "true" || v === true, z.boolean())
     .optional(),
-  show_email: z
-    .preprocess((v) => v === "on" || v === "true" || v === true, z.boolean())
-    .optional(),
-  show_phone: z
-    .preprocess((v) => v === "on" || v === "true" || v === true, z.boolean())
-    .optional(),
+
+  // --- NEW: 3-Tier Privacy Fields ---
+  email_privacy: z
+    .enum(["public", "members", "private"])
+    .optional()
+    .default("private"),
+  phone_privacy: z
+    .enum(["public", "members", "private"])
+    .optional()
+    .default("private"),
+  district_privacy: z
+    .enum(["public", "members", "private"])
+    .optional()
+    .default("public"),
 });
 
 export const passwordChangeSchema = z
@@ -51,7 +59,7 @@ export const passwordChangeSchema = z
     current_password: z.string().min(1, "Current password is required."),
     new_password: z
       .string()
-      .min(10, "New password must be at least 10 characters.")
+      .min(5, "New password must be at least 5 characters.")
       .max(200, "New password is too long."),
     confirm_new_password: z.string(),
   })

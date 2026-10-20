@@ -5,7 +5,8 @@ export async function getProfileByUserId(userId) {
     `SELECT user_id, first_name, last_name, display_name, graduation_year,
             biography, profession, organization, district, country_code,
             phone, preferred_contact, skills, interests, career_history,
-            mentor_opt_in, public_visibility, show_email, show_phone,
+            mentor_opt_in, public_visibility,
+            email_privacy, phone_privacy, district_privacy,
             avatar_path, verified_at, created_at, updated_at
        FROM member_profiles
       WHERE user_id = $1
@@ -37,8 +38,9 @@ export async function updateProfile(userId, fields) {
     "career_history",
     "mentor_opt_in",
     "public_visibility",
-    "show_email",
-    "show_phone",
+    "email_privacy",
+    "phone_privacy",
+    "district_privacy",
   ];
 
   const sets = [];

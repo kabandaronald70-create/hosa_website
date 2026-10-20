@@ -1,3 +1,4 @@
+import { query } from "../config/db.js";
 import {
   getAdminCounts,
   getRecentAudits,
@@ -53,7 +54,7 @@ export async function showAdminOverview(req, res, next) {
       title: "Admin — HOSA",
       counts,
       recentAudits,
-      layout: "layouts/app", // ← Added
+      layout: "layouts/app",
     });
   } catch (err) {
     next(err);
@@ -85,6 +86,10 @@ export async function showMembersList(req, res, next) {
     const verified =
       verifiedRaw === "yes" ? true : verifiedRaw === "no" ? false : undefined;
 
+    const approvalRaw = req.query.approval;
+    const approval =
+      approvalRaw === "yes" ? true : approvalRaw === "no" ? false : undefined;
+
     const page = Number.isFinite(Number(req.query.page))
       ? Math.max(1, Number(req.query.page))
       : 1;
@@ -94,6 +99,7 @@ export async function showMembersList(req, res, next) {
       status,
       role,
       verified,
+      approval,
       page,
       limit: 25,
     });
@@ -101,8 +107,14 @@ export async function showMembersList(req, res, next) {
     res.render("admin/members-list", {
       title: "Members — Admin",
       result,
-      filters: { q, status, role, verified: verifiedRaw || "" },
-      layout: "layouts/app", // ← Added
+      filters: {
+        q,
+        status,
+        role,
+        verified: verifiedRaw || "",
+        approval: approvalRaw || "",
+      },
+      layout: "layouts/app",
     });
   } catch (err) {
     next(err);
@@ -116,13 +128,13 @@ export async function showMemberDetail(req, res, next) {
       return res.status(404).render("admin/member-detail", {
         title: "Member not found",
         member: null,
-        layout: "layouts/app", // ← Added
+        layout: "layouts/app",
       });
     }
     res.render("admin/member-detail", {
       title: `Member: ${member.email} — Admin`,
       member,
-      layout: "layouts/app", // ← Added
+      layout: "layouts/app",
     });
   } catch (err) {
     next(err);
@@ -236,6 +248,38 @@ export async function actionReactivateMember(req, res, next) {
 }
 
 // ---------------------------------------------------------------------------
+// Membership Approval
+// ---------------------------------------------------------------------------
+
+export async function actionApproveMembership(req, res, next) {
+  try {
+    const { id } = req.params;
+    const member = await getMemberForAdmin(id);
+    if (!member) {
+      return res.status(404).render("error", { message: "Member not found" });
+    }
+
+    await query(
+      `UPDATE users SET membership_approved_at = now(), membership_approved_by = $1 WHERE id = $2`,
+      [req.user.id, id],
+    );
+
+    await auditLog({
+      req,
+      action: "member.approve_membership",
+      targetType: "user",
+      targetId: id,
+      metadata: { email: member.email },
+    });
+
+    req.flash("success", `Approved membership for ${member.email}.`);
+    res.redirect(`/admin/members/${id}`);
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Moderation queue
 // ---------------------------------------------------------------------------
 
@@ -249,7 +293,7 @@ export async function showModerationQueue(req, res, next) {
       title: "Moderation — Admin",
       stories,
       opportunities,
-      layout: "layouts/app", // ← Added
+      layout: "layouts/app",
     });
   } catch (err) {
     next(err);
@@ -428,7 +472,7 @@ export async function showEventsList(req, res, next) {
       title: "Events — Admin",
       result,
       filters: { q, status, when },
-      layout: "layouts/app", // ← Added
+      layout: "layouts/app",
     });
   } catch (err) {
     next(err);
@@ -451,7 +495,7 @@ export async function showEventDetail(req, res, next) {
       title: `Event: ${event.title}`,
       event,
       rsvps,
-      layout: "layouts/app", // ← Added
+      layout: "layouts/app",
     });
   } catch (err) {
     next(err);
@@ -465,7 +509,7 @@ export function showNewEventForm(req, res) {
     values: { timezone: "Africa/Kampala" },
     fieldErrors: {},
     isNew: true,
-    layout: "layouts/app", // ← Added
+    layout: "layouts/app",
   });
 }
 
@@ -480,7 +524,7 @@ export async function actionCreateEvent(req, res, next) {
       values: req.body,
       fieldErrors,
       isNew: true,
-      layout: "layouts/app", // ← Added
+      layout: "layouts/app",
     });
   }
 
@@ -515,7 +559,6 @@ export async function showEditEventForm(req, res, next) {
       });
     }
 
-    // Prefill values formatted for <input type="datetime-local">.
     const localFor = (d) => {
       if (!d) return "";
       const dt = new Date(d);
@@ -534,7 +577,7 @@ export async function showEditEventForm(req, res, next) {
       },
       fieldErrors: {},
       isNew: false,
-      layout: "layouts/app", // ← Added
+      layout: "layouts/app",
     });
   } catch (err) {
     next(err);
@@ -552,7 +595,7 @@ export async function actionUpdateEvent(req, res, next) {
       values: req.body,
       fieldErrors,
       isNew: false,
-      layout: "layouts/app", // ← Added
+      layout: "layouts/app",
     });
   }
 
@@ -639,7 +682,6 @@ export async function showAuditLog(req, res, next) {
       listAuditTargetTypes(),
     ]);
 
-    // Pre-redact metadata for display.
     result.rows.forEach((row) => {
       row.metadata = redactMetadata(row.metadata);
     });
@@ -650,7 +692,7 @@ export async function showAuditLog(req, res, next) {
       filters,
       actions,
       targetTypes,
-      layout: "layouts/app", // ← Added
+      layout: "layouts/app",
     });
   } catch (err) {
     next(err);
@@ -668,7 +710,7 @@ export async function showAuditDetail(req, res, next) {
     res.render("admin/audit-detail", {
       title: `Audit #${entry.id}`,
       entry,
-      layout: "layouts/app", // ← Added
+      layout: "layouts/app",
     });
   } catch (err) {
     next(err);

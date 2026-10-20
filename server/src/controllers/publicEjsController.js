@@ -1,4 +1,8 @@
-import { listPublicMembers } from "../models/directoryModel.js";
+import {
+  listPublicMembers,
+  getPublicMemberBySeedRefOrId,
+  applyMemberPrivacy,
+} from "../models/directoryModel.js";
 import { listPublishedEvents, getEventBySlug } from "../models/eventModel.js";
 import { listPublishedStories } from "../models/storyModel.js";
 import { listApprovedOpportunities } from "../models/opportunityModel.js";
@@ -24,10 +28,15 @@ export async function showDirectory(req, res, next) {
       limit: 24,
     });
 
+    // Apply privacy rules to each member
+    const sanitizedMembers = result.rows.map((m) =>
+      applyMemberPrivacy(m, req.user),
+    );
+
     res.render("public/directory", {
       title: "Directory — HOSA",
       layout: "layouts/public",
-      members: result.rows,
+      members: sanitizedMembers, // Use the sanitized array
       pagination: result,
       filters: { q, district, profession, mentorOnly },
     });
@@ -38,8 +47,6 @@ export async function showDirectory(req, res, next) {
 
 export async function showMemberDetail(req, res, next) {
   try {
-    const { getPublicMemberBySeedRefOrId } =
-      await import("../models/directoryModel.js");
     const member = await getPublicMemberBySeedRefOrId(req.params.id);
     if (!member) {
       return res.status(404).render("public/404", {
@@ -47,10 +54,14 @@ export async function showMemberDetail(req, res, next) {
         layout: "layouts/public",
       });
     }
+
+    // Apply privacy rules to the single member
+    const sanitizedMember = applyMemberPrivacy(member, req.user);
+
     res.render("public/member-detail", {
       title: `${member.display_name || member.first_name} — HOSA`,
       layout: "layouts/public",
-      member,
+      member: sanitizedMember, // Pass sanitized data to the view
     });
   } catch (err) {
     next(err);

@@ -6,7 +6,7 @@ export function normalizeEmail(email) {
 
 export async function findUserByEmail(emailNormalized) {
   const { rows } = await query(
-    `SELECT id, email, email_normalized, password_hash, email_verified_at,
+    `SELECT id, email, email_normalized, password_hash, membership_approved_at,
             status, created_at, updated_at, last_login_at
        FROM users
       WHERE email_normalized = $1
@@ -18,7 +18,7 @@ export async function findUserByEmail(emailNormalized) {
 
 export async function findUserById(id) {
   const { rows } = await query(
-    `SELECT id, email, email_normalized, password_hash, email_verified_at,
+    `SELECT id, email, email_normalized, password_hash, membership_approved_at,
             status, created_at, updated_at, last_login_at
        FROM users
       WHERE id = $1
@@ -44,7 +44,7 @@ export async function getProfileForUser(userId) {
   const { rows } = await query(
     `SELECT user_id, first_name, last_name, display_name, graduation_year,
             biography, profession, organization, district, country_code,
-            mentor_opt_in, public_visibility, show_email, show_phone,
+            mentor_opt_in, public_visibility,
             avatar_path, created_at, updated_at
        FROM member_profiles
       WHERE user_id = $1

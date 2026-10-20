@@ -1,6 +1,7 @@
 import {
   listPublicMembers,
   getPublicMemberBySeedRefOrId,
+  applyMemberPrivacy,
 } from "../models/directoryModel.js";
 import { listPublishedEvents, getEventBySlug } from "../models/eventModel.js";
 import { listPublishedStories } from "../models/storyModel.js";
@@ -37,7 +38,7 @@ export async function getDirectory(req, res, next) {
     });
 
     res.json({
-      data: rows.map(serializeMember),
+      data: rows.map((row) => serializeMember(applyMemberPrivacy(row, req.user))),
       pagination: { page, limit, total, pages },
     });
   } catch (err) {
@@ -49,7 +50,7 @@ export async function getDirectoryMember(req, res, next) {
   try {
     const row = await getPublicMemberBySeedRefOrId(req.params.id);
     if (!row) return res.status(404).json({ error: "Member not found." });
-    res.json({ data: serializeMember(row) });
+    res.json({ data: serializeMember(applyMemberPrivacy(row, req.user)) });
   } catch (err) {
     next(err);
   }

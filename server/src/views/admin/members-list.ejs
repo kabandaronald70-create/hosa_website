@@ -42,6 +42,15 @@
       </select>
     </div>
 
+    <div class="field" style="margin: 0;">
+      <label for="approval">Membership</label>
+      <select id="approval" name="approval">
+        <option value="" <%= !filters.approval ? 'selected' : '' %>>Any</option>
+        <option value="yes" <%= filters.approval === 'yes' ? 'selected' : '' %>>Approved</option>
+        <option value="no" <%= filters.approval === 'no' ? 'selected' : '' %>>Pending</option>
+      </select>
+    </div>
+
     <button type="submit" class="btn btn--primary" style="height: 44px;">Filter</button>
     <a href="/admin/members" class="btn btn--ghost" style="height: 44px; line-height: 44px;">Reset</a>
   </form>
@@ -61,6 +70,7 @@
         <th>Class</th>
         <th>Status</th>
         <th>Roles</th>
+        <th>Membership</th>
         <th>Verified</th>
         <th></th>
       </tr>
@@ -84,6 +94,11 @@
             <%= m.roles.join(', ') || '—' %>
           </td>
           
+          <td data-label="Membership">
+            <% if (m.membership_approved_at) { %><span class="badge badge--success">Approved</span>
+            <% } else { %><span class="badge badge--warning">Pending</span><% } %>
+          </td>
+
           <td data-label="Verified">
             <% if (m.verified_at) { %><span class="badge badge--success">✓ Yes</span>
             <% } else { %><span class="badge badge--warning">No</span><% } %>
