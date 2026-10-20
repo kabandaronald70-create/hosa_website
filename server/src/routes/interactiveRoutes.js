@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { requireAuth } from "../middleware/auth.js";
-import { requireVerified } from "../middleware/requireVerified.js"; // ← Added
+import { requireApproved } from "../middleware/requireApproved.js";
 import { setRsvp, cancelRsvp } from "../controllers/rsvpController.js";
 import {
   showNewRequestForm,
@@ -18,30 +18,20 @@ import {
 
 const router = Router();
 
-// RSVPs require verification
-router.post("/events/:slug/rsvp", requireAuth, requireVerified, setRsvp);
+// RSVPs require login + membership approval (these are not under /dashboard).
+router.post("/events/:slug/rsvp", requireAuth, requireApproved, setRsvp);
 router.post(
   "/events/:slug/rsvp/cancel",
   requireAuth,
-  requireVerified,
+  requireApproved,
   cancelRsvp,
 );
 
-// Mentorship Requests require verification
-router.get(
-  "/dashboard/mentorship/requests/new",
-  requireAuth,
-  requireVerified,
-  showNewRequestForm,
-);
-router.post(
-  "/dashboard/mentorship/requests/new",
-  requireAuth,
-  requireVerified,
-  submitNewRequest,
-);
+// Everything below lives under /dashboard, which is gated by login + membership
+// approval in routes/index.js.
+router.get("/dashboard/mentorship/requests/new", requireAuth, showNewRequestForm);
+router.post("/dashboard/mentorship/requests/new", requireAuth, submitNewRequest);
 
-// Viewing and managing existing requests only requires login
 router.get("/dashboard/mentorship/requests", requireAuth, showMyRequests);
 router.post(
   "/dashboard/mentorship/requests/:id/accept",
@@ -59,14 +49,8 @@ router.post(
   actionCancel,
 );
 
-// Saved items (only view requires login, add/remove requires verification)
 router.get("/dashboard/saved", requireAuth, showMySaved);
-router.post("/dashboard/saved", requireAuth, requireVerified, addSaved);
-router.post(
-  "/dashboard/saved/:id/delete",
-  requireAuth,
-  requireVerified,
-  removeSaved,
-);
+router.post("/dashboard/saved", requireAuth, addSaved);
+router.post("/dashboard/saved/:id/delete", requireAuth, removeSaved);
 
 export default router;

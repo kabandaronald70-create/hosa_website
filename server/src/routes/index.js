@@ -12,6 +12,8 @@ import adminRoutes from "./admin.js";
 import publicEjsRoutes from "./publicEjsRoutes.js";
 import publicRoutes from "./publicRoutes.js";
 import superAdminRoutes from "./superAdminRoutes.js";
+import { requireAuth } from "../middleware/auth.js";
+import { requireApproved } from "../middleware/requireApproved.js";
 
 const router = Router();
 
@@ -19,6 +21,11 @@ router.use(apiPublicRoutes);
 router.use(healthRoutes);
 router.use(styleguideRoutes);
 router.use(authRoutes);
+
+// Every member dashboard page requires login + membership approval.
+// Unapproved members are redirected to the pending-approval page.
+router.use("/dashboard", requireAuth, requireApproved);
+
 router.use(profileRoutes);
 router.use(submissionRoutes);
 router.use(interactiveRoutes);

@@ -99,9 +99,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             // Not logged in
             window.location.href = `/login?next=${encodeURIComponent(window.location.pathname)}`;
           } else {
-            // Could be unverified (res.redirected to /verify-required) or a server error
+            // Could be a server error, or an account that is still pending admin approval
             alert(
-              "Could not save item. Please make sure you are logged in and have verified your email.",
+              "Could not save item. Please make sure you are logged in and that your membership has been approved.",
             );
             btn.textContent = oldText;
           }

@@ -80,8 +80,8 @@ async function importMembers() {
         }
 
         const userRes = await client.query(
-          `INSERT INTO users (email, email_normalized, password_hash, status)
-           VALUES ($1, $2, $3, 'active')
+          `INSERT INTO users (email, email_normalized, password_hash, status, membership_approved_at)
+           VALUES ($1, $2, $3, 'active', now())
            RETURNING id`,
           [email, emailNormalized, UNUSABLE_PASSWORD_HASH],
         );

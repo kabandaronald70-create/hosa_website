@@ -1,0 +1,40 @@
+<div class="card" style="max-width: 720px; margin: 0 auto; text-align: center;">
+  <h1 style="margin-top: 0;">Membership Pending</h1>
+
+  <p style="color: var(--muted); font-size: var(--text-lg);">
+    Hello <strong><%= profile && profile.first_name ? profile.first_name : 'there' %></strong>,
+    your account has been created.
+  </p>
+  <p style="color: var(--muted);">
+    Your HOSA membership is currently being reviewed by our administration team.
+    You can keep browsing the public site while you wait — the alumni dashboard
+    and other member features will unlock once an administrator approves your account.
+  </p>
+
+  <% if (admins && admins.length > 0) { %>
+    <div class="card" style="text-align: left; margin-top: var(--space-5); background: var(--surface-2, #f8fafc);">
+      <h2 style="font-size: var(--text-lg); margin-top: 0;">Need to expedite your approval?</h2>
+      <p style="color: var(--muted); font-size: var(--text-sm); margin-top: var(--space-2);">
+        If you need access urgently, reach out directly to one of our administrators:
+      </p>
+
+      <ul style="list-style: none; padding: 0; margin: var(--space-3) 0 0;">
+        <% admins.forEach(function(admin) { %>
+          <li style="padding: var(--space-3) 0; border-top: 1px solid var(--line);">
+            <div style="font-weight: 600;">
+              <%= admin.first_name %> <%= admin.last_name %>
+            </div>
+            <div style="font-size: var(--text-sm); margin-top: var(--space-1);">
+              <% if (admin.phone) { %>
+                <div>📞 <a href="tel:<%= admin.phone %>"><%= admin.phone %></a></div>
+              <% } %>
+              <div>✉️ <a href="mailto:<%= admin.email %>?subject=HOSA Membership Approval Request — <%= user.email %>"><%= admin.email %></a></div>
+            </div>
+          </li>
+        <% }); %>
+      </ul>
+    </div>
+  <% } %>
+
+  <a href="/" class="btn btn--primary" style="margin-top: var(--space-5);">Return to Homepage</a>
+</div>

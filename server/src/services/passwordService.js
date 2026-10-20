@@ -10,7 +10,7 @@ const ARGON2_OPTIONS = Object.freeze({
   parallelism: 4,
 });
 
-const MIN_PASSWORD_LENGTH = 10;
+const MIN_PASSWORD_LENGTH = 5;
 const MAX_PASSWORD_LENGTH = 200;
 
 export function validatePasswordStrength(password) {

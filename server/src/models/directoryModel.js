@@ -9,22 +9,52 @@ const PUBLIC_FIELDS = `
   mp.graduation_year,
   mp.country_code,
   mp.district,
+  mp.district_privacy,
   mp.profession,
   mp.organization,
   mp.biography,
   mp.mentor_opt_in,
   mp.mentor_field,
   mp.preferred_contact,
+  mp.phone,
+  mp.phone_privacy,
+  mp.email_privacy,
   mp.avatar_path,
-  mp.show_email,
-  mp.show_phone,
   mp.verified_at,
   u.email AS account_email
 `;
 
+// Admin approval is the gate for appearing in the public directory.
+const APPROVED_ONLY = `u.membership_approved_at IS NOT NULL`;
+
+/**
+ * Strip contact details a viewer is not entitled to see.
+ * Tiers are 'public', 'members' (any signed-in user) and 'private'.
+ * This is the single enforcement point for both the HTML pages and the JSON API.
+ */
+export function applyMemberPrivacy(member, viewer) {
+  if (!member) return null;
+
+  const isMember = Boolean(viewer);
+  const hiddenFrom = (tier) =>
+    tier === "private" || (tier === "members" && !isMember);
+
+  const sanitized = { ...member };
+  if (sanitized.district && hiddenFrom(sanitized.district_privacy)) {
+    sanitized.district = null;
+  }
+  if (sanitized.phone && hiddenFrom(sanitized.phone_privacy)) {
+    sanitized.phone = null;
+  }
+  if (sanitized.account_email && hiddenFrom(sanitized.email_privacy)) {
+    sanitized.account_email = null;
+  }
+  return sanitized;
+}
+
 /**
  * Public directory listing with filters, sorting, and pagination.
- * Only returns rows where public_visibility = TRUE.
+ * Only returns rows whose owner has been approved and opted into the directory.
  */
 export async function listPublicMembers({
   q,
@@ -36,7 +66,7 @@ export async function listPublicMembers({
   page = 1,
   limit = 24,
 }) {
-  const where = ["mp.public_visibility = TRUE"];
+  const where = [`mp.public_visibility = TRUE`, APPROVED_ONLY];
   const values = [];
   let i = 1;
 
@@ -85,6 +115,7 @@ export async function listPublicMembers({
   const { rows: countRows } = await query(
     `SELECT COUNT(*)::int AS total
        FROM member_profiles mp
+       JOIN users u ON u.id = mp.user_id
       WHERE ${where.join(" AND ")}`,
     values,
   );
@@ -115,6 +146,7 @@ export async function getPublicMemberBySeedRefOrId(idOrSeedRef) {
        FROM member_profiles mp
        JOIN users u ON u.id = mp.user_id
       WHERE mp.public_visibility = TRUE
+        AND ${APPROVED_ONLY}
         AND (mp.seed_ref = $1 OR mp.user_id::text = $1)
       LIMIT 1`,
     [idOrSeedRef],

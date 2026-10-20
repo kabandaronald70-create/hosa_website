@@ -39,7 +39,7 @@ A full rewrite would discard ~1500 lines of working frontend code and take 4–6
 | 0     | Discovery                                       | Same                                           |
 | 1     | Design system                                   | **Same** — build once, apply everywhere        |
 | 2     | Rebuild all public pages in EJS                 | Build only the **missing** public pages in EJS |
-| 3     | Auth + profiles + verification                  | Auth done; **add verification flows**          |
+| 3     | Auth + profiles + verification                  | Auth done; **add approval flow**               |
 | 4     | Contributions + moderation                      | **Already done** ✅                            |
 | 5     | Announcements, Archive, Mentorship, Super Admin | Mentorship done; **build the rest**            |
 | 6     | QA + launch                                     | Same                                           |

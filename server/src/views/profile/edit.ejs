@@ -111,25 +111,50 @@
       </div>
     </div>
 
-    <div class="card" style="margin-bottom: var(--space-5);">
-      <h2 style="font-size: var(--text-lg); margin-top: 0;">Privacy & Mentorship</h2>
-      
-      <div class="field" style="flex-direction: row; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
-        <input type="checkbox" id="mentor_opt_in" name="mentor_opt_in" value="on" <%= values.mentor_opt_in ? 'checked' : '' %> style="min-height: auto;">
-        <label for="mentor_opt_in" style="margin: 0; font-weight: normal;">I am willing to mentor current students</label>
+      <div class="card" style="margin-bottom: var(--space-5);">
+    <h2 style="font-size: var(--text-lg); margin-top: 0;">Privacy & Mentorship</h2>
+    
+    <div class="field" style="flex-direction: row; align-items: center; gap: var(--space-2); margin-bottom: var(--space-4);">
+      <input type="checkbox" id="mentor_opt_in" name="mentor_opt_in" value="on" <%= values.mentor_opt_in ? 'checked' : '' %> style="min-height: auto;">
+      <label for="mentor_opt_in" style="margin: 0; font-weight: normal;">I am willing to mentor current students</label>
+    </div>
+
+    <div class="field" style="flex-direction: row; align-items: center; gap: var(--space-2); margin-bottom: var(--space-4);">
+      <input type="checkbox" id="public_visibility" name="public_visibility" value="on" <%= values.public_visibility !== false ? 'checked' : '' %> style="min-height: auto;">
+      <label for="public_visibility" style="margin: 0; font-weight: normal;">Show my profile in the public directory</label>
+    </div>
+
+    <h3 style="font-size: var(--text-base); margin-top: var(--space-4); margin-bottom: var(--space-2);">Contact Visibility</h3>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+      <div class="field">
+        <label for="email_privacy">Email Address</label>
+        <select id="email_privacy" name="email_privacy">
+          <option value="public" <%= values.email_privacy === 'public' ? 'selected' : '' %>>Public</option>
+          <option value="members" <%= values.email_privacy === 'members' ? 'selected' : '' %>>Members Only</option>
+          <option value="private" <%= values.email_privacy === 'private' ? 'selected' : '' %>>Only Me (Private)</option>
+        </select>
       </div>
 
-      <div class="field" style="flex-direction: row; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
-        <input type="checkbox" id="public_visibility" name="public_visibility" value="on" <%= values.public_visibility !== false ? 'checked' : '' %> style="min-height: auto;">
-        <label for="public_visibility" style="margin: 0; font-weight: normal;">Show my profile in the public directory</label>
-      </div>
-
-      <div class="field" style="flex-direction: row; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
-        <input type="checkbox" id="show_email" name="show_email" value="on" <%= values.show_email ? 'checked' : '' %> style="min-height: auto;">
-        <label for="show_email" style="margin: 0; font-weight: normal;">Show my email in the directory</label>
+      <div class="field">
+        <label for="phone_privacy">Phone Number</label>
+        <select id="phone_privacy" name="phone_privacy">
+          <option value="public" <%= values.phone_privacy === 'public' ? 'selected' : '' %>>Public</option>
+          <option value="members" <%= values.phone_privacy === 'members' ? 'selected' : '' %>>Members Only</option>
+          <option value="private" <%= values.phone_privacy === 'private' ? 'selected' : '' %>>Only Me (Private)</option>
+        </select>
       </div>
     </div>
 
+    <div class="field">
+      <label for="district_privacy">District / Location</label>
+      <select id="district_privacy" name="district_privacy">
+        <option value="public" <%= values.district_privacy === 'public' ? 'selected' : '' %>>Public</option>
+        <option value="members" <%= values.district_privacy === 'members' ? 'selected' : '' %>>Members Only</option>
+        <option value="private" <%= values.district_privacy === 'private' ? 'selected' : '' %>>Only Me (Private)</option>
+      </select>
+    </div>
+  </div>
     <button type="submit" class="btn btn--primary" style="width: 100%; padding: var(--space-3); font-size: var(--text-lg); margin-bottom: var(--space-6);">Save profile</button>
   </form>
 

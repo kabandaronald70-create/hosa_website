@@ -133,8 +133,6 @@ Legend:
 
 | Feature                                                  | Workplan phase |
 | -------------------------------------------------------- | -------------- |
-| Email verification                                       | Phase 3        |
-| Password reset                                           | Phase 3        |
 | Alumni verification workflow (class-year admin approval) | Phase 3        |
 | Per-field visibility (Public / Members / Only me)        | Phase 3        |
 | Data export + account deletion                           | Phase 3        |

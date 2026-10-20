@@ -26,8 +26,11 @@ export async function saveProfile(userId, data) {
     career_history: data.career_history || null,
     mentor_opt_in: Boolean(data.mentor_opt_in),
     public_visibility: data.public_visibility !== false, // default true if omitted
-    show_email: Boolean(data.show_email),
-    show_phone: Boolean(data.show_phone),
+
+    // --- NEW: 3-Tier Privacy Fields ---
+    email_privacy: data.email_privacy || "private",
+    phone_privacy: data.phone_privacy || "private",
+    district_privacy: data.district_privacy || "public",
   };
 
   const before = await getProfileByUserId(userId);
@@ -73,8 +76,6 @@ export async function changePassword(
     userId,
   ]);
 
-  // Invalidate all other sessions for this user, keeping the current one.
-  // Requires knowing the current sid — pass it in via the caller.
   return { ok: true };
 }
 

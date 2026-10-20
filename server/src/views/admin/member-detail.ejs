@@ -1,54 +1,113 @@
 <% if (!member) { %>
-  <h1>Member not found</h1>
-  <p><a href="/admin/members">← Back to members</a></p>
+  <div class="card" style="text-align: center; padding: var(--space-8);">
+    <h1 style="margin-top: 0;">Member not found</h1>
+    <a href="/admin/members" class="btn btn--primary" style="margin-top: var(--space-4);">← Back to members</a>
+  </div>
 <% } else { %>
-  <p><a href="/admin/members" class="link-button">← Back to members</a></p>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); flex-wrap: wrap; gap: var(--space-3);">
+    <div style="display: flex; align-items: center; gap: var(--space-3);">
+      <a href="/admin/members" class="btn btn--ghost" style="padding: var(--space-2);">←</a>
+      <h1 style="margin: 0;"><%= member.display_name || `${member.first_name} ${member.last_name}` %></h1>
+    </div>
+  </div>
 
-  <h1><%= member.display_name || `${member.first_name} ${member.last_name}` %></h1>
-  <p><%= member.email %></p>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5);">
+    
+    <!-- Account Info -->
+    <div class="card">
+      <h2 style="font-size: var(--text-lg); margin-top: 0;">Account</h2>
+      <dl style="display: grid; grid-template-columns: 120px 1fr; gap: var(--space-2); font-size: var(--text-sm);">
+        <dt><strong>Email:</strong></dt>
+        <dd><%= member.email %></dd>
 
-  <section aria-labelledby="account-heading">
-    <h2 id="account-heading">Account</h2>
-    <dl>
-      <dt>Status</dt><dd><%= member.status %></dd>
-      <dt>Roles</dt><dd><%= member.roles.join(', ') || '—' %></dd>
-      <dt>Verified</dt><dd><%= member.verified_at ? new Date(member.verified_at).toLocaleString() : 'Not verified' %></dd>
-      <dt>Public visibility</dt><dd><%= member.public_visibility ? 'Yes' : 'No' %></dd>
-      <dt>Joined</dt><dd><%= new Date(member.created_at).toLocaleString() %></dd>
-      <dt>Last login</dt><dd><%= member.last_login_at ? new Date(member.last_login_at).toLocaleString() : '—' %></dd>
-    </dl>
-  </section>
+        <dt><strong>Status:</strong></dt>
+        <dd>
+          <% if (member.status === 'active') { %><span class="badge badge--success">Active</span>
+          <% } else if (member.status === 'suspended') { %><span class="badge badge--danger">Suspended</span>
+          <% } else { %><span class="badge badge--warning"><%= member.status %></span><% } %>
+        </dd>
 
-  <section aria-labelledby="profile-heading">
-    <h2 id="profile-heading">Profile</h2>
-    <dl>
-      <dt>Class year</dt><dd><%= member.graduation_year ?? '—' %></dd>
-      <dt>District</dt><dd><%= member.district || '—' %></dd>
-      <dt>Country</dt><dd><%= member.country_code || '—' %></dd>
-      <dt>Profession</dt><dd><%= member.profession || '—' %></dd>
-    </dl>
-  </section>
+        <dt><strong>Roles:</strong></dt>
+        <dd><%= member.roles.join(', ') || '—' %></dd>
 
-  <section aria-labelledby="actions-heading">
-    <h2 id="actions-heading">Actions</h2>
+        <dt><strong>Verified:</strong></dt>
+        <dd><%= member.verified_at ? new Date(member.verified_at).toLocaleString() : 'Not verified' %></dd>
 
-    <form method="post" action="/admin/members/<%= member.id %>/<%= member.verified_at ? 'unverify' : 'verify' %>" style="display:inline">
-      <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
-      <button type="submit"><%= member.verified_at ? 'Remove verification' : 'Verify member' %></button>
-    </form>
+        <dt><strong>Public Directory:</strong></dt>
+        <dd><%= member.public_visibility ? 'Yes' : 'No' %></dd>
 
-    <% if (member.status === 'active') { %>
-      <form method="post" action="/admin/members/<%= member.id %>/suspend">
+        <dt><strong>Joined:</strong></dt>
+        <dd><%= new Date(member.created_at).toLocaleString() %></dd>
+        
+        <dt><strong>Last Login:</strong></dt>
+        <dd><%= member.last_login_at ? new Date(member.last_login_at).toLocaleString() : '—' %></dd>
+      </dl>
+    </div>
+
+    <!-- Profile Info -->
+    <div class="card">
+      <h2 style="font-size: var(--text-lg); margin-top: 0;">Profile Details</h2>
+      <dl style="display: grid; grid-template-columns: 120px 1fr; gap: var(--space-2); font-size: var(--text-sm);">
+        <dt><strong>Class Year:</strong></dt>
+        <dd><%= member.graduation_year ?? '—' %></dd>
+
+        <dt><strong>District:</strong></dt>
+        <dd><%= member.district || '—' %></dd>
+
+        <dt><strong>Country:</strong></dt>
+        <dd><%= member.country_code || '—' %></dd>
+
+        <dt><strong>Profession:</strong></dt>
+        <dd><%= member.profession || '—' %></dd>
+      </dl>
+    </div>
+  </div>
+
+  <!-- Actions Section -->
+  <section style="margin-top: var(--space-5);">
+    <h2 style="font-size: var(--text-lg); margin-bottom: var(--space-3);">Actions</h2>
+
+    <div class="card">
+      <!-- Membership Approval -->
+      <% if (!member.membership_approved_at) { %>
+        <div class="alert alert--warning" style="margin-bottom: var(--space-4);">
+          <strong>This user is pending membership approval.</strong><br>
+          They cannot access the directory or RSVP to events until approved.
+        </div>
+        <form method="post" action="/admin/members/<%= member.id %>/approve-membership" style="margin-bottom: var(--space-4);">
+          <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn--primary" style="width: 100%;">Approve Membership</button>
+        </form>
+      <% } else { %>
+        <p style="color: var(--success); margin-bottom: var(--space-4); font-weight: 600;">✅ Membership Approved</p>
+      <% } %>
+
+      <hr style="border: 0; border-top: 1px solid var(--line); margin: var(--space-4) 0;">
+
+      <!-- Verify / Unverify -->
+      <form method="post" action="/admin/members/<%= member.id %>/<%= member.verified_at ? 'unverify' : 'verify' %>" style="margin-bottom: var(--space-4);">
         <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
-        <label for="reason">Reason for suspension (optional)</label>
-        <input id="reason" name="reason" type="text" maxlength="500">
-        <button type="submit" onclick="return confirm('Suspend this account?')">Suspend</button>
+        <button type="submit" class="btn btn--ghost" style="width: 100%;">
+          <%= member.verified_at ? 'Remove Verification' : 'Verify Member' %>
+        </button>
       </form>
-    <% } else if (member.status === 'suspended') { %>
-      <form method="post" action="/admin/members/<%= member.id %>/reactivate">
-        <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
-        <button type="submit">Reactivate</button>
-      </form>
-    <% } %>
+
+      <!-- Suspend / Reactivate -->
+      <% if (member.status === 'active') { %>
+        <form method="post" action="/admin/members/<%= member.id %>/suspend">
+          <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+          <div class="field">
+            <label for="reason">Reason for suspension (optional)</label>
+            <input id="reason" name="reason" type="text" maxlength="500">
+          </div>
+          <button type="submit" class="btn btn--danger" style="width: 100%;" onclick="return confirm('Suspend this account?')">Suspend Account</button>
+        </form>
+      <% } else if (member.status === 'suspended') { %>
+        <form method="post" action="/admin/members/<%= member.id %>/reactivate">
+          <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn--primary" style="width: 100%;">Reactivate Account</button>
+        </form>
+      <% } %>
+    </div>
   </section>
 <% } %>

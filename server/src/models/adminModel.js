@@ -55,8 +55,8 @@ export async function getRecentAudits(limit = 10) {
 // ---------------------------------------------------------------------------
 
 const MEMBER_COLUMNS = `
-  u.id, u.email, u.status, u.email_verified_at,
-  u.created_at, u.last_login_at,
+  u.id, u.email, u.status,
+  u.created_at, u.last_login_at, u.membership_approved_at,
   mp.seed_ref, mp.first_name, mp.last_name, mp.display_name,
   mp.graduation_year, mp.district, mp.country_code, mp.profession,
   mp.verified_at, mp.public_visibility, mp.avatar_path,
@@ -65,13 +65,15 @@ const MEMBER_COLUMNS = `
 
 /**
  * Paginated + filtered member list. Search across email, name, profession.
- * Filters: status (active/suspended/deactivated), role name, verified (bool).
+ * Filters: status (active/suspended/deactivated), role name, verified (bool),
+ * approval (true = membership approved, false = awaiting approval).
  */
 export async function listMembers({
   q,
   status,
   role,
   verified,
+  approval,
   page = 1,
   limit = 25,
 } = {}) {
@@ -96,6 +98,8 @@ export async function listMembers({
   }
   if (verified === true) where.push(`mp.verified_at IS NOT NULL`);
   if (verified === false) where.push(`mp.verified_at IS NULL`);
+  if (approval === true) where.push(`u.membership_approved_at IS NOT NULL`);
+  if (approval === false) where.push(`u.membership_approved_at IS NULL`);
   if (role) {
     where.push(`
       EXISTS (
@@ -127,7 +131,9 @@ export async function listMembers({
        LEFT JOIN roles r ON r.id = ur.role_id
        ${whereSql}
       GROUP BY u.id, mp.user_id
-      ORDER BY mp.verified_at NULLS FIRST, u.created_at DESC
+      ORDER BY u.membership_approved_at NULLS FIRST,
+               mp.verified_at NULLS FIRST,
+               u.created_at DESC
       LIMIT $${i} OFFSET $${i + 1}`,
     [...values, limit, offset],
   );

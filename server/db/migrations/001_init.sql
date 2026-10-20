@@ -8,7 +8,6 @@ CREATE TABLE users (
   email             TEXT NOT NULL,
   email_normalized  TEXT NOT NULL UNIQUE,
   password_hash     TEXT NOT NULL,
-  email_verified_at TIMESTAMPTZ,
   status            TEXT NOT NULL DEFAULT 'active'
                     CHECK (status IN ('active', 'suspended', 'deactivated', 'pending_verification')),
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
