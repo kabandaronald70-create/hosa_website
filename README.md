@@ -148,3 +148,6 @@ npm run build     # production build to dist/
 npm run preview   # preview built site on http://localhost:4173
 npm run lint      # run ESLint
 ````
+
+The backend's production start command is `npm start` from `server/`. It applies
+pending database migrations before starting the web server.
