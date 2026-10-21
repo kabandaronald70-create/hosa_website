@@ -1,0 +1,21 @@
+<div class="container" style="max-width: 600px; margin: 50px auto">
+  <h1>Report Content</h1>
+  <p>You are reporting a <%= type %> for inappropriate content.</p>
+  <form method="post" action="/report">
+    <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>" />
+    <input type="hidden" name="type" value="<%= type %>" />
+    <input type="hidden" name="id" value="<%= id %>" />
+    <div class="field">
+      <label for="reason">Reason for reporting</label>
+      <textarea
+        id="reason"
+        name="reason"
+        rows="4"
+        required
+        placeholder="Please explain why you are reporting this..."
+      ></textarea>
+    </div>
+    <button type="submit" class="btn btn--primary">Submit Report</button>
+    <a href="/" class="btn btn--ghost">Cancel</a>
+  </form>
+</div>

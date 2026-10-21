@@ -9,45 +9,63 @@ import { logger } from "../utils/logger.js";
  * Returns { profile, roleChanges } — roleChanges lists any roles to add/remove.
  */
 export async function saveProfile(userId, data) {
-  const fields = {
-    first_name: data.first_name,
-    last_name: data.last_name,
-    display_name: data.display_name || null,
-    graduation_year: data.graduation_year ?? null,
-    biography: data.biography || null,
-    profession: data.profession || null,
-    organization: data.organization || null,
-    district: data.district || null,
-    country_code: data.country_code || null,
-    phone: data.phone || null,
-    preferred_contact: data.preferred_contact || null,
-    skills: data.skills || null,
-    interests: data.interests || null,
-    career_history: data.career_history || null,
-    mentor_opt_in: Boolean(data.mentor_opt_in),
-    public_visibility: data.public_visibility !== false, // default true if omitted
+  const {
+    first_name,
+    last_name,
+    display_name,
+    graduation_year,
+    profession,
+    organization,
+    district,
+    country_code,
+    biography,
+    skills,
+    career_history,
+    email_privacy,
+    phone_privacy,
+    district_privacy, // <-- New fields
+    mentor_opt_in,
+    public_visibility,
+    phone,
+    preferred_contact,
+  } = data;
 
-    // --- NEW: 3-Tier Privacy Fields ---
-    email_privacy: data.email_privacy || "private",
-    phone_privacy: data.phone_privacy || "private",
-    district_privacy: data.district_privacy || "public",
-  };
+  // Convert checkboxes to booleans
+  const isMentor = mentor_opt_in === "on" || mentor_opt_in === true;
+  const isVisible = public_visibility === "on" || public_visibility === true;
 
-  const before = await getProfileByUserId(userId);
-  const profile = await updateProfile(userId, fields);
-
-  // Sync the 'mentor' role to mentor_opt_in.
-  const wasMentor = await hasRole(userId, "mentor");
-  const shouldBeMentor = fields.mentor_opt_in;
-
-  if (shouldBeMentor && !wasMentor) {
-    await grantRole(userId, "mentor");
-  } else if (!shouldBeMentor && wasMentor) {
-    // Only remove the mentor role; never touch member/admin/moderator here.
-    await revokeRole(userId, "mentor");
-  }
-
-  return { profile, before };
+  await query(
+    `UPDATE member_profiles SET
+      first_name = $1, last_name = $2, display_name = $3, graduation_year = $4,
+      profession = $5, organization = $6, district = $7, country_code = $8,
+      biography = $9, skills = $10, career_history = $11,
+      email_privacy = $12, phone_privacy = $13, district_privacy = $14,
+      mentor_opt_in = $15, public_visibility = $16,
+      phone = $17, preferred_contact = $18,
+      updated_at = now()
+    WHERE user_id = $19`,
+    [
+      first_name,
+      last_name,
+      display_name,
+      graduation_year || null,
+      profession,
+      organization,
+      district,
+      country_code,
+      biography,
+      skills,
+      career_history,
+      email_privacy,
+      phone_privacy,
+      district_privacy,
+      isMentor,
+      isVisible,
+      phone,
+      preferred_contact,
+      userId,
+    ],
+  );
 }
 
 export async function changePassword(

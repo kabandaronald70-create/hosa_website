@@ -2,6 +2,8 @@ import {
   listPublicMembers,
   getPublicMemberBySeedRefOrId,
   applyMemberPrivacy,
+  getDistinctDistricts,
+  getDistinctProfessions,
 } from "../models/directoryModel.js";
 import { listPublishedEvents, getEventBySlug } from "../models/eventModel.js";
 import { listPublishedStories } from "../models/storyModel.js";
@@ -19,14 +21,19 @@ export async function showDirectory(req, res, next) {
     const mentorOnly = req.query.mentor === "1";
     const page = Math.max(1, Number(req.query.page) || 1);
 
-    const result = await listPublicMembers({
-      q,
-      district,
-      profession,
-      mentorOnly,
-      page,
-      limit: 24,
-    });
+    // Fetch the members AND the dropdown options in parallel
+    const [result, districts, professions] = await Promise.all([
+      listPublicMembers({
+        q,
+        district,
+        profession,
+        mentorOnly,
+        page,
+        limit: 24,
+      }),
+      getDistinctDistricts(),
+      getDistinctProfessions(),
+    ]);
 
     // Apply privacy rules to each member
     const sanitizedMembers = result.rows.map((m) =>
@@ -36,9 +43,11 @@ export async function showDirectory(req, res, next) {
     res.render("public/directory", {
       title: "Directory — HOSA",
       layout: "layouts/public",
-      members: sanitizedMembers, // Use the sanitized array
+      members: sanitizedMembers,
       pagination: result,
       filters: { q, district, profession, mentorOnly },
+      districts,
+      professions,
     });
   } catch (err) {
     next(err);

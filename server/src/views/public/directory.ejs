@@ -8,27 +8,38 @@
     <h2 style="font-size: var(--text-lg); margin-bottom: var(--space-3);">Filters</h2>
     
     <form method="GET" action="/directory">
-      <!-- 2-column grid for filters on mobile, 1-column on desktop -->
       <div class="filter-grid">
         <div class="field" style="margin-bottom: 0;">
           <label for="q">Search by name</label>
           <input type="search" id="q" name="q" value="<%= filters.q %>" placeholder="e.g. Sarah">
         </div>
+
         <div class="field" style="margin-bottom: 0;">
           <label for="district">District</label>
-          <input type="text" id="district" name="district" value="<%= filters.district %>" placeholder="e.g. Kampala">
+          <select id="district" name="district">
+            <option value="">All districts</option>
+            <% districts.forEach((d) => { %>
+              <option value="<%= d %>" <%= filters.district === d ? 'selected' : '' %>><%= d %></option>
+            <% }) %>
+          </select>
         </div>
+
         <div class="field" style="margin-bottom: 0;">
           <label for="profession">Profession</label>
-          <input type="text" id="profession" name="profession" value="<%= filters.profession %>" placeholder="e.g. Engineer">
+          <select id="profession" name="profession">
+            <option value="">All professions</option>
+            <% professions.forEach((p) => { %>
+              <option value="<%= p %>" <%= filters.profession === p ? 'selected' : '' %>><%= p %></option>
+            <% }) %>
+          </select>
         </div>
+
         <div class="field" style="flex-direction: row; align-items: center; gap: var(--space-2); margin-bottom: 0; padding-top: var(--space-4);">
           <input type="checkbox" id="mentor" name="mentor" value="1" <%= filters.mentorOnly ? 'checked' : '' %> style="min-height: auto;">
           <label for="mentor" style="margin: 0; font-weight: normal;">Mentors only</label>
         </div>
       </div>
 
-      <!-- Buttons span across both columns on mobile -->
       <div class="filter-actions">
         <button type="submit" class="btn btn--primary" style="width: 100%;">Apply</button>
         <a href="/directory" class="btn btn--ghost" style="width: 100%; text-align: center;">Reset</a>
@@ -36,7 +47,7 @@
     </form>
   </aside>
 
-  <div>
+  <div class="directory-results">
     <p style="color: var(--muted); margin-bottom: var(--space-4);">
       <strong><%= pagination.total %></strong> member<%= pagination.total === 1 ? '' : 's' %> found
     </p>
@@ -48,40 +59,69 @@
         <a href="/directory" class="btn btn--ghost" style="margin-top: var(--space-4);">Clear filters</a>
       </div>
     <% } else { %>
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4);">
+      <div class="directory-card-grid">
         <% members.forEach((m) => { %>
           
-          <article class="card" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+          <article class="card directory-card">
             <div>
+              <!-- Avatar + Name -->
               <div class="card__header">
-                <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--gold); color: var(--ink); display: grid; place-items: center; font-weight: 600; flex-shrink: 0;">
-                  <%= (m.first_name || m.display_name || '?')[0].toUpperCase() %>
-                </div>
-                <div style="min-width: 0;">
-                  <strong style="display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                <% if (m.avatar_path) { %>
+                  <img
+                    src="/dashboard/avatar/<%= m.user_id %>"
+                    alt="<%= m.first_name %> <%= m.last_name %>"
+                    class="directory-card__avatar"
+                  >
+                <% } else { %>
+                  <div class="directory-card__avatar directory-card__avatar--placeholder">
+                    <%= (m.first_name || m.display_name || '?')[0].toUpperCase() %>
+                  </div>
+                <% } %>
+                <div class="directory-card__identity">
+                  <strong class="directory-card__name">
                     <%= m.display_name || `${m.first_name} ${m.last_name}` %>
                   </strong>
-                  <p style="font-size: var(--text-xs); color: var(--muted); margin: 0;">
-                    Class of <%= m.graduation_year || '—' %> · <%= m.district || '—' %>
+                  <p class="directory-card__class">
+                    Class of <%= m.graduation_year || '—' %>
                   </p>
                 </div>
               </div>
-              
-              <% if (m.profession) { %>
-                <p style="font-size: var(--text-sm); margin: 0 0 var(--space-2);"><%= m.profession %></p>
+
+              <!-- Profession + Organization -->
+              <% if (m.profession || m.organization) { %>
+                <p class="directory-card__profession">
+                  <% if (m.profession) { %><strong><%= m.profession %></strong><% } %>
+                  <% if (m.organization) { %><br><span style="color: var(--muted);"><%= m.organization %></span><% } %>
+                </p>
               <% } %>
-              
+
+              <!-- Contact & details list -->
+              <ul class="directory-card__details">
+                <% if (m.district) { %>
+                  <li>📍 <%= m.district %><% if (m.country_code) { %>, <%= m.country_code %><% } %></li>
+                <% } %>
+                <% if (m.phone) { %>
+                  <li>📞 <a href="tel:<%= m.phone %>"><%= m.phone %></a></li>
+                <% } %>
+                <% if (m.account_email) { %>
+                  <li>✉️ <a href="mailto:<%= m.account_email %>"><%= m.account_email %></a></li>
+                <% } %>
+              </ul>
+
+              <!-- Mentor badge -->
               <% if (m.mentor_opt_in) { %>
-                <span class="badge badge--gold">Mentor<% if (m.mentor_field) { %> · <%= m.mentor_field %><% } %></span>
+                <span class="badge badge--gold directory-card__mentor">
+                  Mentor<% if (m.mentor_field) { %> · <%= m.mentor_field %><% } %>
+                </span>
               <% } %>
             </div>
             
             <!-- Actions -->
-            <div style="margin-top: var(--space-4); display: flex; gap: var(--space-2);">
-              <a href="/directory/<%= m.seed_ref || m.user_id %>" class="btn btn--ghost" style="flex-grow: 1;">View Profile</a>
+            <div class="directory-card__actions">
+              <a href="/directory/<%= m.seed_ref || m.user_id %>" class="btn btn--ghost">View Profile</a>
               
               <% if (currentUser) { %>
-                <button type="button" class="btn btn--ghost" data-save="member" data-id="<%= m.user_id %>" data-action="save" style="padding-inline: var(--space-3);" title="Save Profile">☆</button>
+                <button type="button" class="btn btn--ghost directory-card__save" data-save="member" data-id="<%= m.user_id %>" data-action="save" title="Save Profile">☆</button>
               <% } %>
             </div>
           </article>
@@ -105,26 +145,160 @@
 </div>
 
 <style>
-  /* Base layout: 2 columns on desktop, 1 column on mobile */
   .directory-layout {
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--space-6);
+    min-width: 0;
+    width: 100%;
   }
 
-  /* Filter grid: stacked on desktop, 2 columns on mobile */
   .filter-grid {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-3);
   }
 
-  /* Filter actions: stacked on desktop, 2 columns on mobile */
+  .filter-grid > .field {
+    min-width: 0;
+  }
+
+  .filter-grid > .field:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .filter-grid select {
+    width: 100%;
+    min-width: 0;
+  }
+
   .filter-actions {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-2);
     margin-top: var(--space-4);
+  }
+
+  .directory-results {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .directory-card-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+    justify-items: stretch;
+    gap: var(--space-4);
+    width: 100%;
+    max-width: 100%;
+    margin-inline: auto;
+  }
+
+  .directory-card {
+    display: flex;
+    min-width: 0;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .directory-card__avatar {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+    border: 2px solid var(--gold);
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .directory-card__avatar--placeholder {
+    display: grid;
+    place-items: center;
+    background: var(--gold);
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .directory-card__identity {
+    min-width: 0;
+  }
+
+  .directory-card__name {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .directory-card__class {
+    margin: 0;
+    color: var(--muted);
+    font-size: var(--text-xs);
+  }
+
+  .directory-card__profession {
+    margin: var(--space-3) 0 var(--space-1);
+    font-size: var(--text-sm);
+  }
+
+  .directory-card__details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: var(--space-2) 0 0;
+    padding: 0;
+    color: var(--muted);
+    font-size: var(--text-sm);
+    list-style: none;
+  }
+
+  .directory-card__details a {
+    overflow-wrap: anywhere;
+  }
+
+  .directory-card__mentor {
+    display: inline-block;
+    margin-top: var(--space-2);
+  }
+
+  .directory-card__actions {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+  }
+
+  .directory-card__actions > a {
+    flex-grow: 1;
+  }
+
+  .directory-card__save {
+    padding-inline: var(--space-3);
+  }
+
+  @media (min-width: 640px) {
+    .filter-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .filter-grid > .field:first-child {
+      grid-column: auto;
+    }
+
+    .filter-actions {
+      grid-template-columns: 1fr;
+    }
+
+    .directory-card-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .directory-card-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
   }
 
   @media (min-width: 900px) {
@@ -137,12 +311,14 @@
     }
   }
 
-  @media (max-width: 899px) {
-    .filter-grid {
-      grid-template-columns: 1fr 1fr;
-    }
+  @media (max-width: 359px) {
+    .filter-grid,
     .filter-actions {
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
+    }
+
+    .filter-grid > .field:first-child {
+      grid-column: auto;
     }
   }
 </style>

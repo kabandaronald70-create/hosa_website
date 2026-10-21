@@ -153,3 +153,31 @@ export async function getPublicMemberBySeedRefOrId(idOrSeedRef) {
   );
   return rows[0] || null;
 }
+
+// ---------------------------------------------------------------------------
+// Filter options — for the directory dropdowns
+// ---------------------------------------------------------------------------
+
+export async function getDistinctDistricts() {
+  const { rows } = await query(
+    `SELECT DISTINCT district 
+       FROM member_profiles 
+      WHERE district IS NOT NULL 
+        AND district <> '' 
+        AND public_visibility = TRUE
+      ORDER BY district ASC`,
+  );
+  return rows.map((r) => r.district);
+}
+
+export async function getDistinctProfessions() {
+  const { rows } = await query(
+    `SELECT DISTINCT profession 
+       FROM member_profiles 
+      WHERE profession IS NOT NULL 
+        AND profession <> '' 
+        AND public_visibility = TRUE
+      ORDER BY profession ASC`,
+  );
+  return rows.map((r) => r.profession);
+}

@@ -5,7 +5,7 @@ import {
 } from "../models/userModel.js";
 import { logger } from "../utils/logger.js";
 import { countUnread } from "../models/notificationModel.js";
-import { query } from "../config/db.js";
+import { countAnnouncementBadge } from "../models/announcementModel.js";
 
 /**
  * Loads req.user, req.userRoles, req.profile from the session (if any).
@@ -22,30 +22,30 @@ export async function currentUser(req, res, next) {
   req.profile = null;
 
   try {
-    // 1. Fetch active announcement count (for everyone, even guests)
-    const { rows: annCount } = await query(
-      `SELECT COUNT(*)::int AS n FROM announcements`,
-    );
-    res.locals.activeAnnouncements = annCount[0]?.n || 0;
-
     // 2. If no session, we are done (user is a guest)
     if (!req.session?.userId) {
+      res.locals.activeAnnouncements = await countAnnouncementBadge();
       return next();
     }
 
     // 3. Load user from DB
     const user = await findUserById(req.session.userId);
-    if (!user || user.status !== "active") {
+
+    // FIXED: Only block suspended or deactivated users.
+    // Allow 'active' AND 'pending_approval' to stay logged in.
+    if (!user || ["suspended", "deactivated"].includes(user.status)) {
       // Session points at a dead/inactive user — clear it.
       req.session.userId = null;
+      res.locals.activeAnnouncements = await countAnnouncementBadge();
       return next();
     }
 
     // 4. Fetch roles, profile, and unread notifications
-    const [roles, profile, unread] = await Promise.all([
+    const [roles, profile, unread, unreadAnnouncements] = await Promise.all([
       getRolesForUser(user.id),
       getProfileForUser(user.id),
       countUnread(user.id),
+      countAnnouncementBadge(user.id),
     ]);
 
     req.user = user;
@@ -57,6 +57,7 @@ export async function currentUser(req, res, next) {
     res.locals.currentProfile = profile;
     res.locals.isAuthenticated = true;
     res.locals.unreadNotifications = unread;
+    res.locals.activeAnnouncements = unreadAnnouncements;
   } catch (err) {
     logger.error({ err }, "Failed to load current user; treating as guest");
   }

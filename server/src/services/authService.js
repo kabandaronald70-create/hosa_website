@@ -65,7 +65,9 @@ export async function loginUser({ email, password }) {
     throw err;
   }
 
-  if (user.status !== "active") {
+  // Allow 'active' and 'pending_approval' to log in.
+  // Block 'suspended' and 'deactivated'.
+  if (user.status === "suspended" || user.status === "deactivated") {
     const err = new Error(
       "This account is not active. Please contact support.",
     );

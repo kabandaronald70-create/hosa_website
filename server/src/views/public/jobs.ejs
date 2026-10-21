@@ -42,13 +42,20 @@
         </div>
 
         <!-- Actions -->
-        <div style="margin-top: var(--space-4); display: flex; gap: var(--space-2);">
+        <div style="margin-top: var(--space-4); display: flex; gap: var(--space-2); align-items: center;">
           <% if (o.application_url) { %>
             <a href="<%= o.application_url %>" class="btn btn--primary" target="_blank" rel="noopener" style="flex-grow: 1;">Apply →</a>
           <% } %>
           
           <% if (currentUser) { %>
             <button type="button" class="btn btn--ghost" data-save="opportunity" data-id="<%= o.id %>" data-action="save" style="padding-inline: var(--space-3);" title="Save Job">☆</button>
+            
+            <a href="/report?type=opportunity&id=<%= o.id %>" 
+               class="btn btn--ghost" 
+               style="padding-inline: var(--space-3); color: var(--danger); border-color: transparent;" 
+               title="Report this job">
+              ⚠ Report
+            </a>
           <% } %>
         </div>
       </article>

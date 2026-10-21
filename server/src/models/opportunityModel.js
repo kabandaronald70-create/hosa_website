@@ -1,10 +1,28 @@
 import { query } from "../config/db.js";
 
+/**
+ * Automatically mark any approved opportunity as 'closed'
+ * if its deadline has passed.
+ */
+export async function expireOldOpportunities() {
+  await query(
+    `UPDATE opportunities 
+     SET status = 'closed' 
+     WHERE status = 'approved' 
+       AND deadline IS NOT NULL 
+       AND deadline < now()`,
+  );
+}
+
 export async function listApprovedOpportunities({
   category,
   page = 1,
   limit = 24,
 } = {}) {
+  // 1. Run the expiry check first
+  await expireOldOpportunities();
+
+  // 2. Only show approved jobs (closed ones are automatically hidden)
   const where = [`o.status = 'approved'`];
   const values = [];
   let i = 1;
@@ -90,6 +108,9 @@ export async function listMyOpportunities(userId) {
 
 // New addition: fetch a single opportunity by its slug or external_ref
 export async function getOpportunityByIdOrRef(idOrSlug) {
+  // Run expiry check before fetching a single one too
+  await expireOldOpportunities();
+
   const { rows } = await query(
     `SELECT o.id, o.external_ref, o.slug, o.title, o.description,
             o.employer, o.organization, o.location, o.type_label,

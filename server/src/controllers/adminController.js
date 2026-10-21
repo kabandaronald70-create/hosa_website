@@ -23,6 +23,10 @@ import {
   getAuditLogById,
   listAuditActions,
   listAuditTargetTypes,
+  listReports,
+  setReportStatus,
+  deleteReportedOpportunity,
+  deleteReportedStory,
 } from "../models/adminModel.js";
 
 import {
@@ -758,6 +762,87 @@ export async function exportAuditCsv(req, res, next) {
       `attachment; filename="audit-${stamp}.csv"`,
     );
     res.send(lines.join("\r\n") + "\r\n");
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Reports
+// ---------------------------------------------------------------------------
+
+export async function showReportsList(req, res, next) {
+  try {
+    const status = ["pending", "reviewed", "dismissed"].includes(
+      req.query.status,
+    )
+      ? req.query.status
+      : "pending";
+    const page = Number.isFinite(Number(req.query.page))
+      ? Math.max(1, Number(req.query.page))
+      : 1;
+
+    const result = await listReports({ status, page, limit: 25 });
+
+    res.render("admin/reports-list", {
+      title: "Reports — Admin",
+      result,
+      filters: { status },
+      layout: "layouts/app",
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function actionDismissReport(req, res, next) {
+  try {
+    const { id } = req.params;
+    await setReportStatus(id, "dismissed");
+    req.flash("success", "Report dismissed.");
+    res.redirect("/admin/reports");
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function actionResolveReport(req, res, next) {
+  try {
+    const { id } = req.params;
+    await setReportStatus(id, "reviewed");
+    req.flash("success", "Report marked as reviewed.");
+    res.redirect("/admin/reports");
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function actionDeleteReportedContent(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    // Get the report first to know what to delete
+    const { rows } = await query(
+      `SELECT target_type, target_id FROM reports WHERE id = $1`,
+      [id],
+    );
+    if (rows.length === 0) {
+      req.flash("error", "Report not found.");
+      return res.redirect("/admin/reports");
+    }
+
+    const { target_type, target_id } = rows[0];
+
+    if (target_type === "opportunity") {
+      await deleteReportedOpportunity(target_id);
+    } else if (target_type === "story") {
+      await deleteReportedStory(target_id);
+    }
+
+    await setReportStatus(id, "reviewed");
+
+    req.flash("success", `Reported ${target_type} has been deleted.`);
+    res.redirect("/admin/reports");
   } catch (err) {
     next(err);
   }

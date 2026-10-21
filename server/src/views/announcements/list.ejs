@@ -5,8 +5,8 @@
 
 <% if (announcements.length === 0) { %>
   <div class="empty-state">
-    <p class="empty-state__title">No announcements yet.</p>
-    <p>Check back soon for news and updates.</p>
+    <p class="empty-state__title"><%= currentUser ? 'No unread announcements.' : 'No announcements this week.' %></p>
+    <p><%= currentUser ? 'You are all caught up.' : 'Check back soon for news and updates.' %></p>
   </div>
 <% } else { %>
   <div class="stack" style="max-width: 800px;">
@@ -24,6 +24,12 @@
           </div>
         </div>
         <p style="white-space: pre-wrap; font-size: var(--text-base);"><%= a.body %></p>
+        <% if (currentUser) { %>
+          <form method="post" action="/announcements/<%= a.id %>/read" style="margin-top: var(--space-4);">
+            <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+            <button type="submit" class="btn btn--primary">Mark as read</button>
+          </form>
+        <% } %>
       </article>
     <% }) %>
   </div>

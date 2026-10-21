@@ -7,10 +7,14 @@ import {
   showContact,
   showMentorshipInfo,
 } from "../controllers/publicPageController.js";
-import { showAnnouncements } from "../controllers/announcementController.js";
+import {
+  actionMarkAnnouncementRead,
+  showAnnouncements,
+} from "../controllers/announcementController.js";
 import { query } from "../config/db.js";
-import { listAnnouncements } from "../models/announcementModel.js";
+import { listActiveAnnouncements } from "../models/announcementModel.js";
 import { listDocuments } from "../models/documentModel.js"; // ← ADDED THIS IMPORT
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -28,7 +32,7 @@ router.get("/", async (req, res, next) => {
         query(
           `SELECT COUNT(*)::int AS n FROM opportunities WHERE status = 'approved' AND (deadline IS NULL OR deadline >= CURRENT_DATE)`,
         ),
-        listAnnouncements(1),
+        listActiveAnnouncements(1),
       ]);
 
     res.render("public/home", {
@@ -84,6 +88,11 @@ router.get("/archive", async (req, res, next) => {
 router.get("/about", showAbout);
 router.get("/privacy", showPrivacy);
 router.get("/announcements", showAnnouncements);
+router.post(
+  "/announcements/:id/read",
+  requireAuth,
+  actionMarkAnnouncementRead,
+);
 router.get("/terms", showTerms);
 router.get("/help", showHelp);
 router.get("/contact", showContact);

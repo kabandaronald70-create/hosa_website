@@ -30,11 +30,18 @@
           <% } %>
         </div>
 
-        <div style="margin-top: var(--space-4); display: flex; gap: var(--space-2);">
+        <div style="margin-top: var(--space-4); display: flex; gap: var(--space-2); align-items: center;">
           <a href="/stories/<%= s.slug %>" class="btn btn--ghost" style="flex-grow: 1; text-align: center;">Read Story</a>
           
           <% if (currentUser) { %>
             <button type="button" class="btn btn--ghost" data-save="story" data-id="<%= s.slug %>" style="padding-inline: var(--space-3); color: #D2691E; border-color: #D2691E;" title="Save Story">☆</button>
+            
+            <a href="/report?type=story&id=<%= s.id %>" 
+               class="btn btn--ghost" 
+               style="padding-inline: var(--space-3); color: var(--danger); border-color: transparent;" 
+               title="Report this story">
+              ⚠ Report
+            </a>
           <% } %>
         </div>
 
@@ -55,4 +62,4 @@
       <% } %>
     </nav>
   <% } %>
-<% } %>s
+<% } %>
