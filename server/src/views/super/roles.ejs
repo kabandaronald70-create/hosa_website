@@ -5,12 +5,12 @@
   </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5);">
+<div class="role-management-grid">
   
   <!-- Current Admins -->
   <section>
     <h2 style="font-size: var(--text-lg); margin-bottom: var(--space-3);">Current Admins</h2>
-    <div class="card" style="padding: 0; overflow: hidden;">
+    <div class="card role-management-table">
       <table class="data-table">
         <thead>
           <tr><th>Name</th><th>Role</th><th></th></tr>
@@ -48,7 +48,7 @@
   <!-- Promote Members -->
   <section>
     <h2 style="font-size: var(--text-lg); margin-bottom: var(--space-3);">Promote a Member</h2>
-    <div class="card" style="padding: 0; overflow: hidden; max-height: 500px; overflow-y: auto;">
+    <div class="card role-management-table role-management-table--members">
       <table class="data-table">
         <thead>
           <tr><th>Name</th><th></th></tr>
@@ -78,3 +78,84 @@
     </div>
   </section>
 </div>
+
+<style>
+  .role-management-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: var(--space-5);
+  }
+
+  .role-management-grid > section {
+    min-width: 0;
+  }
+
+  .role-management-table {
+    padding: 0;
+    overflow-x: auto;
+  }
+
+  .role-management-table--members {
+    max-height: 500px;
+    overflow-y: auto;
+  }
+
+  @media (max-width: 767px) {
+    .role-management-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-4);
+    }
+
+    .role-management-table .data-table {
+      min-width: 0;
+    }
+
+    .role-management-table thead {
+      display: none;
+    }
+
+    .role-management-table table,
+    .role-management-table tbody {
+      display: block;
+      width: 100%;
+    }
+
+    .role-management-table tbody tr {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: var(--space-2) var(--space-3);
+      padding: var(--space-3);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .role-management-table tbody tr:last-child {
+      border-bottom: 0;
+    }
+
+    .role-management-table tbody td {
+      min-width: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    .role-management-table tbody td:first-child {
+      grid-column: 1 / -1;
+    }
+
+    .role-management-table tbody td[data-label="Name"] {
+      overflow-wrap: anywhere;
+    }
+
+    .role-management-table tbody td[data-label="Name"] small {
+      display: inline-block;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+
+    .role-management-table tbody tr > td[colspan] {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

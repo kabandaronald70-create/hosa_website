@@ -1,0 +1,73 @@
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); flex-wrap: wrap; gap: var(--space-3);">
+  <h1 style="margin: 0;">Reports</h1>
+  <a href="/admin" class="btn btn--ghost">← Back to admin</a>
+</div>
+
+<!-- Filter tabs -->
+<div style="display: flex; gap: var(--space-2); margin-bottom: var(--space-5);">
+  <a href="?status=pending" class="btn <%= filters.status === 'pending' ? 'btn--primary' : 'btn--ghost' %>">Pending</a>
+  <a href="?status=reviewed" class="btn <%= filters.status === 'reviewed' ? 'btn--primary' : 'btn--ghost' %>">Reviewed</a>
+  <a href="?status=dismissed" class="btn <%= filters.status === 'dismissed' ? 'btn--primary' : 'btn--ghost' %>">Dismissed</a>
+</div>
+
+<% if (result.rows.length === 0) { %>
+  <div class="empty-state">
+    <p class="empty-state__title">No <%= filters.status %> reports.</p>
+  </div>
+<% } else { %>
+  <div class="stack">
+    <% result.rows.forEach((r) => { %>
+      <article class="card">
+        <div style="display: flex; justify-content: space-between; align-items: start; gap: var(--space-3); flex-wrap: wrap;">
+          <div>
+            <span class="badge badge--gold"><%= r.target_type.toUpperCase() %></span>
+            <h2 style="font-size: var(--text-lg); margin: var(--space-2) 0 0;">
+              <%= r.target_title || '(Content deleted)' %>
+            </h2>
+            <p style="color: var(--muted); font-size: var(--text-sm); margin: var(--space-1) 0 0;">
+              Reported by: <strong><%= r.reporter_first_name %> <%= r.reporter_last_name %></strong> (<%= r.reporter_email %>)
+              · <%= new Date(r.created_at).toLocaleString('en-GB') %>
+            </p>
+          </div>
+          <span class="badge" style="background: <%= r.status === 'pending' ? '#fef3c7' : r.status === 'reviewed' ? '#dcfce7' : '#e5e7eb' %>; color: #111;">
+            <%= r.status %>
+          </span>
+        </div>
+
+        <div style="margin-top: var(--space-3); padding: var(--space-3); background: var(--bg-soft); border-left: 3px solid var(--danger); border-radius: var(--radius-sm);">
+          <p style="margin: 0; font-size: var(--text-sm);"><strong>Reason:</strong> <%= r.reason %></p>
+        </div>
+
+        <% if (r.status === 'pending') { %>
+          <div style="margin-top: var(--space-4); display: flex; gap: var(--space-2); flex-wrap: wrap;">
+            <form method="post" action="/admin/reports/<%= r.id %>/delete-content" onsubmit="return confirm('Delete this content permanently?')">
+              <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+              <button type="submit" class="btn btn--danger btn--sm">Delete Content</button>
+            </form>
+            <form method="post" action="/admin/reports/<%= r.id %>/resolve">
+              <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+              <button type="submit" class="btn btn--primary btn--sm">Mark as Reviewed (Keep)</button>
+            </form>
+            <form method="post" action="/admin/reports/<%= r.id %>/dismiss">
+              <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+              <button type="submit" class="btn btn--ghost btn--sm">Dismiss</button>
+            </form>
+          </div>
+        <% } %>
+      </article>
+    <% }) %>
+  </div>
+
+  <!-- Pagination -->
+  <% if (result.pages > 1) { %>
+    <nav class="pagination" style="margin-top: var(--space-5);" aria-label="Pagination">
+      <% if (result.page > 1) { %>
+        <a href="?status=<%= filters.status %>&page=<%= result.page - 1 %>">← Prev</a>
+      <% } %>
+      <span class="active"><%= result.page %> / <%= result.pages %></span>
+      <% if (result.page < result.pages) { %>
+        <a href="?status=<%= filters.status %>&page=<%= result.page + 1 %>">Next →</a>
+      <% } %>
+    </nav>
+  <% } %>
+<% } %>

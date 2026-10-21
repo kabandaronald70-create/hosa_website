@@ -39,7 +39,7 @@ export const profileSchema = z.object({
     .preprocess((v) => v === "on" || v === "true" || v === true, z.boolean())
     .optional(),
 
-  // --- NEW: 3-Tier Privacy Fields ---
+  // --- 3-Tier Privacy Fields ---
   email_privacy: z
     .enum(["public", "members", "private"])
     .optional()
@@ -72,5 +72,4 @@ export const passwordChangeSchema = z
     message: "New password must be different from the current one.",
   });
 
-// Reuse the shape from the auth validators (single source of truth).
 export { flattenZodError } from "./authValidators.js";

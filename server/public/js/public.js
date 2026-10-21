@@ -4,6 +4,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     return meta ? meta.getAttribute("content") : "";
   };
 
+  // --- 0. Password Visibility Toggles ---
+  document.querySelectorAll(".password-toggle").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.getAttribute("data-target");
+      const input = document.getElementById(targetId);
+      if (!input) return;
+
+      const isPassword = input.type === "password";
+      input.type = isPassword ? "text" : "password";
+      btn.textContent = isPassword ? "🙈" : "👁";
+      btn.setAttribute(
+        "aria-label",
+        isPassword ? "Hide password" : "Show password",
+      );
+    });
+  });
+
   // --- 1. Load Saved Items to set initial button states ---
   const savedMap = new Map(); // Map of "type:id" -> savedId
 
@@ -97,7 +114,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             updateAllButtons();
           } else if (res.status === 401) {
             // Not logged in
-            window.location.href = `/login?next=${encodeURIComponent(window.location.pathname)}`;
+            window.location.href = `/login?next=${encodeURIComponent(
+              window.location.pathname,
+            )}`;
           } else {
             // Could be a server error, or an account that is still pending admin approval
             alert(

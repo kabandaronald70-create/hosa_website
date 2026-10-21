@@ -386,3 +386,13 @@
   box-shadow: 0 0 0 4px rgba(15, 76, 58, 0.2);
   border-radius: 4px;
 }
+
+.password-toggle:hover {
+  color: var(--ink);
+  background: var(--bg-soft);
+  border-radius: var(--radius-sm);
+}
+.password-toggle:focus {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}

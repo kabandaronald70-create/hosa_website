@@ -45,7 +45,10 @@ export async function getProfileForUser(userId) {
     `SELECT user_id, first_name, last_name, display_name, graduation_year,
             biography, profession, organization, district, country_code,
             mentor_opt_in, public_visibility,
-            avatar_path, created_at, updated_at
+            avatar_path, created_at, updated_at,
+            -- Phase 4A Privacy and Profile Extensions:
+            phone, preferred_contact, skills, career_history,
+            email_privacy, phone_privacy, district_privacy
        FROM member_profiles
       WHERE user_id = $1
       LIMIT 1`,
@@ -56,7 +59,7 @@ export async function getProfileForUser(userId) {
 
 /**
  * Register a member atomically:
- *  - insert user
+ *  - insert user (with pending_approval status)
  *  - insert member_profile
  *  - grant 'member' role (plus 'mentor' if mentorOptIn)
  * Runs in a single transaction; any failure rolls everything back.
@@ -76,7 +79,7 @@ export async function createMember({
   return withTransaction(async (client) => {
     const userRes = await client.query(
       `INSERT INTO users (email, email_normalized, password_hash, status)
-       VALUES ($1, $2, $3, 'active')
+       VALUES ($1, $2, $3, 'pending_approval')
        RETURNING id, email, email_normalized, status, created_at`,
       [email, emailNormalized, passwordHash],
     );

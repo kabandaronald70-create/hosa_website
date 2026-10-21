@@ -14,7 +14,7 @@
   </div>
 <% } %>
 
-<div style="max-width: 800px;">
+<div class="profile-edit">
 
   <!-- Avatar Section (Separate Form) -->
   <div class="card" style="margin-bottom: var(--space-5);">
@@ -45,7 +45,7 @@
     <div class="card" style="margin-bottom: var(--space-5);">
       <h2 style="font-size: var(--text-lg); margin-top: 0;">Basic details</h2>
       
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+      <div class="profile-edit__grid">
         <div class="field">
           <label for="first_name">First name</label>
           <input id="first_name" name="first_name" type="text" required maxlength="80" value="<%= values.first_name || '' %>">
@@ -63,7 +63,7 @@
         <input id="display_name" name="display_name" type="text" maxlength="120" value="<%= values.display_name || '' %>">
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+      <div class="profile-edit__grid profile-edit__grid--graduation">
         <div class="field">
           <label for="graduation_year">Graduation year</label>
           <input id="graduation_year" name="graduation_year" type="number" min="1950" max="2100" value="<%= values.graduation_year || '' %>">
@@ -80,7 +80,7 @@
         <input id="organization" name="organization" type="text" maxlength="120" value="<%= values.organization || '' %>">
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+      <div class="profile-edit__grid profile-edit__grid--location">
         <div class="field">
           <label for="district">District</label>
           <input id="district" name="district" type="text" maxlength="120" value="<%= values.district || '' %>">
@@ -126,7 +126,7 @@
 
     <h3 style="font-size: var(--text-base); margin-top: var(--space-4); margin-bottom: var(--space-2);">Contact Visibility</h3>
     
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+    <div class="profile-edit__grid">
       <div class="field">
         <label for="email_privacy">Email Address</label>
         <select id="email_privacy" name="email_privacy">
@@ -194,3 +194,52 @@
   </div>
 
 </div>
+
+<style>
+  .profile-edit {
+    width: 100%;
+    max-width: 800px;
+    min-width: 0;
+  }
+
+  .profile-edit .card,
+  .profile-edit form {
+    min-width: 0;
+  }
+
+  .profile-edit__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 var(--space-4);
+  }
+
+  .profile-edit__grid > .field {
+    min-width: 0;
+  }
+
+  .profile-edit .field input,
+  .profile-edit .field select,
+  .profile-edit .field textarea {
+    width: 100%;
+    min-width: 0;
+  }
+
+  @media (max-width: 479px) {
+    .profile-edit__grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .profile-edit .card {
+      padding: var(--space-4);
+    }
+
+    #avatar-form > div {
+      flex-wrap: wrap;
+    }
+
+    #avatar-form input[type="file"] {
+      min-width: 0;
+      max-width: 100%;
+    }
+  }
+</style>

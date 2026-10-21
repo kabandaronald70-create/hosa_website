@@ -29,6 +29,10 @@ import {
   showAuditLog,
   showAuditDetail,
   exportAuditCsv,
+  showReportsList,
+  actionDismissReport,
+  actionResolveReport,
+  actionDeleteReportedContent,
 } from "../controllers/adminController.js";
 
 const router = Router();
@@ -77,5 +81,27 @@ router.get("/admin/audit/:id", showAuditDetail);
 router.get("/admin/announcements", showAdminAnnouncements);
 router.post("/admin/announcements", submitAnnouncement);
 router.post("/admin/announcements/:id/delete", removeAnnouncement);
+
+// Reports
+router.get(
+  "/admin/reports",
+  requireRole("admin", "super_admin"),
+  showReportsList,
+);
+router.post(
+  "/admin/reports/:id/dismiss",
+  requireRole("admin", "super_admin"),
+  actionDismissReport,
+);
+router.post(
+  "/admin/reports/:id/resolve",
+  requireRole("admin", "super_admin"),
+  actionResolveReport,
+);
+router.post(
+  "/admin/reports/:id/delete-content",
+  requireRole("admin", "super_admin"),
+  actionDeleteReportedContent,
+);
 
 export default router;

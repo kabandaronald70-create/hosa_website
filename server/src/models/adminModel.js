@@ -604,3 +604,70 @@ export async function listAuditTargetTypes() {
   );
   return rows.map((r) => r.target_type);
 }
+
+// ---------------------------------------------------------------------------
+// Reports
+// ---------------------------------------------------------------------------
+
+export async function listReports({
+  status = "pending",
+  page = 1,
+  limit = 25,
+} = {}) {
+  const offset = (page - 1) * limit;
+  const values = [];
+  let whereClause = "";
+  let i = 1;
+
+  if (status) {
+    whereClause = `WHERE r.status = $${i}`;
+    values.push(status);
+    i += 1;
+  }
+
+  const { rows: countRows } = await query(
+    `SELECT COUNT(*)::int AS total FROM reports r ${whereClause}`,
+    values,
+  );
+
+  const { rows } = await query(
+    `SELECT 
+        r.id, r.target_type, r.target_id, r.reason, r.status, r.created_at,
+        u.email AS reporter_email,
+        mp.first_name AS reporter_first_name,
+        mp.last_name AS reporter_last_name,
+        COALESCE(o.title, s.title) AS target_title
+       FROM reports r
+       JOIN users u ON u.id = r.reporter_id
+       LEFT JOIN member_profiles mp ON mp.user_id = r.reporter_id
+       LEFT JOIN opportunities o ON r.target_type = 'opportunity' AND o.id = r.target_id
+       LEFT JOIN stories s ON r.target_type = 'story' AND s.id = r.target_id
+       ${whereClause}
+       ORDER BY r.created_at DESC
+       LIMIT $${i} OFFSET $${i + 1}`,
+    [...values, limit, offset],
+  );
+
+  return {
+    rows,
+    total: countRows[0].total,
+    page,
+    limit,
+    pages: Math.max(1, Math.ceil(countRows[0].total / limit)),
+  };
+}
+
+export async function setReportStatus(reportId, status) {
+  await query(`UPDATE reports SET status = $1 WHERE id = $2`, [
+    status,
+    reportId,
+  ]);
+}
+
+export async function deleteReportedOpportunity(id) {
+  await query(`DELETE FROM opportunities WHERE id = $1`, [id]);
+}
+
+export async function deleteReportedStory(id) {
+  await query(`DELETE FROM stories WHERE id = $1`, [id]);
+}
