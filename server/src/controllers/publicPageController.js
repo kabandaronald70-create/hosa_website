@@ -1,5 +1,19 @@
-export function showAbout(req, res) {
-  res.render("public/about", { title: "About HOSA", layout: "layouts/public" });
+import { getLeadershipRoles } from "../models/leadershipModel.js";
+export async function showAbout(req, res, next) {
+  try {
+    const roles = await getLeadershipRoles();
+
+    // Filter to only show active roles on the public page
+    const activeRoles = roles.filter((r) => r.status === "active");
+
+    res.render("public/about", {
+      title: "About — HOSA",
+      roles: activeRoles, // Pass the roles to the view
+      layout: "layouts/public",
+    });
+  } catch (err) {
+    next(err);
+  }
 }
 
 export function showPrivacy(req, res) {

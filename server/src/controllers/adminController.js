@@ -28,6 +28,12 @@ import {
   deleteReportedOpportunity,
   deleteReportedStory,
 } from "../models/adminModel.js";
+import {
+  getLeadershipRoles,
+  createLeadershipRole,
+  updateLeadershipRole,
+  deleteLeadershipRole,
+} from "../models/leadershipModel.js";
 
 import {
   notifyStoryApproved,
@@ -843,6 +849,59 @@ export async function actionDeleteReportedContent(req, res, next) {
 
     req.flash("success", `Reported ${target_type} has been deleted.`);
     res.redirect("/admin/reports");
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Leadership & Governance
+// ---------------------------------------------------------------------------
+
+export async function showLeadershipDashboard(req, res, next) {
+  try {
+    const roles = await getLeadershipRoles();
+    // Also get a list of all users to populate the dropdown in the form
+    const { rows: users } = await query(
+      `SELECT u.id, u.email, mp.first_name, mp.last_name FROM users u LEFT JOIN member_profiles mp ON u.id = mp.user_id ORDER BY mp.first_name ASC`,
+    );
+
+    res.render("admin/leadership", {
+      title: "Leadership & Governance — Admin",
+      roles,
+      users,
+      layout: "layouts/app",
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function actionCreateLeadershipRole(req, res, next) {
+  try {
+    await createLeadershipRole(req.body);
+    req.flash("success", "Leadership role created.");
+    res.redirect("/admin/leadership");
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function actionUpdateLeadershipRole(req, res, next) {
+  try {
+    await updateLeadershipRole(req.params.id, req.body);
+    req.flash("success", "Leadership role updated.");
+    res.redirect("/admin/leadership");
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function actionDeleteLeadershipRole(req, res, next) {
+  try {
+    await deleteLeadershipRole(req.params.id);
+    req.flash("success", "Leadership role removed.");
+    res.redirect("/admin/leadership");
   } catch (err) {
     next(err);
   }

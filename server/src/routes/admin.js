@@ -1,6 +1,12 @@
 import { Router } from "express";
 import { requireRole } from "../middleware/auth.js";
 import {
+  showPendingBusinesses,
+  actionApproveBusiness,
+  actionRejectBusiness,
+  actionToggleFeatured,
+} from "../controllers/businessController.js";
+import {
   showAdminAnnouncements,
   submitAnnouncement,
   removeAnnouncement,
@@ -33,6 +39,10 @@ import {
   actionDismissReport,
   actionResolveReport,
   actionDeleteReportedContent,
+  showLeadershipDashboard,
+  actionCreateLeadershipRole,
+  actionUpdateLeadershipRole,
+  actionDeleteLeadershipRole,
 } from "../controllers/adminController.js";
 
 const router = Router();
@@ -102,6 +112,50 @@ router.post(
   "/admin/reports/:id/delete-content",
   requireRole("admin", "super_admin"),
   actionDeleteReportedContent,
+);
+
+// Leadership & Governance
+router.get(
+  "/admin/leadership",
+  requireRole("super_admin"),
+  showLeadershipDashboard,
+);
+router.post(
+  "/admin/leadership",
+  requireRole("super_admin"),
+  actionCreateLeadershipRole,
+);
+router.post(
+  "/admin/leadership/:id",
+  requireRole("super_admin"),
+  actionUpdateLeadershipRole,
+);
+router.post(
+  "/admin/leadership/:id/delete",
+  requireRole("super_admin"),
+  actionDeleteLeadershipRole,
+);
+
+// Business Directory Moderation
+router.get(
+  "/admin/businesses",
+  requireRole("admin", "super_admin"),
+  showPendingBusinesses,
+);
+router.post(
+  "/admin/businesses/:id/approve",
+  requireRole("admin", "super_admin"),
+  actionApproveBusiness,
+);
+router.post(
+  "/admin/businesses/:id/reject",
+  requireRole("admin", "super_admin"),
+  actionRejectBusiness,
+);
+router.post(
+  "/admin/businesses/:id/feature",
+  requireRole("admin", "super_admin"),
+  actionToggleFeatured,
 );
 
 export default router;

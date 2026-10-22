@@ -1,0 +1,110 @@
+<header style="margin-bottom: var(--space-5);">
+  <h1>My Businesses</h1>
+  <p>Manage your business listings. All submissions require admin approval before appearing publicly.</p>
+</header>
+
+<div style="display: grid; grid-template-columns: 1fr; gap: var(--space-5);">
+  <!-- List existing -->
+  <div class="card">
+    <h2 style="margin-top: 0;">Your Listings</h2>
+    <% if (businesses.length === 0) { %>
+      <p style="color: var(--muted);">You have not submitted any businesses yet.</p>
+    <% } else { %>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>Date Posted</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% businesses.forEach(b => { %>
+              <tr>
+                <td data-label="Name"><strong><%= b.name %></strong></td>
+                <td data-label="Category"><%= b.category %></td>
+                <td data-label="Status">
+                  <span class="badge badge--<%= b.status === 'approved' ? 'success' : b.status === 'pending' ? 'warning' : 'danger' %>">
+                    <%= b.status %>
+                  </span>
+                </td>
+                <td data-label="Date Posted" style="font-size: var(--text-sm);">
+                  <%= new Date(b.created_at).toLocaleDateString('en-GB') %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Submit new -->
+  <div class="card">
+    <h2 style="margin-top: 0;">Submit a New Business</h2>
+    
+    <% if (!canSubmit) { %>
+      <!-- 1-Month Limit Reached State -->
+      <div class="alert alert--warning" style="margin-top: var(--space-4);">
+        <strong>Submission Limit Reached</strong><br>
+        Our guidelines allow only one business listing per member per month to keep the directory fresh. 
+        You will be able to submit a new business in <strong><%= waitDays %> days</strong>.
+      </div>
+    <% } else { %>
+      <!-- Submission Form (Added enctype) -->
+      <form method="POST" action="/dashboard/businesses" enctype="multipart/form-data">
+        <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+        
+        <div class="field">
+          <label>Business Name</label>
+          <input type="text" name="name" required>
+        </div>
+        
+        <div class="field">
+          <label>Category</label>
+          <select name="category" required>
+            <% categories.forEach(c => { %><option value="<%= c %>"><%= c %></option><% }) %>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Description</label>
+          <textarea name="description" rows="3" required placeholder="What does your business do?"></textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+          <div class="field">
+            <label>Location</label>
+            <input type="text" name="location" required placeholder="e.g. Kampala">
+          </div>
+          <div class="field">
+            <label>Phone</label>
+            <input type="text" name="phone">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+          <div class="field">
+            <label>Email</label>
+            <input type="email" name="email">
+          </div>
+          <div class="field">
+            <label>Website</label>
+            <input type="url" name="website" placeholder="https://">
+          </div>
+        </div>
+
+        <!-- ADDED: Business Logo Upload -->
+        <div class="field">
+          <label>Business Logo (Optional)</label>
+          <input type="file" name="logo" accept="image/jpeg,image/png,image/webp">
+          <span class="field-hint">Square image, max 2MB. Will be displayed on your directory card.</span>
+        </div>
+
+        <button type="submit" class="btn btn--primary" style="width: 100%;">Submit for Review</button>
+      </form>
+    <% } %>
+  </div>
+</div>

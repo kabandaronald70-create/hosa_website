@@ -1,19 +1,11 @@
-<header
-  style="
-    text-align: center;
-    margin-bottom: var(--space-7);
-    padding: var(--space-7) 0;
-    background: var(--gold-100);
-    border-radius: var(--radius-md);
-  "
->
-  <h1 style="margin-bottom: var(--space-2)">About HOSA</h1>
+<header style="margin-bottom: var(--space-7); text-align: center">
+  <h1>About HOSA</h1>
   <p
     style="
       font-size: var(--text-lg);
-      color: var(--muted);
-      max-width: 600px;
+      max-width: 800px;
       margin: 0 auto;
+      color: var(--muted);
     "
   >
     The Highway Old Students' Association connects generations of alumni from
@@ -21,67 +13,177 @@
   </p>
 </header>
 
-<section class="stack-lg" style="max-width: 800px; margin: 0 auto">
-  <div>
-    <h2>Our Mission</h2>
+<div
+  style="display: grid; gap: var(--space-6); max-width: 900px; margin: 0 auto"
+>
+  <!-- Mission & History -->
+  <section class="card">
+    <h2 style="color: var(--green)">Our Mission</h2>
     <p>
       To foster lifelong connections among former students of Highway Secondary
       School, support the professional and personal growth of our members, and
       give back to the school that shaped us. We believe in the power of the
       HOSA network to uplift our community in Kassanda District and beyond.
     </p>
-  </div>
 
-  <div>
-    <h2>Our History</h2>
+    <h2 style="color: var(--green); margin-top: var(--space-5)">Our History</h2>
     <p>
       Highway Secondary School opened its doors in 2001. Since our first cohort
       graduated, our alumni have spread across Uganda and the world — serving as
       doctors, engineers, teachers, entrepreneurs, and leaders. HOSA was founded
       to keep that community alive, no matter where life takes us.
     </p>
-  </div>
+  </section>
 
-  <div>
-    <h2>What We Do</h2>
+  <!-- What We Do -->
+  <section class="card">
+    <h2 style="color: var(--green)">What We Do</h2>
     <div
       style="
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: var(--space-4);
+        margin-top: var(--space-4);
       "
     >
-      <div class="card">
-        <h3 style="margin-bottom: var(--space-2)">Connect</h3>
-        <p style="margin: 0; font-size: var(--text-sm)">
+      <div>
+        <h3 style="font-size: var(--text-lg); margin-bottom: var(--space-2)">
+          🤝 Connect
+        </h3>
+        <p style="font-size: var(--text-sm); color: var(--muted)">
           Through our directory, alumni can find old friends, colleagues, and
           mentors in every industry.
         </p>
       </div>
-      <div class="card">
-        <h3 style="margin-bottom: var(--space-2)">Mentor</h3>
-        <p style="margin: 0; font-size: var(--text-sm)">
+      <div>
+        <h3 style="font-size: var(--text-lg); margin-bottom: var(--space-2)">
+          🌱 Mentor
+        </h3>
+        <p style="font-size: var(--text-sm); color: var(--muted)">
           Our mentorship programme pairs experienced alumni with current
           students and recent graduates.
         </p>
       </div>
-      <div class="card">
-        <h3 style="margin-bottom: var(--space-2)">Give Back</h3>
-        <p style="margin: 0; font-size: var(--text-sm)">
+      <div>
+        <h3 style="font-size: var(--text-lg); margin-bottom: var(--space-2)">
+          🎓 Give Back
+        </h3>
+        <p style="font-size: var(--text-sm); color: var(--muted)">
           We support the school through fundraising, facility improvements, and
           scholarship programs.
         </p>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div>
-    <h2>Executive Committee</h2>
-    <p style="color: var(--muted)">
-      <em
-        >Committee details will be published soon. Contact us to get
-        involved.</em
-      >
+  <!-- Governance Structure -->
+  <section>
+    <h2
+      style="
+        color: var(--green);
+        text-align: center;
+        margin-bottom: var(--space-5);
+      "
+    >
+      Governance Structure
+    </h2>
+
+    <div
+      class="card"
+      style="margin-bottom: var(--space-4); border-left: 4px solid var(--gold)"
+    >
+      <h3 style="margin-top: 0">The General Assembly (GA)</h3>
+      <p style="color: var(--muted); font-size: var(--text-sm)">
+        The supreme governing body comprising all registered members of the
+        Association. The GA holds ultimate decision-making authority, elects
+        leaders, and approves policies.
+      </p>
+    </div>
+
+    <div
+      class="card"
+      style="margin-bottom: var(--space-4); border-left: 4px solid var(--gold)"
+    >
+      <h3 style="margin-top: 0">The Board of Trustees (BOT)</h3>
+      <p style="color: var(--muted); font-size: var(--text-sm)">
+        The oversight body responsible for providing strategic guidance,
+        ensuring accountability, and approving key decisions made by the
+        Executive Committee on behalf of the General Assembly.
+      </p>
+    </div>
+
+    <div class="card" style="border-left: 4px solid var(--gold)">
+      <h3 style="margin-top: 0">The Executive Committee (EC)</h3>
+      <p style="color: var(--muted); font-size: var(--text-sm)">
+        The administrative and operational arm of the Association responsible
+        for the day-to-day management of its affairs.
+      </p>
+    </div>
+  </section>
+
+    <!-- Current Leadership (Executive Committee) -->
+  <section>
+    <h2 style="color: var(--green); margin-bottom: var(--space-4);">Current Leadership</h2>
+    <p style="margin-bottom: var(--space-4);">Meet the leaders currently serving the HOSA community.</p>
+
+    <% if (roles.length === 0) { %>
+      <div class="empty-state">
+        <p class="empty-state__title">Leadership details coming soon.</p>
+      </div>
+    <% } else { %>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-4);">
+        
+        <% roles.forEach((role) => { %>
+          <article class="card" style="text-align: center; padding: var(--space-6) var(--space-4);">
+            
+            <% if (role.first_name) { %>
+              <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--gold); color: var(--ink); display: grid; place-items: center; font-size: var(--text-2xl); font-weight: 700; margin: 0 auto var(--space-3);">
+                <%= role.first_name[0].toUpperCase() %>
+              </div>
+              <h3 style="margin: 0; font-size: var(--text-lg);"><%= role.first_name %> <%= role.last_name %></h3>
+            <% } else { %>
+              <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--line); color: var(--muted); display: grid; place-items: center; font-size: var(--text-2xl); font-weight: 700; margin: 0 auto var(--space-3);">
+                ?
+              </div>
+              <h3 style="margin: 0; font-size: var(--text-lg); color: var(--muted);">To Be Appointed</h3>
+            <% } %>
+
+            <p class="badge badge--gold" style="margin: var(--space-2) 0;"><%= role.office_title %></p>
+            
+            <% if (role.term_start) { %>
+              <p style="font-size: var(--text-xs); color: var(--muted); margin-top: var(--space-2);">
+                Term: <%= new Date(role.term_start).getFullYear() %> – <%= role.term_end ? new Date(role.term_end).getFullYear() : 'Present' %>
+              </p>
+            <% } %>
+
+            <% if (role.biography) { %>
+              <p style="font-size: var(--text-sm); color: var(--muted); margin: var(--space-2) 0 0;"><%= role.biography %></p>
+            <% } %>
+            
+          </article>
+        <% }); %>
+
+      </div>
+    <% } %>
+  </section>
+  <!-- Call to Action -->
+  <section
+    class="card"
+    style="
+      background: var(--green-700);
+      color: var(--white);
+      text-align: center;
+      border: none;
+      margin-top: var(--space-6);
+    "
+  >
+    <h2 style="color: var(--white); margin-top: 0">Get Involved</h2>
+    <p style="color: var(--gold-100); margin-bottom: var(--space-4)">
+      HOSA is driven by the passion of its members. Whether you want to mentor,
+      volunteer, or sponsor an initiative, there is a place for you here.
     </p>
-  </div>
-</section>
+    <a href="/contact" class="btn btn--accent" style="min-width: 200px"
+      >Contact Us</a
+    >
+  </section>
+</div>

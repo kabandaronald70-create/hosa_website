@@ -1,0 +1,94 @@
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); flex-wrap: wrap; gap: var(--space-3);">
+  <div>
+    <h1 style="margin: 0;">Business Approvals</h1>
+    <p style="color: var(--muted); margin: var(--space-1) 0 0; font-size: var(--text-sm);">Review alumni business submissions before they appear in the public directory.</p>
+  </div>
+  <a href="/admin" class="btn btn--ghost">← Back to Admin</a>
+</div>
+
+<div class="card" style="padding: 0; overflow: hidden;">
+  <div class="table-responsive">
+    <table class="data-table" style="border-radius: 0; box-shadow: none;">
+      <thead>
+        <tr>
+          <th>Business</th>
+          <th>Category</th>
+          <th>Owner</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (businesses.length === 0) { %>
+  <tr>
+    <td colspan="4" style="text-align: center; padding: var(--space-6); color: var(--muted);">
+      No businesses found in the system yet.
+    </td>
+  </tr>
+<% } %>
+        
+        <% businesses.forEach(b => { %>
+          <tr>
+            <td data-label="Business">
+              <div style="display: flex; gap: var(--space-3); align-items: center;">
+                <!-- Show logo if uploaded -->
+                <% if (b.logo_path) { %>
+                  <img src="<%= b.logo_path %>" alt="Logo" style="width: 40px; height: 40px; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--line);">
+                <% } else { %>
+                  <div style="width: 40px; height: 40px; border-radius: var(--radius-sm); background: var(--bg-soft); color: var(--muted); display: grid; place-items: center; font-weight: bold;">
+                    <%= b.name[0].toUpperCase() %>
+                  </div>
+                <% } %>
+                <div>
+                  <strong style="color: var(--green); font-size: var(--text-base);"><%= b.name %></strong><br>
+                  <span style="font-size: var(--text-xs); color: var(--muted);">📍 <%= b.location %></span>
+                </div>
+              </div>
+            </td>
+            
+            <td data-label="Category">
+              <span class="badge badge--gold"><%= b.category %></span>
+            </td>
+            
+            <td data-label="Owner">
+              <span style="font-size: var(--text-sm);"><%= b.owner_email %></span>
+            </td>
+            
+            <td data-label="Actions">
+              <div style="display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center;">
+                
+                <!-- Approve / Reject -->
+                <% if (b.status === 'pending') { %>
+                  <form method="post" action="/admin/businesses/<%= b.id %>/approve" style="display:inline;">
+                    <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                    <button type="submit" class="btn btn--primary btn--sm">Approve</button>
+                  </form>
+                  
+                  <form method="post" action="/admin/businesses/<%= b.id %>/reject" onsubmit="return confirm('Reject this business?')" style="display:inline;">
+                    <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                    <button type="submit" class="btn btn--ghost btn--sm" style="color: var(--danger);">Reject</button>
+                  </form>
+                <% } else { %>
+                  <span class="badge badge--success" style="margin-right: var(--space-2);">Approved</span>
+                <% } %>
+
+                <!-- Feature Dropdown (only if approved) -->
+                <% if (b.status === 'approved') { %>
+                  <form method="post" action="/admin/businesses/<%= b.id %>/feature" style="display:flex; gap:4px; align-items:center; margin-top: 4px;">
+                    <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                    <select name="days" style="padding: 4px; border: 1px solid var(--line); border-radius: 4px; font-size: 12px; min-height: 32px; background: var(--white);">
+                      <option value="7">Feature 7 Days</option>
+                      <option value="30">Feature 30 Days</option>
+                      <option value="0">Remove Feature</option>
+                    </select>
+                    <button type="submit" class="btn btn--accent btn--sm" style="padding: 4px 8px; font-size: 12px;">Update</button>
+                  </form>
+                <% } %>
+
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>

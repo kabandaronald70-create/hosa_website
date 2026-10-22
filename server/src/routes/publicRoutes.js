@@ -13,8 +13,9 @@ import {
 } from "../controllers/announcementController.js";
 import { query } from "../config/db.js";
 import { listActiveAnnouncements } from "../models/announcementModel.js";
-import { listDocuments } from "../models/documentModel.js"; // ← ADDED THIS IMPORT
+import { listDocuments } from "../models/documentModel.js";
 import { requireAuth } from "../middleware/auth.js";
+import { showBusinessDirectory } from "../controllers/businessController.js";
 
 const router = Router();
 
@@ -88,14 +89,11 @@ router.get("/archive", async (req, res, next) => {
 router.get("/about", showAbout);
 router.get("/privacy", showPrivacy);
 router.get("/announcements", showAnnouncements);
-router.post(
-  "/announcements/:id/read",
-  requireAuth,
-  actionMarkAnnouncementRead,
-);
+router.post("/announcements/:id/read", requireAuth, actionMarkAnnouncementRead);
 router.get("/terms", showTerms);
 router.get("/help", showHelp);
 router.get("/contact", showContact);
 router.get("/mentorship", showMentorshipInfo);
+router.get("/businesses", showBusinessDirectory);
 
 export default router;
