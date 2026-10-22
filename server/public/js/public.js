@@ -27,7 +27,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (btnTopnav && topnav) {
     btnTopnav.addEventListener("click", (e) => {
       e.preventDefault();
-      topnav.classList.toggle("is-open");
+      const isOpen = topnav.classList.toggle("is-open");
+      btnTopnav.setAttribute("aria-expanded", String(isOpen));
+
+      const sidebar = document.querySelector(".sidebar");
+      const overlay = document.getElementById("sidebar-overlay");
+      if (sidebar) sidebar.classList.remove("is-open");
+      if (overlay) overlay.classList.remove("is-visible");
     });
   }
 

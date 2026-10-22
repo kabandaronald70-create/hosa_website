@@ -67,7 +67,13 @@
 
       <!-- Mobile Toggles (Only visible on mobile via CSS) -->
       <div class="mobile-toggles">
-        <button type="button" class="mobile-toggle-btn" id="btn-topnav">
+        <button
+          type="button"
+          class="mobile-toggle-btn"
+          id="btn-topnav"
+          aria-controls="topbar-nav"
+          aria-expanded="false"
+        >
           <span>Topbar</span> ☰
         </button>
         <% if (isAppPage) { %>
