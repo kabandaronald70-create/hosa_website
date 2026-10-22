@@ -1,0 +1,94 @@
+<header style="margin-bottom: var(--space-6); display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: var(--space-4);">
+  <div>
+    <h1>Alumni Business Directory</h1>
+    <p>Discover and support businesses owned by fellow Highway alumni.</p>
+  </div>
+  <a href="/dashboard/businesses" class="btn btn--accent">List Your Business</a>
+</header>
+
+<form method="GET" action="/businesses" style="display: flex; gap: var(--space-3); margin-bottom: var(--space-5); flex-wrap: wrap;">
+  <input type="text" name="q" value="<%= filters.search %>" placeholder="Search businesses or services..." style="flex-grow: 1; min-width: 200px;">
+  <select name="category">
+    <option value="">All Categories</option>
+    <% categories.forEach(c => { %>
+      <option value="<%= c %>" <%= filters.category === c ? 'selected' : '' %>><%= c %></option>
+    <% }) %>
+  </select>
+  <button type="submit" class="btn btn--primary">Search</button>
+</form>
+
+<% 
+  // Separate featured and regular businesses
+  const now = new Date();
+  const featuredBusinesses = businesses.filter(b => b.featured_until && new Date(b.featured_until) > now);
+  const regularBusinesses = businesses.filter(b => !b.featured_until || new Date(b.featured_until) <= now);
+%>
+
+<% if (businesses.length === 0) { %>
+  <div class="empty-state">
+    <p class="empty-state__title">No businesses found.</p>
+  </div>
+<% } else { %>
+
+  <!-- Featured Businesses -->
+  <% if (featuredBusinesses.length > 0) { %>
+    <h2 style="color: var(--gold-700); margin-bottom: var(--space-3); font-size: var(--text-xl);">⭐ Featured Businesses</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-6);">
+      <% featuredBusinesses.forEach(b => { %>
+        <article class="card" style="display: flex; flex-direction: column; border: 2px solid var(--gold); background: var(--ivory);">
+          <div style="flex-grow: 1;">
+            <div style="display: flex; gap: var(--space-3); align-items: center; margin-bottom: var(--space-3);">
+              <% if (b.logo_path) { %>
+                <img src="<%= b.logo_path %>" alt="<%= b.name %> Logo" style="width: 50px; height: 50px; border-radius: var(--radius-sm); object-fit: cover;">
+              <% } else { %>
+                <div style="width: 50px; height: 50px; border-radius: var(--radius-sm); background: var(--gold); color: var(--ink); display: grid; place-items: center; font-size: var(--text-xl); font-weight: bold;">
+                  <%= b.name[0].toUpperCase() %>
+                </div>
+              <% } %>
+              <div>
+                <span class="badge badge--gold">Featured</span>
+                <h2 style="font-size: var(--text-lg); margin: 0;"><%= b.name %></h2>
+              </div>
+            </div>
+            <p style="color: var(--muted); font-size: var(--text-sm); margin-bottom: var(--space-2);">📍 <%= b.location %></p>
+            <p style="font-size: var(--text-sm);"><%= b.description %></p>
+          </div>
+          <div style="margin-top: var(--space-4); border-top: 1px solid var(--line); padding-top: var(--space-3);">
+            <% if (b.website) { %><a href="<%= b.website %>" target="_blank" class="btn btn--accent btn--sm" style="width: 100%; margin-bottom: var(--space-2);">Visit Website</a><% } %>
+            <p style="font-size: var(--text-xs); color: var(--muted); margin: 0; text-align: center;">Owned by: <%= b.first_name %> <%= b.last_name %></p>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+  <% } %>
+
+  <!-- All Other Businesses -->
+  <h2 style="margin-bottom: var(--space-3); font-size: var(--text-xl);">All Businesses</h2>
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-4);">
+    <% regularBusinesses.forEach(b => { %>
+      <article class="card" style="display: flex; flex-direction: column;">
+        <div style="flex-grow: 1;">
+          <div style="display: flex; gap: var(--space-3); align-items: center; margin-bottom: var(--space-3);">
+            <% if (b.logo_path) { %>
+              <img src="<%= b.logo_path %>" alt="<%= b.name %> Logo" style="width: 50px; height: 50px; border-radius: var(--radius-sm); object-fit: cover;">
+            <% } else { %>
+              <div style="width: 50px; height: 50px; border-radius: var(--radius-sm); background: var(--gold); color: var(--ink); display: grid; place-items: center; font-size: var(--text-xl); font-weight: bold;">
+                <%= b.name[0].toUpperCase() %>
+              </div>
+            <% } %>
+            <div>
+              <span class="badge badge--muted"><%= b.category %></span>
+              <h2 style="font-size: var(--text-lg); margin: 0;"><%= b.name %></h2>
+            </div>
+          </div>
+          <p style="color: var(--muted); font-size: var(--text-sm); margin-bottom: var(--space-2);">📍 <%= b.location %></p>
+          <p style="font-size: var(--text-sm);"><%= b.description %></p>
+        </div>
+        <div style="margin-top: var(--space-4); border-top: 1px solid var(--line); padding-top: var(--space-3);">
+          <% if (b.website) { %><a href="<%= b.website %>" target="_blank" class="btn btn--ghost btn--sm" style="width: 100%; margin-bottom: var(--space-2);">Visit Website</a><% } %>
+          <p style="font-size: var(--text-xs); color: var(--muted); margin: 0; text-align: center;">Owned by: <%= b.first_name %> <%= b.last_name %></p>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+<% } %>

@@ -1,0 +1,168 @@
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); flex-wrap: wrap; gap: var(--space-3);">
+  <div>
+    <h1 style="margin: 0;">Leadership & Governance</h1>
+    <p style="color: var(--muted); margin: var(--space-1) 0 0; font-size: var(--text-sm);">Manage officers, terms, and committee assignments.</p>
+  </div>
+  <a href="/admin" class="btn btn--ghost">← Back to Admin</a>
+</div>
+
+<style>
+  .leadership-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+    align-items: start;
+  }
+
+  /* On desktop, split into two columns: List (left) and Form (right) */
+  @media (min-width: 992px) {
+    .leadership-layout {
+      grid-template-columns: 1fr 380px;
+    }
+    .leadership-form-sticky {
+      position: sticky;
+      top: var(--space-6);
+    }
+  }
+
+  /* Ensure the form fields don't look cramped on mobile */
+  .leadership-form-sticky .field {
+    margin-bottom: var(--space-3);
+  }
+</style>
+
+<div class="leadership-layout">
+  
+  <!-- LEFT COLUMN: Current Officers List -->
+  <div class="card" style="padding: 0; overflow: hidden;">
+    <div style="padding: var(--space-5); border-bottom: 1px solid var(--line); background: var(--ivory);">
+      <h2 style="margin: 0; font-size: var(--text-lg);">Current Officers</h2>
+    </div>
+    
+    <div class="table-responsive">
+      <table class="data-table" style="border-radius: 0; box-shadow: none;">
+        <thead>
+          <tr>
+            <th>Officer</th>
+            <th>Office</th>
+            <th>Term</th>
+            <th>Status</th>
+            <th style="text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (roles.length === 0) { %>
+            <tr>
+              <td colspan="5" style="text-align: center; padding: var(--space-6); color: var(--muted);">
+                No leadership roles defined yet. Use the form to add one.
+              </td>
+            </tr>
+          <% } %>
+          
+          <% roles.forEach(role => { %>
+            <tr>
+              <!-- Officer Details -->
+              <td data-label="Officer">
+                <% if (role.first_name) { %>
+                  <strong><%= role.first_name %> <%= role.last_name %></strong><br>
+                  <span style="font-size: var(--text-xs); color: var(--muted);"><%= role.email %></span>
+                <% } else { %>
+                  <span style="color: var(--muted); font-style: italic;">Vacant Seat</span>
+                <% } %>
+              </td>
+
+              <!-- Office & Category -->
+              <td data-label="Office">
+                <strong style="color: var(--green);"><%= role.office_title %></strong><br>
+                <span class="badge badge--gold" style="font-size: 10px; margin-top: 4px;"><%= role.category %></span>
+              </td>
+
+              <!-- Term -->
+              <td data-label="Term" style="font-size: var(--text-sm);">
+                <%= role.term_start ? new Date(role.term_start).getFullYear() : '—' %> – 
+                <%= role.term_end ? new Date(role.term_end).getFullYear() : 'Present' %>
+              </td>
+
+              <!-- Status -->
+              <td data-label="Status">
+                <span class="badge badge--<%= role.status === 'active' ? 'success' : 'muted' %>">
+                  <%= role.status %>
+                </span>
+              </td>
+
+              <!-- Actions -->
+              <td data-label="Actions" style="text-align: right;">
+                <form method="post" action="/admin/leadership/<%= role.id %>/delete" onsubmit="return confirm('Remove this leadership role?')" style="display:inline;">
+                  <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                  <button type="submit" class="btn btn--ghost btn--sm" style="color: var(--danger); padding: 4px 8px;">Remove</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN: Add New Officer Form -->
+  <div class="card leadership-form-sticky">
+    <h3 style="margin-top: 0; font-size: var(--text-lg); border-bottom: 1px solid var(--line); padding-bottom: var(--space-3);">Add New Officer</h3>
+    
+    <form method="post" action="/admin/leadership">
+      <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+
+      <div class="field">
+        <label>Assign User</label>
+        <select name="userId">
+          <option value="">-- Leave Vacant --</option>
+          <% users.forEach(u => { %>
+            <option value="<%= u.id %>"><%= u.first_name ? `${u.first_name} ${u.last_name}` : u.email %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Office Title</label>
+        <input type="text" name="officeTitle" required placeholder="e.g. Chairperson, Treasurer">
+      </div>
+
+      <div class="field">
+        <label>Category</label>
+        <select name="category">
+          <option value="Executive Committee">Executive Committee</option>
+          <option value="Board of Trustees">Board of Trustees</option>
+          <option value="Secretariat">Secretariat</option>
+        </select>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
+        <div class="field">
+          <label>Term Start</label>
+          <input type="date" name="termStart">
+        </div>
+        <div class="field">
+          <label>Term End</label>
+          <input type="date" name="termEnd">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-2);">
+        <div class="field">
+          <label>Status</label>
+          <select name="status">
+            <option value="active">Active</option>
+            <option value="vacant">Vacant</option>
+            <option value="past">Past</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Order</label>
+          <input type="number" name="displayOrder" value="0" title="Lower numbers appear first">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn--primary" style="width: 100%; margin-top: var(--space-2);">Add Role</button>
+    </form>
+  </div>
+
+</div>
