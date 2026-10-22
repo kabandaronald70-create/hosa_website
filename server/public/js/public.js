@@ -21,6 +21,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
+  // --- 0b. Topbar mobile nav toggle ---
+  const btnTopnav = document.getElementById("btn-topnav");
+  const topnav = document.getElementById("topbar-nav");
+  if (btnTopnav && topnav) {
+    btnTopnav.addEventListener("click", (e) => {
+      e.preventDefault();
+      topnav.classList.toggle("is-open");
+    });
+  }
+
   // --- 1. Load Saved Items to set initial button states ---
   const savedMap = new Map(); // Map of "type:id" -> savedId
 

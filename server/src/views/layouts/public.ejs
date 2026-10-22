@@ -46,23 +46,7 @@
   </main>
 
   <%- include('../partials/footer') %>
-
-  <!-- Scripts (Placed at the bottom for performance) -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Public Top Nav Toggle
-      const btnTopnav = document.getElementById('btn-topnav');
-      const topnav = document.getElementById('topbar-nav');
-      
-      if (btnTopnav && topnav) {
-        btnTopnav.addEventListener('click', (e) => {
-          e.preventDefault();
-          topnav.classList.toggle('is-open');
-        });
-      }
-    });
-  </script>
-  
+    
   <script src="/js/public.js"></script>
 </body>
 </html>
