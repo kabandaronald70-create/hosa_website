@@ -7,8 +7,14 @@ import {
   hasPostedRecently,
   toggleFeaturedBusiness,
   listAllBusinessesForAdmin,
+  getBusinessById,
+  updateBusiness,
 } from "../models/businessModel.js";
-import { uploadBusinessLogo } from "../services/logoService.js"; // <-- ADDED
+import { uploadBusinessLogo } from "../services/logoService.js";
+import {
+  getActiveCampaign,
+  getCampaignBusinesses,
+} from "../models/campaignModel.js";
 
 const CATEGORIES = [
   "Agriculture",
@@ -30,13 +36,24 @@ export async function showBusinessDirectory(req, res, next) {
   try {
     const search = req.query.q || "";
     const category = req.query.category || "";
-    const businesses = await listApprovedBusinesses({ search, category });
+
+    const [businesses, activeCampaign] = await Promise.all([
+      listApprovedBusinesses({ search, category }),
+      getActiveCampaign(),
+    ]);
+
+    let campaignBusinesses = [];
+    if (activeCampaign) {
+      campaignBusinesses = await getCampaignBusinesses(activeCampaign.id);
+    }
 
     res.render("public/business-directory", {
       title: "Alumni Business Directory",
       businesses,
       categories: CATEGORIES,
       filters: { search, category },
+      activeCampaign,
+      campaignBusinesses,
       layout: "layouts/public",
     });
   } catch (err) {
@@ -49,7 +66,6 @@ export async function showMyBusinesses(req, res, next) {
   try {
     const businesses = await getBusinessesByUser(req.user.id);
 
-    // Calculate if they can submit based on their latest post
     let canSubmit = true;
     let waitDays = 0;
 
@@ -79,7 +95,6 @@ export async function showMyBusinesses(req, res, next) {
 
 export async function actionCreateBusiness(req, res, next) {
   try {
-    // 1. Enforce the 1-month limit (Server-side check)
     const recentlyPosted = await hasPostedRecently(req.user.id);
     if (recentlyPosted) {
       req.flash(
@@ -89,18 +104,16 @@ export async function actionCreateBusiness(req, res, next) {
       return res.redirect("/dashboard/businesses");
     }
 
-    // 2. Handle the uploaded logo via Supabase Storage
     let logoUrl = null;
     if (req.file) {
       logoUrl = await uploadBusinessLogo(
         req.user.id,
-        req.file.buffer, // Memory storage gives us the buffer
+        req.file.buffer,
         req.file.mimetype,
         req.file.originalname,
       );
     }
 
-    // 3. Create the business
     const { name, category, description, location, website, phone, email } =
       req.body;
 
@@ -113,7 +126,7 @@ export async function actionCreateBusiness(req, res, next) {
       website,
       phone,
       email,
-      logoPath: logoUrl, // <-- Saves the full Supabase URL
+      logoPath: logoUrl,
     });
 
     req.flash("success", "Business submitted! It is pending admin approval.");
@@ -123,10 +136,68 @@ export async function actionCreateBusiness(req, res, next) {
   }
 }
 
+// --- Edit Business ---
+export async function showEditBusinessForm(req, res, next) {
+  try {
+    const business = await getBusinessById(req.params.id);
+    if (!business || business.user_id !== req.user.id) {
+      req.flash("error", "Business not found or you don't have permission.");
+      return res.redirect("/dashboard/businesses");
+    }
+
+    res.render("dashboard/business-edit", {
+      title: "Edit Business",
+      business,
+      categories: CATEGORIES,
+      layout: "layouts/app",
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function actionUpdateBusiness(req, res, next) {
+  try {
+    const business = await getBusinessById(req.params.id);
+    if (!business || business.user_id !== req.user.id) {
+      req.flash("error", "Permission denied.");
+      return res.redirect("/dashboard/businesses");
+    }
+
+    let logoPath = business.logo_path;
+    if (req.file) {
+      logoPath = await uploadBusinessLogo(
+        req.user.id,
+        req.file.buffer,
+        req.file.mimetype,
+        req.file.originalname,
+      );
+    }
+
+    const { name, category, description, location, website, phone, email } =
+      req.body;
+
+    await updateBusiness(req.params.id, req.user.id, {
+      name,
+      category,
+      description,
+      location,
+      website,
+      phone,
+      email,
+      logoPath,
+    });
+
+    req.flash("success", "Business updated! It is pending admin re-approval.");
+    res.redirect("/dashboard/businesses");
+  } catch (err) {
+    next(err);
+  }
+}
+
 // --- Admin Moderation ---
 export async function showPendingBusinesses(req, res, next) {
   try {
-    // CHANGED: Fetch all businesses instead of just pending ones
     const businesses = await listAllBusinessesForAdmin();
 
     res.render("admin/businesses-pending", {
@@ -159,7 +230,6 @@ export async function actionRejectBusiness(req, res, next) {
   }
 }
 
-// --- New: Feature/Unfeature Business ---
 export async function actionToggleFeatured(req, res, next) {
   try {
     const { days } = req.body;

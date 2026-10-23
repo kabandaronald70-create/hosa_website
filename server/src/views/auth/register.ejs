@@ -8,7 +8,7 @@
     </div>
   </div>
 
-  <div class="auth-layout__form" style="max-height: 80vh; overflow-y: auto;">
+  <div class="auth-layout__form">
     <h2>Create your account</h2>
 
     <% if (Object.keys(fieldErrors).length > 0) { %>
@@ -31,7 +31,7 @@
         <% if (fieldErrors.email) { %><span class="field-error"><%= fieldErrors.email %></span><% } %>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+      <div class="responsive-fields" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3);">
         <div class="field">
           <label for="first_name">First name</label>
           <input id="first_name" name="first_name" type="text" autocomplete="given-name" required maxlength="80" value="<%= values.first_name || '' %>">
@@ -44,7 +44,7 @@
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+      <div class="responsive-fields" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3);">
         <div class="field">
           <label for="graduation_year">Graduation year</label>
           <input id="graduation_year" name="graduation_year" type="number" min="1950" max="2100" value="<%= values.graduation_year || '' %>">

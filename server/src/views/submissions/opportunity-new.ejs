@@ -28,7 +28,7 @@
       <% if (fieldErrors.title) { %><span class="field-error"><%= fieldErrors.title %></span><% } %>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+    <div class="responsive-fields" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4);">
       <div class="field">
         <label for="type_label">Type</label>
         <select id="type_label" name="type_label">
@@ -47,7 +47,7 @@
       </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+    <div class="responsive-fields" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4);">
       <div class="field">
         <label for="employer">Organization / employer</label>
         <input id="employer" name="employer" type="text" maxlength="200" value="<%= values.employer || '' %>">

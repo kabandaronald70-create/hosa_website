@@ -1,0 +1,83 @@
+<header style="margin-bottom: var(--space-5);">
+  <h1>My Business Network Requests</h1>
+  <p>Post requests to find partners, suppliers, or offer services to fellow alumni.</p>
+</header>
+
+<div style="display: grid; grid-template-columns: 1fr; gap: var(--space-5);">
+  
+  <!-- List Existing -->
+  <div class="card">
+    <h2 style="margin-top: 0;">Your Active Requests</h2>
+    <% if (requests.length === 0) { %>
+      <p style="color: var(--muted);">You have no active network requests.</p>
+    <% } else { %>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% requests.forEach(r => { %>
+              <tr>
+                <td data-label="Type"><span class="badge badge--muted"><%= r.request_type %></span></td>
+                <td data-label="Title"><strong><%= r.title %></strong></td>
+                <td data-label="Status">
+                  <span class="badge badge--<%= r.status === 'active' ? 'success' : 'danger' %>">
+                    <%= r.status %>
+                  </span>
+                </td>
+                <td data-label="Actions">
+                  <% if (r.status === 'active') { %>
+                    <form method="post" action="/dashboard/business-network/<%= r.id %>/close" style="display:inline;">
+                      <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                      <button type="submit" class="btn btn--ghost btn--sm" style="color: var(--danger);">Close</button>
+                    </form>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+    <form method="POST" action="/dashboard/business-network">
+  <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+  
+  <div class="field">
+    <label>Request Type</label>
+    <select name="request_type" required>
+      <option value="seeking">Seeking (I need something)</option>
+      <option value="offering">Offering (I have something)</option>
+      <option value="partnership">Partnership (Let's work together)</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Title</label>
+    <input type="text" name="title" required placeholder="e.g. Seeking agricultural supplier in Central Uganda">
+  </div>
+
+  <div class="field">
+    <label>Description</label>
+    <textarea name="description" rows="3" required placeholder="Provide more details..."></textarea>
+  </div>
+
+  <div class="field">
+    <label>How to connect</label>
+    <input type="text" name="contact_method" placeholder="e.g. WhatsApp +256 700 000000">
+  </div>
+
+  <div class="field">
+    <label>Expires On (Optional)</label>
+    <input type="date" name="expires_at">
+  </div>
+
+  <button type="submit" class="btn btn--primary" style="width: 100%;">Post Request</button>
+</form>

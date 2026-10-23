@@ -6,9 +6,27 @@
   <a href="/dashboard/businesses" class="btn btn--accent">List Your Business</a>
 </header>
 
+<!-- ACTIVE CAMPAIGN BANNER -->
+<% if (activeCampaign && campaignBusinesses.length > 0) { %>
+  <div class="card" style="background: var(--gold-100); border: 2px solid var(--gold); margin-bottom: var(--space-6); text-align: center; padding: var(--space-6);">
+    <h2 style="color: var(--gold-700); margin-top: 0; font-size: var(--text-2xl);">🌟 <%= activeCampaign.title %></h2>
+    <p style="font-size: var(--text-lg); margin-bottom: var(--space-4);"><%= activeCampaign.description %></p>
+    
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3);">
+      <% campaignBusinesses.forEach(cb => { %>
+        <div class="card" style="width: 200px; padding: var(--space-3); text-align: left;">
+          <h3 style="font-size: var(--text-base); margin: 0 0 var(--space-1);"><%= cb.name %></h3>
+          <span style="font-size: var(--text-xs); color: var(--muted);"><%= cb.category %></span>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+<% } %>
+
+<!-- Search Form (Only ONE form tag now) -->
 <form method="GET" action="/businesses" style="display: flex; gap: var(--space-3); margin-bottom: var(--space-5); flex-wrap: wrap;">
-  <input type="text" name="q" value="<%= filters.search %>" placeholder="Search businesses or services..." style="flex-grow: 1; min-width: 200px;">
-  <select name="category">
+  <input type="text" name="q" value="<%= filters.search %>" placeholder="Search businesses or services..." style="flex-grow: 1; min-width: min(100%, 200px);">
+  <select name="category" style="max-width: 100%;">
     <option value="">All Categories</option>
     <% categories.forEach(c => { %>
       <option value="<%= c %>" <%= filters.category === c ? 'selected' : '' %>><%= c %></option>
@@ -33,7 +51,7 @@
   <!-- Featured Businesses -->
   <% if (featuredBusinesses.length > 0) { %>
     <h2 style="color: var(--gold-700); margin-bottom: var(--space-3); font-size: var(--text-xl);">⭐ Featured Businesses</h2>
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-6);">
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: var(--space-4); margin-bottom: var(--space-6);">
       <% featuredBusinesses.forEach(b => { %>
         <article class="card" style="display: flex; flex-direction: column; border: 2px solid var(--gold); background: var(--ivory);">
           <div style="flex-grow: 1;">
@@ -64,7 +82,7 @@
 
   <!-- All Other Businesses -->
   <h2 style="margin-bottom: var(--space-3); font-size: var(--text-xl);">All Businesses</h2>
-  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-4);">
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: var(--space-4);">
     <% regularBusinesses.forEach(b => { %>
       <article class="card" style="display: flex; flex-direction: column;">
         <div style="flex-grow: 1;">

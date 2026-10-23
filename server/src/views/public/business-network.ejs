@@ -1,0 +1,36 @@
+<header style="margin-bottom: var(--space-6); display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: var(--space-4);">
+  <div>
+    <h1>Business Network</h1>
+    <p>Connect with fellow alumni for partnerships, suppliers, and business opportunities.</p>
+  </div>
+  <a href="/dashboard/business-network" class="btn btn--accent">Post a Request</a>
+</header>
+
+<% if (requests.length === 0) { %>
+  <div class="empty-state">
+    <p class="empty-state__title">No active networking requests.</p>
+    <p>Check back later or post your own.</p>
+  </div>
+<% } else { %>
+  <div style="display: grid; grid-template-columns: 1fr; gap: var(--space-4);">
+    <% requests.forEach(r => { %>
+      <article class="card" style="display: flex; flex-direction: column; gap: var(--space-3);">
+        <div>
+          <span class="badge badge--<%= r.request_type === 'seeking' ? 'warning' : r.request_type === 'offering' ? 'success' : 'gold' %>">
+            <%= r.request_type.toUpperCase() %>
+          </span>
+          <h2 style="font-size: var(--text-lg); margin: var(--space-2) 0;"><%= r.title %></h2>
+          <p style="font-size: var(--text-sm); color: var(--muted); margin: 0;">Posted by: <strong><%= r.first_name %> <%= r.last_name %></strong> <%= r.organization ? `(${r.organization})` : '' %></p>
+        </div>
+        
+        <p style="margin: 0; white-space: pre-wrap;"><%= r.description %></p>
+        
+        <% if (r.contact_method) { %>
+          <div style="margin-top: var(--space-2); padding: var(--space-3); background: var(--ivory); border-radius: var(--radius-sm); font-size: var(--text-sm);">
+            <strong>How to connect:</strong> <%= r.contact_method %>
+          </div>
+        <% } %>
+      </article>
+    <% }) %>
+  </div>
+<% } %>

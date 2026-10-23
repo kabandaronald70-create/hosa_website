@@ -31,7 +31,7 @@
   }
 </style>
 
-<div class="leadership-layout">
+<div class="leadership-layout responsive-columns">
   
   <!-- LEFT COLUMN: Current Officers List -->
   <div class="card" style="padding: 0; overflow: hidden;">
@@ -135,7 +135,7 @@
         </select>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
+      <div class="responsive-fields" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2);">
         <div class="field">
           <label>Term Start</label>
           <input type="date" name="termStart">
@@ -146,7 +146,7 @@
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-2);">
+      <div class="responsive-fields" style="display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: var(--space-2);">
         <div class="field">
           <label>Status</label>
           <select name="status">

@@ -38,7 +38,36 @@
     </main>
   </div>
 
-   <script src="/js/app.js"></script>
+  <!-- Scripts (Placed at the bottom for performance) -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnSidebar = document.getElementById('btn-sidebar');
+      const topnav = document.getElementById('topbar-nav');
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+
+      if (btnSidebar && sidebar) {
+        btnSidebar.addEventListener('click', (e) => {
+          e.preventDefault();
+          const isOpen = sidebar.classList.toggle('is-open');
+          btnSidebar.setAttribute('aria-expanded', String(isOpen));
+          if (overlay) overlay.classList.toggle('is-visible', isOpen);
+          if (topnav) topnav.classList.remove('is-open');
+          const btnTopnav = document.getElementById('btn-topnav');
+          if (btnTopnav) btnTopnav.setAttribute('aria-expanded', 'false');
+        });
+      }
+
+      if (overlay && sidebar) {
+        overlay.addEventListener('click', () => {
+          sidebar.classList.remove('is-open');
+          overlay.classList.remove('is-visible');
+          if (btnSidebar) btnSidebar.setAttribute('aria-expanded', 'false');
+        });
+      }
+    });
+  </script>
+  
   <script src="/js/public.js"></script>
 </body>
 </html>

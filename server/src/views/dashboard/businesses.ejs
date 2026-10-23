@@ -3,6 +3,14 @@
   <p>Manage your business listings. All submissions require admin approval before appearing publicly.</p>
 </header>
 
+<style>
+  @media (max-width: 600px) {
+    .responsive-fields {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>
+
 <div style="display: grid; grid-template-columns: 1fr; gap: var(--space-5);">
   <!-- List existing -->
   <div class="card">
@@ -18,6 +26,7 @@
               <th>Category</th>
               <th>Status</th>
               <th>Date Posted</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -32,6 +41,9 @@
                 </td>
                 <td data-label="Date Posted" style="font-size: var(--text-sm);">
                   <%= new Date(b.created_at).toLocaleDateString('en-GB') %>
+                </td>
+                <td data-label="Actions">
+                  <a href="/dashboard/businesses/<%= b.id %>/edit" class="btn btn--ghost btn--sm" style="white-space: nowrap;">Edit</a>
                 </td>
               </tr>
             <% }) %>
@@ -53,7 +65,7 @@
         You will be able to submit a new business in <strong><%= waitDays %> days</strong>.
       </div>
     <% } else { %>
-      <!-- Submission Form (Added enctype) -->
+      <!-- Submission Form -->
       <form method="POST" action="/dashboard/businesses" enctype="multipart/form-data">
         <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
         
@@ -74,7 +86,7 @@
           <textarea name="description" rows="3" required placeholder="What does your business do?"></textarea>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+        <div class="responsive-fields" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3);">
           <div class="field">
             <label>Location</label>
             <input type="text" name="location" required placeholder="e.g. Kampala">
@@ -85,7 +97,7 @@
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+        <div class="responsive-fields" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3);">
           <div class="field">
             <label>Email</label>
             <input type="email" name="email">
@@ -96,7 +108,7 @@
           </div>
         </div>
 
-        <!-- ADDED: Business Logo Upload -->
+        <!-- Business Logo Upload -->
         <div class="field">
           <label>Business Logo (Optional)</label>
           <input type="file" name="logo" accept="image/jpeg,image/png,image/webp">
