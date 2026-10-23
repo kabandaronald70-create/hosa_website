@@ -17,6 +17,15 @@
     <% } %>
     <a href="/directory" class="btn btn--ghost" style="color: var(--ivory); border-color: var(--ivory);">Browse directory</a>
   </div>
+  <% if (currentUser) { %>
+  <div class="card" style="background: var(--green-700); color: var(--white); text-align: center; margin: var(--space-6) auto; max-width: 900px; border: none;">
+    <h2 style="color: var(--white); margin-top: 0;">🤝 Grow Your Business Network</h2>
+    <p style="color: var(--gold-100); margin-bottom: var(--space-4);">
+      Connect with fellow alumni for partnerships, suppliers, and opportunities.
+    </p>
+    <a href="/business-network" class="btn btn--accent">Visit the Network Board</a>
+  </div>
+<% } %>
 </section>
 <% if (latestAnnouncement) { %>
   <div class="alert alert--info" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-6);">
@@ -29,7 +38,7 @@
 
 <!-- Honest Stats Strip -->
 <% if (stats && (stats.members > 0 || stats.events > 0 || stats.jobs > 0)) { %>
-  <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-6);">
+  <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: var(--space-4); margin-bottom: var(--space-6);">
     <% if (stats.members > 0) { %>
       <div class="card" style="text-align: center;">
         <div style="font-size: var(--text-2xl); font-weight: 700; color: var(--green);"><%= stats.members %></div>
@@ -54,7 +63,7 @@
 <!-- Explore HOSA Cards -->
 <section style="margin-bottom: var(--space-6);">
   <h2 style="text-align: center; margin-bottom: var(--space-5); font-size: var(--text-2xl);">Explore HOSA</h2>
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-4);">
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: var(--space-4);">
     <a href="/directory" class="card" style="text-decoration: none; color: inherit;">
       <h3 style="font-size: var(--text-lg); margin-bottom: var(--space-2);">Directory</h3>
       <p style="color: var(--muted); font-size: var(--text-sm); margin: 0;">Find former classmates and connect with alumni across professions.</p>

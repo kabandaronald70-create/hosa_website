@@ -17,7 +17,7 @@
   <a href="/admin/events" class="btn btn--ghost">← Back to events</a>
 </div>
 
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-5)">
+<div class="responsive-columns" style="display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: var(--space-5)">
   <div class="card">
     <h2 style="font-size: var(--text-lg); margin-top: 0">Details</h2>
     <p><strong>Status:</strong> <%= event.status %></p>

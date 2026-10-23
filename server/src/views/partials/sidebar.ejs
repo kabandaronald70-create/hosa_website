@@ -4,7 +4,7 @@
 <% const isMod = roles.includes('moderator'); %>
 <% const isSuper = roles.includes('super_admin'); %>
 
-<aside class="sidebar">
+<aside class="sidebar" id="app-sidebar">
   <div class="sidebar__user">
     <% if (currentProfile && currentProfile.avatar_path) { %>
       <img src="/dashboard/avatar/me" alt="" class="sidebar__avatar" style="object-fit:cover;padding:0;">
@@ -28,6 +28,9 @@
     
     <a href="/dashboard/profile" class="sidebar__link" <%= activePath === '/dashboard/profile' ? 'aria-current="page"' : '' %>>
       <span class="sidebar__link-icon">👤</span> My Profile
+    </a>
+    <a href="/dashboard/business-network" class="sidebar__link" <%= activePath.startsWith('/dashboard/business-network') ? 'aria-current="page"' : '' %>>
+      <span class="sidebar__link-icon">📡</span> Business Network
     </a>
     
     <a href="/dashboard/saved" class="sidebar__link" <%= activePath === '/dashboard/saved' ? 'aria-current="page"' : '' %>>
@@ -84,6 +87,9 @@
       <a href="/admin/announcements" class="sidebar__link" <%= activePath.startsWith('/admin/announcements') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">📢</span> Announcements
       </a>
+      <a href="/admin/campaigns" class="sidebar__link" <%= activePath.startsWith('/admin/campaigns') ? 'aria-current="page"' : '' %>>
+  <span class="sidebar__link-icon">📢</span> Campaigns
+</a>
     </div>
   <% } %>
 

@@ -8,7 +8,7 @@
 
 <div class="card" style="margin-bottom: var(--space-5);">
   <form method="get" action="/admin/events" style="display: flex; gap: var(--space-3); align-items: flex-end; flex-wrap: wrap;">
-    <div class="field" style="margin: 0; flex-grow: 1; min-width: 200px;">
+    <div class="field" style="margin: 0; flex-grow: 1; min-width: min(100%, 200px);">
       <label for="q">Search by title</label>
       <input id="q" name="q" type="search" value="<%= filters.q %>">
     </div>

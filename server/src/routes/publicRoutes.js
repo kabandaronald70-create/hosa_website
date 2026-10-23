@@ -7,15 +7,20 @@ import {
   showContact,
   showMentorshipInfo,
 } from "../controllers/publicPageController.js";
+import { showArchive } from "../controllers/publicEjsController.js";
 import {
   actionMarkAnnouncementRead,
   showAnnouncements,
 } from "../controllers/announcementController.js";
 import { query } from "../config/db.js";
 import { listActiveAnnouncements } from "../models/announcementModel.js";
-import { listDocuments } from "../models/documentModel.js";
 import { requireAuth } from "../middleware/auth.js";
 import { showBusinessDirectory } from "../controllers/businessController.js";
+import {
+  downloadDocumentFile,
+  viewDocumentFile,
+} from "../controllers/documentController.js";
+import { showNetworkBoard } from "../controllers/networkController.js";
 
 const router = Router();
 
@@ -51,39 +56,9 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-// --- Archive Route (Now fetches documents) ---
-router.get("/archive", async (req, res, next) => {
-  try {
-    // Fetch past events
-    const eventsResult = await query(
-      `SELECT slug, title, starts_at, venue, description 
-         FROM events 
-        WHERE status = 'published' AND starts_at < now() 
-        ORDER BY starts_at DESC LIMIT 20`,
-    );
-
-    // Fetch older stories
-    const storiesResult = await query(
-      `SELECT slug, title, excerpt, published_at, category
-         FROM stories 
-        WHERE status = 'published' 
-        ORDER BY published_at ASC LIMIT 20`,
-    );
-
-    // Fetch documents (for logged-in users)
-    const documents = await listDocuments();
-
-    res.render("public/archive", {
-      title: "Archive — HOSA",
-      layout: "layouts/public",
-      pastEvents: eventsResult.rows,
-      stories: storiesResult.rows,
-      documents: documents,
-    });
-  } catch (err) {
-    next(err);
-  }
-});
+router.get("/archive", showArchive);
+router.get("/documents/:id/view", requireAuth, viewDocumentFile);
+router.get("/documents/:id/download", requireAuth, downloadDocumentFile);
 
 // --- Static Public Pages ---
 router.get("/about", showAbout);
@@ -95,5 +70,6 @@ router.get("/help", showHelp);
 router.get("/contact", showContact);
 router.get("/mentorship", showMentorshipInfo);
 router.get("/businesses", showBusinessDirectory);
+router.get("/business-network", requireAuth, showNetworkBoard);
 
 export default router;

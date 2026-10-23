@@ -23,8 +23,7 @@
       <a href="/stories" class="<%= currentPath.startsWith('/stories') ? 'active' : '' %>">Stories</a>
       <a href="/jobs" class="<%= currentPath.startsWith('/jobs') ? 'active' : '' %>">Jobs</a>
       <a href="/businesses" class="<%= currentPath.startsWith('/businesses') ? 'active' : '' %>">Businesses</a>
-      <a href="/mentorship" class="<%= currentPath.startsWith('/mentorship') ? 'active' : '' %>">Mentorship</a>
-      <a href="/about" class="<%= currentPath.startsWith('/about') ? 'active' : '' %>">About</a>
+      <a href="/about" class="<%= currentPath.startsWith('/about') ? 'active' : '' %>">About Us</a>
     </nav>
 
     <!-- Right Side Actions -->
@@ -68,12 +67,12 @@
 
       <!-- Mobile Toggles (Only visible on mobile via CSS) -->
       <div class="mobile-toggles">
-        <button type="button" class="mobile-toggle-btn" id="btn-topnav">
-          <span>Topbar</span> ☰
+        <button type="button" class="mobile-toggle-btn" id="btn-topnav" aria-label="Toggle primary navigation" aria-controls="topbar-nav" aria-expanded="false">
+          <span>Topbar</span> Topbar
         </button>
         <% if (isAppPage) { %>
-          <button type="button" class="mobile-toggle-btn" id="btn-sidebar">
-            <span>Sidebar</span> ☰
+          <button type="button" class="mobile-toggle-btn" id="btn-sidebar" aria-label="Toggle dashboard menu" aria-controls="app-sidebar" aria-expanded="false">
+            <span>Sidebar</span> Sidebar
           </button>
         <% } %>
       </div>

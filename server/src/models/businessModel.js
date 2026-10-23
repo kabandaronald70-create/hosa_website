@@ -122,3 +122,32 @@ export async function listAllBusinessesForAdmin() {
   );
   return rows;
 }
+
+export async function getBusinessById(id) {
+  const { rows } = await query(`SELECT * FROM businesses WHERE id = $1`, [id]);
+  return rows[0] || null;
+}
+
+export async function updateBusiness(id, userId, data) {
+  // Note: We set status back to 'pending' so the admin has to re-approve edits
+  const { rows } = await query(
+    `UPDATE businesses 
+     SET name = $1, category = $2, description = $3, location = $4, 
+         website = $5, phone = $6, email = $7, logo_path = $8, status = 'pending'
+     WHERE id = $9 AND user_id = $10
+     RETURNING *`,
+    [
+      data.name,
+      data.category,
+      data.description,
+      data.location,
+      data.website,
+      data.phone,
+      data.email,
+      data.logoPath,
+      id,
+      userId,
+    ],
+  );
+  return rows[0];
+}

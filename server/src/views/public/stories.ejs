@@ -9,7 +9,7 @@
     <p>Check back soon to read about the incredible journeys of our alumni.</p>
   </div>
 <% } else { %>
-  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-5);">
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: var(--space-5);">
     <% stories.forEach((s) => { %>
       
       <article class="card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">

@@ -41,7 +41,7 @@
     <div
       style="
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
         gap: var(--space-4);
         margin-top: var(--space-4);
       "
@@ -131,7 +131,7 @@
         <p class="empty-state__title">Leadership details coming soon.</p>
       </div>
     <% } else { %>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-4);">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: var(--space-4);">
         
         <% roles.forEach((role) => { %>
           <article class="card" style="text-align: center; padding: var(--space-6) var(--space-4);">

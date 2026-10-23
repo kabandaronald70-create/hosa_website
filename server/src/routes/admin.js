@@ -44,6 +44,13 @@ import {
   actionUpdateLeadershipRole,
   actionDeleteLeadershipRole,
 } from "../controllers/adminController.js";
+import {
+  showAdminCampaigns,
+  actionCreateCampaign,
+  actionToggleCampaignBusiness,
+  actionUpdateCampaign, // <-- ADDED
+  actionDeleteCampaign, // <-- ADDED
+} from "../controllers/campaignController.js";
 
 const router = Router();
 
@@ -156,6 +163,33 @@ router.post(
   "/admin/businesses/:id/feature",
   requireRole("admin", "super_admin"),
   actionToggleFeatured,
+);
+
+// Campaigns
+router.get(
+  "/admin/campaigns",
+  requireRole("admin", "super_admin"),
+  showAdminCampaigns,
+);
+router.post(
+  "/admin/campaigns",
+  requireRole("admin", "super_admin"),
+  actionCreateCampaign,
+);
+router.post(
+  "/admin/campaigns/toggle-business",
+  requireRole("admin", "super_admin"),
+  actionToggleCampaignBusiness,
+);
+router.post(
+  "/admin/campaigns/:id/update",
+  requireRole("admin", "super_admin"),
+  actionUpdateCampaign,
+);
+router.post(
+  "/admin/campaigns/:id/delete",
+  requireRole("admin", "super_admin"),
+  actionDeleteCampaign,
 );
 
 export default router;
