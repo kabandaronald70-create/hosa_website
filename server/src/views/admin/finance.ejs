@@ -1,0 +1,327 @@
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); flex-wrap: wrap; gap: var(--space-3);">
+  <h1 style="margin: 0;">Financial Management</h1>
+  <a href="/admin" class="btn btn--ghost">← Back to Admin</a>
+</div>
+
+<!-- Summary Cards -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-6);">
+  <div class="card" style="border-left: 4px solid var(--success);">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0;">Verified Income</p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--success);">UGX <%= summary.totalIncome.toLocaleString() %></h2>
+  </div>
+  
+  <div class="card" style="border-left: 4px solid var(--danger);">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0;">Total Expenses</p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--danger);">UGX <%= summary.totalExpenses.toLocaleString() %></h2>
+  </div>
+  
+  <div class="card" style="border-left: 4px solid var(--green);">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0;">Net Balance</p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--green);">UGX <%= summary.netBalance.toLocaleString() %></h2>
+  </div>
+
+  <div class="card" style="border-left: 4px solid var(--warning);">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0;">Pending Verification</p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--warning);">UGX <%= summary.pendingIncome.toLocaleString() %></h2>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr; gap: var(--space-6);">
+  
+  <!-- Contributions to Verify -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
+      <h2 style="margin: 0;">Pending Contributions</h2>
+    </div>
+    
+    <% if (pendingContribs.length === 0) { %>
+      <p style="color: var(--muted);">No pending contributions to verify.</p>
+    <% } else { %>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Purpose</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% pendingContribs.forEach(c => { %>
+              <tr>
+                <td data-label="Member">
+                  <strong><%= c.first_name ? `${c.first_name} ${c.last_name}` : 'Guest / External' %></strong>
+                </td>
+                <td data-label="Purpose"><%= c.purpose %></td>
+                <td data-label="Amount"><strong>UGX <%= Number(c.amount).toLocaleString() %></strong></td>
+                <td data-label="Method"><%= c.payment_method %> (<%= c.reference || 'No Ref' %>)</td>
+                <td data-label="Action">
+                  <form method="post" action="/admin/finance/contributions/<%= c.id %>/verify" style="display:inline;">
+                    <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                    <button type="submit" class="btn btn--primary btn--sm">Verify</button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Verified Contributions -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
+      <h2 style="margin: 0;">Verified Contributions</h2>
+      <a href="/admin/finance/export/contributions" class="btn btn--ghost btn--sm">⬇ Download All</a>
+    </div>
+
+    <% if (verifiedContribs.length === 0) { %>
+      <p style="color: var(--muted);">No verified contributions yet.</p>
+    <% } else { %>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Purpose</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Reference</th>
+              <th>Verified</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% verifiedContribs.forEach(c => { %>
+              <tr>
+                <td data-label="Member">
+                  <strong><%= c.first_name ? `${c.first_name} ${c.last_name}` : 'Guest / External' %></strong>
+                </td>
+                <td data-label="Purpose"><%= c.purpose %></td>
+                <td data-label="Amount"><strong>UGX <%= Number(c.amount).toLocaleString() %></strong></td>
+                <td data-label="Method"><%= c.payment_method %></td>
+                <td data-label="Reference"><%= c.reference || '—' %></td>
+                <td data-label="Verified"><%= c.verified_at ? new Date(c.verified_at).toLocaleDateString('en-GB') : '—' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Expenses Management -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
+      <h2 style="margin: 0;">Expense Requests & History</h2>
+      <a href="/admin/finance/export/expenses" class="btn btn--ghost btn--sm">⬇ Download All</a>
+    </div>
+    
+    <!-- Add New Expense Form (Only for Treasurer) -->
+    <% if (currentLeadershipRoles.includes('Treasurer')) { %>
+      <div style="background: var(--ivory); padding: var(--space-4); border-radius: var(--radius-sm); margin-bottom: var(--space-4);">
+        <h3 style="margin-top: 0; font-size: var(--text-base);">Request New Expense</h3>
+        <form method="post" action="/admin/finance/expenses" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+          <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+          <div class="field" style="margin: 0;">
+            <label>Title</label>
+            <input type="text" name="title" required placeholder="e.g. Venue Hire">
+          </div>
+          <div class="field" style="margin: 0;">
+            <label>Amount (UGX)</label>
+            <input type="number" name="amount" required min="1" placeholder="e.g. 500000">
+          </div>
+          <div class="field" style="margin: 0;">
+            <label>Category</label>
+            <select name="category" required>
+              <option value="Administration">Administration</option>
+              <option value="Events">Events</option>
+              <option value="Projects">Projects</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="field" style="margin: 0;">
+            <label>Description</label>
+            <input type="text" name="description" placeholder="Short description">
+          </div>
+          <button type="submit" class="btn btn--primary" style="grid-column: 1 / -1; margin-top: var(--space-2);">Submit Expense Request</button>
+        </form>
+      </div>
+    <% } %>
+
+    <!-- History Table -->
+    <% if (expenses.length === 0) { %>
+      <p style="color: var(--muted);">No expenses recorded.</p>
+    <% } else { %>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Requested By</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% expenses.forEach(e => { %>
+              <tr>
+                <td data-label="Title"><strong><%= e.title %></strong></td>
+                <td data-label="Amount">UGX <%= Number(e.amount).toLocaleString() %></td>
+                <td data-label="Status">
+                  <span class="badge badge--<%= e.status === 'paid' ? 'success' : e.status === 'approved' ? 'primary' : e.status === 'rejected' ? 'danger' : 'warning' %>">
+                    <%= e.status.replace('_', ' ') %>
+                  </span>
+                </td>
+                <td data-label="Requested By">
+                  <%= e.requester_email %>
+                  <% if (e.chairperson_email) { %>
+                    <br><span style="font-size: 10px; color: var(--muted);">Exec: <%= e.chairperson_email %></span>
+                  <% } %>
+                </td>
+                <td data-label="Actions">
+                  <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                    
+                    <!-- View Details Button (for all statuses to allow auditing) -->
+                    <button type="button" class="btn btn--ghost btn--sm" onclick="document.getElementById('details-expense-<%= e.id %>').style.display = document.getElementById('details-expense-<%= e.id %>').style.display === 'none' ? 'block' : 'none';">View Details</button>
+
+                    <!-- PENDING STATE -->
+                    <% if (e.status === 'pending') { %>
+                      <% if (e.requested_by === currentUser.id) { %>
+                        <button type="button" class="btn btn--ghost btn--sm" onclick="document.getElementById('edit-expense-<%= e.id %>').style.display = document.getElementById('edit-expense-<%= e.id %>').style.display === 'none' ? 'block' : 'none';">Edit</button>
+                        <form method="post" action="/admin/finance/expenses/<%= e.id %>/delete" onsubmit="return confirm('Delete this expense request?')" style="display:inline;">
+                          <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                          <button type="submit" class="btn btn--ghost btn--sm" style="color: var(--danger);">Delete</button>
+                        </form>
+                      <% } else { %>
+                        <% if (currentLeadershipRoles.includes('Chairperson')) { %>
+                          <form method="post" action="/admin/finance/expenses/<%= e.id %>/status" style="display:inline;">
+                            <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                            <input type="hidden" name="status" value="executive_approved">
+                            <button type="submit" class="btn btn--primary btn--sm">Exec. Approve</button>
+                          </form>
+                        <% } %>
+                        <% if (currentLeadershipRoles.includes('Chairperson') || currentUserRoles.includes('super_admin')) { %>
+                          <button type="button" class="btn btn--ghost btn--sm" style="color: var(--danger);" onclick="document.getElementById('reject-form-<%= e.id %>').style.display = document.getElementById('reject-form-<%= e.id %>').style.display === 'none' ? 'block' : 'none';">Reject</button>
+                        <% } %>
+                      <% } %>
+
+                    <!-- EXECUTIVE APPROVED STATE -->
+                    <% } else if (e.status === 'executive_approved') { %>
+                      <% if (currentUserRoles.includes('super_admin')) { %>
+                        <form method="post" action="/admin/finance/expenses/<%= e.id %>/status" style="display:inline;">
+                          <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                          <input type="hidden" name="status" value="approved">
+                          <button type="submit" class="btn btn--accent btn--sm">Final Approve</button>
+                        </form>
+                        <button type="button" class="btn btn--ghost btn--sm" style="color: var(--danger);" onclick="document.getElementById('reject-form-<%= e.id %>').style.display = document.getElementById('reject-form-<%= e.id %>').style.display === 'none' ? 'block' : 'none';">Reject</button>
+                      <% } else { %>
+                        <span style="font-size: 11px; color: var(--muted); font-style: italic;">Awaiting Super Admin</span>
+                      <% } %>
+                    
+                    <!-- APPROVED STATE -->
+                    <% } else if (e.status === 'approved') { %>
+                      <form method="post" action="/admin/finance/expenses/<%= e.id %>/status" style="display:inline;">
+                        <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                        <input type="hidden" name="status" value="paid">
+                        <button type="submit" class="btn btn--success btn--sm" style="background: var(--success); color: white;">Mark as Paid</button>
+                      </form>
+                      <a href="/admin/finance/export/expenses/<%= e.id %>" class="btn btn--ghost btn--sm">⬇ Download</a>
+                    
+                    <!-- PAID STATE -->
+                    <% } else if (e.status === 'paid') { %>
+                      <a href="/admin/finance/export/expenses/<%= e.id %>" class="btn btn--ghost btn--sm">⬇ Download</a>
+                    <% } %>
+                  </div>
+
+                  <!-- Hidden Details Panel (for all statuses) -->
+                  <div id="details-expense-<%= e.id %>" style="display: none; margin-top: var(--space-3); background: var(--ivory); padding: var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--line);">
+                    <h4 style="margin-top: 0;">Expense Details</h4>
+                    <p><strong>Title:</strong> <%= e.title %></p>
+                    <p><strong>Amount:</strong> UGX <%= Number(e.amount).toLocaleString() %></p>
+                    <p><strong>Category:</strong> <%= e.category %></p>
+                    <p><strong>Description:</strong> <%= e.description || 'No description provided' %></p>
+                    <p><strong>Status:</strong> <%= e.status.replace('_', ' ') %></p>
+                    <p><strong>Requested By:</strong> <%= e.requester_email %></p>
+                    <p><strong>Date:</strong> <%= new Date(e.created_at).toLocaleString() %></p>
+                    <button type="button" class="btn btn--ghost btn--sm" onclick="document.getElementById('details-expense-<%= e.id %>').style.display = 'none';">Close</button>
+                  </div>
+
+                  <!-- Hidden Reject Form (Pending) -->
+                  <% if (e.status === 'pending' && (currentLeadershipRoles.includes('Chairperson') || currentUserRoles.includes('super_admin'))) { %>
+                    <div id="reject-form-<%= e.id %>" style="display: none; margin-top: var(--space-3); background: #fff5f5; padding: var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--danger);">
+                      <form method="post" action="/admin/finance/expenses/<%= e.id %>/status">
+                        <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                        <input type="hidden" name="status" value="rejected">
+                        <div class="field" style="margin-bottom: var(--space-2);">
+                          <label style="font-size: 12px; color: var(--danger); font-weight: bold;">Reason for Rejection</label>
+                          <input type="text" name="reason" required placeholder="e.g. Budget exceeded, missing receipts..." style="padding: 6px; font-size: 12px; width: 100%; border: 1px solid var(--danger);">
+                        </div>
+                        <button type="submit" class="btn btn--danger btn--sm" style="padding: 2px 8px; font-size: 12px;">Confirm Reject</button>
+                        <button type="button" class="btn btn--ghost btn--sm" style="padding: 2px 8px; font-size: 12px;" onclick="document.getElementById('reject-form-<%= e.id %>').style.display = 'none';">Cancel</button>
+                      </form>
+                    </div>
+                  <% } %>
+
+                  <!-- Hidden Reject Form (Executive Approved) -->
+                  <% if (e.status === 'executive_approved' && currentUserRoles.includes('super_admin')) { %>
+                    <div id="reject-form-<%= e.id %>" style="display: none; margin-top: var(--space-3); background: #fff5f5; padding: var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--danger);">
+                      <form method="post" action="/admin/finance/expenses/<%= e.id %>/status">
+                        <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                        <input type="hidden" name="status" value="rejected">
+                        <div class="field" style="margin-bottom: var(--space-2);">
+                          <label style="font-size: 12px; color: var(--danger); font-weight: bold;">Reason for Rejection</label>
+                          <input type="text" name="reason" required placeholder="e.g. Budget exceeded, missing receipts..." style="padding: 6px; font-size: 12px; width: 100%; border: 1px solid var(--danger);">
+                        </div>
+                        <button type="submit" class="btn btn--danger btn--sm" style="padding: 2px 8px; font-size: 12px;">Confirm Reject</button>
+                        <button type="button" class="btn btn--ghost btn--sm" style="padding: 2px 8px; font-size: 12px;" onclick="document.getElementById('reject-form-<%= e.id %>').style.display = 'none';">Cancel</button>
+                      </form>
+                    </div>
+                  <% } %>
+
+                  <!-- Hidden Edit Form -->
+                  <% if (e.status === 'pending' && e.requested_by === currentUser.id) { %>
+                    <div id="edit-expense-<%= e.id %>" style="display: none; margin-top: var(--space-3); background: var(--ivory); padding: var(--space-3); border-radius: var(--radius-sm);">
+                      <form method="post" action="/admin/finance/expenses/<%= e.id %>/update" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
+                        <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                        
+                        <div class="field" style="margin: 0;">
+                          <label style="font-size: 10px;">Title</label>
+                          <input type="text" name="title" value="<%= e.title %>" required style="padding: 4px; font-size: 12px;">
+                        </div>
+                        <div class="field" style="margin: 0;">
+                          <label style="font-size: 10px;">Amount</label>
+                          <input type="number" name="amount" value="<%= e.amount %>" required style="padding: 4px; font-size: 12px;">
+                        </div>
+                        <div class="field" style="margin: 0;">
+                          <label style="font-size: 10px;">Category</label>
+                          <select name="category" required style="padding: 4px; font-size: 12px;">
+                            <% ['Administration', 'Events', 'Projects', 'Other'].forEach(cat => { %>
+                              <option value="<%= cat %>" <%= e.category === cat ? 'selected' : '' %>><%= cat %></option>
+                            <% }) %>
+                          </select>
+                        </div>
+                        <div class="field" style="margin: 0;">
+                          <label style="font-size: 10px;">Description</label>
+                          <input type="text" name="description" value="<%= e.description || '' %>" style="padding: 4px; font-size: 12px;">
+                        </div>
+                        
+                        <div style="grid-column: 1 / -1; display: flex; gap: 4px; margin-top: 4px;">
+                          <button type="submit" class="btn btn--primary btn--sm" style="padding: 2px 8px; font-size: 12px;">Save</button>
+                          <button type="button" class="btn btn--ghost btn--sm" style="padding: 2px 8px; font-size: 12px;" onclick="document.getElementById('edit-expense-<%= e.id %>').style.display = 'none';">Cancel</button>
+                        </div>
+                      </form>
+                    </div>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</div>

@@ -17,6 +17,43 @@
   </div>
 </div>
 
+<!-- HOSA Financial Status Card -->
+<% if (typeof finance !== 'undefined' && finance) { %>
+  <section class="card" style="margin-bottom: var(--space-6); border-left: 4px solid var(--green); background: var(--ivory);">
+    <h2 style="font-size: var(--text-lg); margin-top: 0; color: var(--green);">HOSA Financial Status</h2>
+    <p style="font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-4);">
+      In the spirit of transparency, here is a summary of the Association's current financial position.
+    </p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: var(--space-4);">
+      <div style="background: var(--white); padding: var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--line);">
+        <p style="font-size: var(--text-xs); color: var(--muted); margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Verified Income</p>
+        <p style="font-size: var(--text-lg); font-weight: bold; color: var(--success); margin: var(--space-1) 0 0;">
+          UGX <%= finance.totalIncome.toLocaleString() %>
+        </p>
+      </div>
+      
+      <div style="background: var(--white); padding: var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--line);">
+        <p style="font-size: var(--text-xs); color: var(--muted); margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Total Expenses</p>
+        <p style="font-size: var(--text-lg); font-weight: bold; color: var(--danger); margin: var(--space-1) 0 0;">
+          UGX <%= finance.totalExpenses.toLocaleString() %>
+        </p>
+      </div>
+      
+      <div style="background: var(--white); padding: var(--space-3); border-radius: var(--radius-sm); border: 2px solid var(--green);">
+        <p style="font-size: var(--text-xs); color: var(--muted); margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Net Balance</p>
+        <p style="font-size: var(--text-lg); font-weight: bold; color: var(--green); margin: var(--space-1) 0 0;">
+          UGX <%= finance.netBalance.toLocaleString() %>
+        </p>
+      </div>
+    </div>
+    
+    <div style="margin-top: var(--space-4); text-align: right;">
+      <a href="/dashboard/contributions" class="btn btn--ghost btn--sm">Make a Contribution →</a>
+    </div>
+  </section>
+<% } %>
+
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: var(--space-5); margin-bottom: var(--space-6);">
   <!-- Profile Completion -->
   <section class="card">

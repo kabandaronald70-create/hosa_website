@@ -41,6 +41,32 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  // --- 0c. Leadership Auto-Fill ---
+  const userSelect = document.getElementById("userId");
+  if (userSelect) {
+    const emailInput = document.getElementById("email");
+    const phoneInput = document.getElementById("phone");
+    const locationInput = document.getElementById("location");
+
+    userSelect.addEventListener("change", () => {
+      const option = userSelect.options[userSelect.selectedIndex];
+
+      if (option.value) {
+        if (emailInput)
+          emailInput.value = option.getAttribute("data-email") || "";
+        if (phoneInput)
+          phoneInput.value = option.getAttribute("data-phone") || "";
+        if (locationInput)
+          locationInput.value = option.getAttribute("data-location") || "";
+      } else {
+        // Clear fields if "Leave Vacant" is selected
+        if (emailInput) emailInput.value = "";
+        if (phoneInput) phoneInput.value = "";
+        if (locationInput) locationInput.value = "";
+      }
+    });
+  }
+
   // --- 1. Load Saved Items to set initial button states ---
   const savedMap = new Map(); // Map of "type:id" -> savedId
 
@@ -61,7 +87,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function updateAllButtons() {
-    // Update Save Buttons
     document.querySelectorAll("[data-save]").forEach((btn) => {
       const type = btn.dataset.save;
       const id = btn.dataset.id;
@@ -99,7 +124,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       try {
         if (isCurrentlySaved) {
-          // UNSAVE
           const res = await fetch(`/api/saved/${savedId}`, {
             method: "DELETE",
             credentials: "same-origin",
@@ -108,7 +132,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (res.ok) {
             savedMap.delete(key);
             updateAllButtons();
-            // If we are on the saved items page, reload it to remove the item
             if (window.location.pathname === "/dashboard/saved") {
               window.location.reload();
             }
@@ -117,7 +140,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             btn.textContent = oldText;
           }
         } else {
-          // SAVE
           const res = await fetch("/api/saved", {
             method: "POST",
             credentials: "same-origin",
@@ -133,12 +155,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             savedMap.set(key, data.saved.id);
             updateAllButtons();
           } else if (res.status === 401) {
-            // Not logged in
             window.location.href = `/login?next=${encodeURIComponent(
               window.location.pathname,
             )}`;
           } else {
-            // Could be a server error, or an account that is still pending admin approval
             alert(
               "Could not save item. Please make sure you are logged in and that your membership has been approved.",
             );
@@ -168,14 +188,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       try {
         let res;
         if (isGoing) {
-          // CANCEL RSVP
           res = await fetch(`/api/rsvp/${slug}`, {
             method: "DELETE",
             credentials: "same-origin",
             headers: { "x-csrf-token": getCsrfToken() },
           });
         } else {
-          // SET RSVP
           res = await fetch(`/api/rsvp/${slug}`, {
             method: "POST",
             credentials: "same-origin",
@@ -191,13 +209,13 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (isGoing) {
             btn.dataset.rsvped = "false";
             btn.textContent = "RSVP";
-            btn.style.backgroundColor = "#D2691E"; // Chocolate
+            btn.style.backgroundColor = "#D2691E";
             btn.style.borderColor = "#D2691E";
             btn.style.color = "#fff";
           } else {
             btn.dataset.rsvped = "true";
             btn.textContent = "✓ RSVP'd";
-            btn.style.backgroundColor = "#0F4C3A"; // Dark Green
+            btn.style.backgroundColor = "#0F4C3A";
             btn.style.borderColor = "#0F4C3A";
             btn.style.color = "#fff";
           }
@@ -219,7 +237,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   ) {
     await loadSavedItems();
 
-    // Set initial RSVP colors based on HTML data attributes
     document.querySelectorAll("[data-rsvp]").forEach((btn) => {
       if (btn.dataset.rsvped === "true") {
         btn.style.backgroundColor = "#0F4C3A";

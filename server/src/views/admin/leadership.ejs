@@ -14,7 +14,6 @@
     align-items: start;
   }
 
-  /* On desktop, split into two columns: List (left) and Form (right) */
   @media (min-width: 992px) {
     .leadership-layout {
       grid-template-columns: 1fr 380px;
@@ -25,7 +24,6 @@
     }
   }
 
-  /* Ensure the form fields don't look cramped on mobile */
   .leadership-form-sticky .field {
     margin-bottom: var(--space-3);
   }
@@ -61,7 +59,6 @@
           
           <% roles.forEach(role => { %>
             <tr>
-              <!-- Officer Details -->
               <td data-label="Officer">
                 <% if (role.first_name) { %>
                   <strong><%= role.first_name %> <%= role.last_name %></strong><br>
@@ -71,26 +68,22 @@
                 <% } %>
               </td>
 
-              <!-- Office & Category -->
               <td data-label="Office">
                 <strong style="color: var(--green);"><%= role.office_title %></strong><br>
                 <span class="badge badge--gold" style="font-size: 10px; margin-top: 4px;"><%= role.category %></span>
               </td>
 
-              <!-- Term -->
               <td data-label="Term" style="font-size: var(--text-sm);">
                 <%= role.term_start ? new Date(role.term_start).getFullYear() : '—' %> – 
                 <%= role.term_end ? new Date(role.term_end).getFullYear() : 'Present' %>
               </td>
 
-              <!-- Status -->
               <td data-label="Status">
                 <span class="badge badge--<%= role.status === 'active' ? 'success' : 'muted' %>">
                   <%= role.status %>
                 </span>
               </td>
 
-              <!-- Actions -->
               <td data-label="Actions" style="text-align: right;">
                 <form method="post" action="/admin/leadership/<%= role.id %>/delete" onsubmit="return confirm('Remove this leadership role?')" style="display:inline;">
                   <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
@@ -113,17 +106,61 @@
 
       <div class="field">
         <label>Assign User</label>
-        <select name="userId">
+        <select name="userId" id="userId">
           <option value="">-- Leave Vacant --</option>
           <% users.forEach(u => { %>
-            <option value="<%= u.id %>"><%= u.first_name ? `${u.first_name} ${u.last_name}` : u.email %></option>
+            <option 
+              value="<%= u.id %>" 
+              data-email="<%= u.email %>" 
+              data-phone="<%= u.phone || '' %>" 
+              data-location="<%= u.district || '' %>">
+              <%= u.first_name ? `${u.first_name} ${u.last_name}` : u.email %>
+            </option>
           <% }) %>
         </select>
       </div>
 
       <div class="field">
         <label>Office Title</label>
-        <input type="text" name="officeTitle" required placeholder="e.g. Chairperson, Treasurer">
+        <select name="officeTitle" required>
+          <option value="">-- Select Office --</option>
+          <optgroup label="Executive Committee">
+            <option value="Chairperson">Chairperson</option>
+            <option value="Vice Chairperson">Vice Chairperson</option>
+             <option value="Treasurer">General Secretary</option>
+            <option value="Treasurer">Treasurer</option>
+            <option value="Publicity">Publicity</option>
+            <option value="Projects Manager">Projects Manager</option>
+          </optgroup>
+          <optgroup label="Outreach Officers">
+            <option value="Outreach Officer (North)">Outreach Officer (North)</option>
+            <option value="Outreach Officer (East)">Outreach Officer (East)</option>
+            <option value="Outreach Officer (South)">Outreach Officer (South)</option>
+            <option value="Outreach Officer (West)">Outreach Officer (West)</option>
+          </optgroup>
+          <optgroup label="General Affairs">
+            <option value="General Affairs Representative 1">General Affairs Representative 1</option>
+            <option value="General Affairs Representative 2">General Affairs Representative 2</option>
+            <option value="General Affairs Representative 3">General Affairs Representative 3</option>
+            <option value="General Affairs Representative 4">General Affairs Representative 4</option>
+            <option value="General Affairs Representative 5">General Affairs Representative 5</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Location</label>
+        <input type="text" name="location" id="location" placeholder="e.g. Kampala">
+      </div>
+
+      <div class="field">
+        <label>Email</label>
+        <input type="email" name="email" id="email" placeholder="e.g. chair@hosa.org">
+      </div>
+
+      <div class="field">
+        <label>Phone</label>
+        <input type="text" name="phone" id="phone" placeholder="e.g. +256 700 000000">
       </div>
 
       <div class="field">

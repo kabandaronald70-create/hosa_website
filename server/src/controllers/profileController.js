@@ -171,6 +171,7 @@ export async function serveAvatar(req, res, next) {
     }
 
     // If asking for someone else, require public visibility.
+    // BUT allow guests to see public avatars (no req.user check).
     if (targetId !== req.user?.id && profile.public_visibility !== true) {
       return res.status(404).type("text/plain").send("Not found");
     }
@@ -184,7 +185,8 @@ export async function serveAvatar(req, res, next) {
       return res.status(502).type("text/plain").send("Storage error");
     }
 
-    res.set("Cache-Control", "private, max-age=30");
+    // Cache for longer since avatars don't change often
+    res.set("Cache-Control", "public, max-age=3600");
     res.redirect(302, url);
   } catch (err) {
     next(err);

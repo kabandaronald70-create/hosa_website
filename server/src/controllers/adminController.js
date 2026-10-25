@@ -861,9 +861,13 @@ export async function actionDeleteReportedContent(req, res, next) {
 export async function showLeadershipDashboard(req, res, next) {
   try {
     const roles = await getLeadershipRoles();
-    // Also get a list of all users to populate the dropdown in the form
+    // Fetch users WITH their profile data (phone, district) and account email
     const { rows: users } = await query(
-      `SELECT u.id, u.email, mp.first_name, mp.last_name FROM users u LEFT JOIN member_profiles mp ON u.id = mp.user_id ORDER BY mp.first_name ASC`,
+      `SELECT u.id, u.email, 
+              mp.first_name, mp.last_name, mp.phone, mp.district 
+       FROM users u 
+       LEFT JOIN member_profiles mp ON u.id = mp.user_id 
+       ORDER BY mp.first_name ASC`,
     );
 
     res.render("admin/leadership", {

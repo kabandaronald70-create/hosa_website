@@ -48,9 +48,20 @@ import {
   showAdminCampaigns,
   actionCreateCampaign,
   actionToggleCampaignBusiness,
-  actionUpdateCampaign, // <-- ADDED
-  actionDeleteCampaign, // <-- ADDED
+  actionUpdateCampaign,
+  actionDeleteCampaign,
 } from "../controllers/campaignController.js";
+import {
+  showFinanceDashboard,
+  actionVerifyContribution,
+  actionCreateExpense,
+  actionUpdateExpenseStatus,
+  actionUpdateExpense,
+  actionDeleteExpense,
+  actionExportContributions,
+  actionExportAllExpenses,
+  actionExportSingleExpense,
+} from "../controllers/financeController.js";
 
 const router = Router();
 
@@ -190,6 +201,89 @@ router.post(
   "/admin/campaigns/:id/delete",
   requireRole("admin", "super_admin"),
   actionDeleteCampaign,
+);
+
+// ---------------------------------------------------------------------------
+// Financial Management
+// ---------------------------------------------------------------------------
+
+// Custom middleware to enforce finance role restrictions
+const requireFinanceAccess = (req, res, next) => {
+  const isSuperAdmin = req.userRoles.includes("super_admin");
+  const isChairperson = req.leadershipRoles?.includes("Chairperson");
+  const isTreasurer = req.leadershipRoles?.includes("Treasurer");
+
+  if (isSuperAdmin || isChairperson || isTreasurer) {
+    return next();
+  }
+
+  req.flash(
+    "error",
+    "You do not have permission to access the financial dashboard.",
+  );
+  res.redirect("/dashboard");
+};
+
+router.get(
+  "/admin/finance",
+  requireRole("admin", "super_admin"),
+  requireFinanceAccess,
+  showFinanceDashboard,
+);
+
+router.post(
+  "/admin/finance/contributions/:id/verify",
+  requireRole("admin", "super_admin"),
+  requireFinanceAccess,
+  actionVerifyContribution,
+);
+
+router.post(
+  "/admin/finance/expenses",
+  requireRole("admin", "super_admin"),
+  requireFinanceAccess,
+  actionCreateExpense,
+);
+
+router.post(
+  "/admin/finance/expenses/:id/status",
+  requireRole("admin", "super_admin"),
+  requireFinanceAccess,
+  actionUpdateExpenseStatus,
+);
+
+router.post(
+  "/admin/finance/expenses/:id/update",
+  requireRole("admin", "super_admin"),
+  requireFinanceAccess,
+  actionUpdateExpense,
+);
+
+router.post(
+  "/admin/finance/expenses/:id/delete",
+  requireRole("admin", "super_admin"),
+  requireFinanceAccess,
+  actionDeleteExpense,
+);
+
+// Document export
+router.get(
+  "/admin/finance/export/contributions",
+  requireRole("admin", "super_admin"),
+  requireFinanceAccess,
+  actionExportContributions,
+);
+router.get(
+  "/admin/finance/export/expenses",
+  requireRole("admin", "super_admin"),
+  requireFinanceAccess,
+  actionExportAllExpenses,
+);
+router.get(
+  "/admin/finance/export/expenses/:id",
+  requireRole("admin", "super_admin"),
+  requireFinanceAccess,
+  actionExportSingleExpense,
 );
 
 export default router;

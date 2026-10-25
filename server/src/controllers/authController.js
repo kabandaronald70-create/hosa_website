@@ -24,23 +24,36 @@ export async function submitRegister(req, res, next) {
 
   if (!parsed.success) {
     const { fieldErrors } = flattenZodError(parsed.error);
+
+    // Pass back ALL entered values so the user doesn't lose their progress
     const {
       email = "",
       first_name = "",
       last_name = "",
+      other_name = "",
       graduation_year = "",
       district = "",
       country_code = "",
+      nationality = "",
+      profession = "",
+      phone = "",
+      region = "",
     } = req.body;
+
     return res.status(400).render("auth/register", {
       title: "Register — HOSA",
       values: {
         email,
         first_name,
         last_name,
+        other_name,
         graduation_year,
         district,
         country_code,
+        nationality,
+        profession,
+        phone,
+        region,
       },
       fieldErrors,
       layout: "layouts/public",
@@ -53,10 +66,15 @@ export async function submitRegister(req, res, next) {
     password: parsed.data.password,
     firstName: parsed.data.first_name,
     lastName: parsed.data.last_name,
+    otherName: parsed.data.other_name || null,
     graduationYear: parsed.data.graduation_year ?? null,
     district: parsed.data.district || null,
     countryCode: parsed.data.country_code || null,
     mentorOptIn: Boolean(parsed.data.mentor_opt_in),
+    nationality: parsed.data.nationality,
+    profession: parsed.data.profession,
+    phone: parsed.data.phone,
+    region: parsed.data.region,
   };
 
   try {
@@ -81,9 +99,14 @@ export async function submitRegister(req, res, next) {
           email: req.body.email || "",
           first_name: req.body.first_name || "",
           last_name: req.body.last_name || "",
+          other_name: req.body.other_name || "",
           graduation_year: req.body.graduation_year || "",
           district: req.body.district || "",
           country_code: req.body.country_code || "",
+          nationality: req.body.nationality || "",
+          profession: req.body.profession || "",
+          phone: req.body.phone || "",
+          region: req.body.region || "",
         },
         fieldErrors: { email: "That email is already registered." },
         layout: "layouts/public",

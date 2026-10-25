@@ -20,6 +20,10 @@ import {
   actionCreateRequest,
   actionCloseRequest,
 } from "../controllers/networkController.js";
+import {
+  showMyContributions,
+  actionSubmitContribution,
+} from "../controllers/financeController.js";
 
 const router = Router();
 
@@ -57,5 +61,9 @@ router.post(
   requireAuth,
   actionCloseRequest,
 );
+
+// Contributions
+router.get("/dashboard/contributions", requireAuth, showMyContributions);
+router.post("/dashboard/contributions", requireAuth, actionSubmitContribution);
 
 export default router;
