@@ -1,4 +1,5 @@
 import { Router } from "express";
+import multer from "multer";
 import { requireRole } from "../middleware/auth.js";
 import {
   showPendingBusinesses,
@@ -6,6 +7,19 @@ import {
   actionRejectBusiness,
   actionToggleFeatured,
 } from "../controllers/businessController.js";
+import {
+  showAdminProjects,
+  showAdminProjectDetail,
+  actionCreateProject,
+  actionUpdateProjectStatus,
+  actionCreateMilestone,
+  actionUpdateMilestoneStatus,
+  actionUploadProjectFile,
+  actionUpdateProject,
+  actionDeleteProject,
+  actionUpdateFundsRaised,
+} from "../controllers/projectController.js";
+
 import {
   showAdminAnnouncements,
   submitAnnouncement,
@@ -64,6 +78,10 @@ import {
 } from "../controllers/financeController.js";
 
 const router = Router();
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
 
 router.use("/admin", requireRole("admin", "super_admin", "moderator"));
 
@@ -207,7 +225,6 @@ router.post(
 // Financial Management
 // ---------------------------------------------------------------------------
 
-// Custom middleware to enforce finance role restrictions
 const requireFinanceAccess = (req, res, next) => {
   const isSuperAdmin = req.userRoles.includes("super_admin");
   const isChairperson = req.leadershipRoles?.includes("Chairperson");
@@ -284,6 +301,99 @@ router.get(
   requireRole("admin", "super_admin"),
   requireFinanceAccess,
   actionExportSingleExpense,
+);
+
+// ---------------------------------------------------------------------------
+// Projects & Regional Development
+// ---------------------------------------------------------------------------
+
+const requireProjectAccess = (req, res, next) => {
+  const isSuperAdmin = req.userRoles.includes("super_admin");
+  const isChairperson = req.leadershipRoles?.includes("Chairperson");
+  const isProjectsManager = req.leadershipRoles?.includes("Projects Manager");
+
+  if (isSuperAdmin || isChairperson || isProjectsManager) {
+    return next();
+  }
+  req.flash("error", "You do not have permission to manage projects.");
+  res.redirect("/dashboard");
+};
+
+router.get(
+  "/admin/projects",
+  requireRole("admin", "super_admin"),
+  requireProjectAccess,
+  showAdminProjects,
+);
+router.post(
+  "/admin/projects",
+  requireRole("admin", "super_admin"),
+  requireProjectAccess,
+  upload.single("image"),
+  actionCreateProject,
+);
+router.get(
+  "/admin/projects/:id",
+  requireRole("admin", "super_admin"),
+  requireProjectAccess,
+  showAdminProjectDetail,
+);
+router.post(
+  "/admin/projects/:id/status",
+  requireRole("admin", "super_admin"),
+  requireProjectAccess,
+  actionUpdateProjectStatus,
+);
+router.post(
+  "/admin/projects/milestones",
+  requireRole("admin", "super_admin"),
+  requireProjectAccess,
+  actionCreateMilestone,
+);
+router.post(
+  "/admin/projects/milestones/:id/status",
+  requireRole("admin", "super_admin"),
+  requireProjectAccess,
+  actionUpdateMilestoneStatus,
+);
+router.post(
+  "/admin/projects/:id/update",
+  requireRole("admin", "super_admin"),
+  requireProjectAccess,
+  actionUpdateProject,
+);
+router.post(
+  "/admin/projects/:id/delete",
+  requireRole("admin", "super_admin"),
+  requireProjectAccess,
+  actionDeleteProject,
+);
+router.post(
+  "/admin/projects/:id/funds",
+  requireRole("admin", "super_admin"),
+  requireProjectAccess,
+  actionUpdateFundsRaised,
+);
+
+// File uploads
+router.post(
+  "/admin/projects/:id/files",
+  requireRole("admin", "super_admin"),
+  requireProjectAccess,
+  upload.single("file"),
+  actionUploadProjectFile,
+);
+router.post(
+  "/admin/projects/:id/update",
+  requireRole("admin", "super_admin"),
+  requireProjectAccess,
+  actionUpdateProject,
+);
+router.post(
+  "/admin/projects/:id/delete",
+  requireRole("admin", "super_admin"),
+  requireProjectAccess,
+  actionDeleteProject,
 );
 
 export default router;

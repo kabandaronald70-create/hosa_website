@@ -54,7 +54,12 @@
                 <td data-label="Member">
                   <strong><%= c.first_name ? `${c.first_name} ${c.last_name}` : 'Guest / External' %></strong>
                 </td>
-                <td data-label="Purpose"><%= c.purpose %></td>
+                <td data-label="Purpose">
+                  <%= c.purpose %>
+                  <% if (c.project_title) { %>
+                    <br><span style="font-size: var(--text-xs); color: var(--green);">Project: <%= c.project_title %></span>
+                  <% } %>
+                </td>
                 <td data-label="Amount"><strong>UGX <%= Number(c.amount).toLocaleString() %></strong></td>
                 <td data-label="Method"><%= c.payment_method %> (<%= c.reference || 'No Ref' %>)</td>
                 <td data-label="Action">
@@ -99,7 +104,12 @@
                 <td data-label="Member">
                   <strong><%= c.first_name ? `${c.first_name} ${c.last_name}` : 'Guest / External' %></strong>
                 </td>
-                <td data-label="Purpose"><%= c.purpose %></td>
+                <td data-label="Purpose">
+                  <%= c.purpose %>
+                  <% if (c.project_title) { %>
+                    <br><span style="font-size: var(--text-xs); color: var(--green);">Project: <%= c.project_title %></span>
+                  <% } %>
+                </td>
                 <td data-label="Amount"><strong>UGX <%= Number(c.amount).toLocaleString() %></strong></td>
                 <td data-label="Method"><%= c.payment_method %></td>
                 <td data-label="Reference"><%= c.reference || '—' %></td>

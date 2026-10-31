@@ -17,6 +17,10 @@ For production DB use Supabase Free with SSL (the app enables SSL when
 
 ## Migrations in production
 
-Run once from a Render Shell after deploy:
+The Web Service start command (`npm start`) applies pending database migrations
+before starting the server. To apply migrations manually from the Render Shell
+(with `server` as the working directory), run:
 
-<!-- auto-deploy test: 2026-10-18 01:51 -->
+```sh
+npm run migrate
+```

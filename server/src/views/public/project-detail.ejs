@@ -1,0 +1,98 @@
+<header style="margin-bottom: var(--space-6);">
+  <h1><%= project.title %></h1>
+  <p><%= project.region %> Region · <%= project.category %></p>
+</header>
+
+<div class="card" style="margin-bottom: var(--space-6);">
+  <h2>About this Project</h2>
+  <p><%= project.description %></p>
+
+  <!-- Budget & Funds Breakdown -->
+  <div style="display: flex; gap: var(--space-6); flex-wrap: wrap; margin-top: var(--space-4);">
+    <div>
+      <p style="margin: 0; font-size: var(--text-sm); color: var(--muted);">Budget</p>
+      <p style="margin: 0; font-weight: bold; font-size: var(--text-lg);">UGX <%= Number(project.budget).toLocaleString() %></p>
+    </div>
+    <div>
+      <p style="margin: 0; font-size: var(--text-sm); color: var(--muted);">Funds Raised</p>
+      <p style="margin: 0; font-weight: bold; font-size: var(--text-lg); color: var(--success);">
+        UGX <%= Number(project.funds_raised || 0).toLocaleString() %>
+      </p>
+    </div>
+    <div>
+      <p style="margin: 0; font-size: var(--text-sm); color: var(--muted);">Status</p>
+      <p style="margin: 0;">
+        <span class="badge badge--<%= project.status === 'completed' ? 'success' : project.status === 'in_progress' ? 'primary' : 'warning' %>">
+          <%= project.status %>
+        </span>
+      </p>
+    </div>
+  </div>
+
+  <!-- Funding Progress Bar -->
+  <% const pct = project.budget > 0 ? Math.min(100, Math.round((project.funds_raised / project.budget) * 100)) : 0; %>
+  <div style="margin-top: var(--space-4);">
+    <div style="display: flex; justify-content: space-between; font-size: var(--text-xs); color: var(--muted); margin-bottom: 4px;">
+      <span>Funding Progress</span>
+      <span><%= pct %>%</span>
+    </div>
+    <div style="height: 12px; background: var(--line); border-radius: 6px; overflow: hidden;">
+      <div style="height: 100%; width: <%= pct %>%; background: var(--success); transition: width 0.3s;"></div>
+    </div>
+  </div>
+
+  <!-- Support This Project Button -->
+  <div style="margin-top: var(--space-5); border-top: 1px solid var(--line); padding-top: var(--space-4); text-align: center;">
+    <p style="font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-3);">
+      Want to help make this project a reality?
+    </p>
+    <a href="/dashboard/contributions?purpose=Project%20Donation&amp;project_id=<%= encodeURIComponent(project.id) %>" class="btn btn--accent" style="min-width: 220px;">
+      ❤️ Support this Project
+    </a>
+  </div>
+</div>
+
+<h2 style="margin-bottom: var(--space-4);">Project Milestones</h2>
+<% if (!milestones || milestones.length === 0) { %>
+  <p style="color: var(--muted);">No milestones have been set for this project yet.</p>
+<% } else { %>
+  <div style="display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-6);">
+    <% milestones.forEach(m => { %>
+      <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-2);">
+        <div>
+          <h3 style="margin: 0; font-size: var(--text-base);"><%= m.title %></h3>
+          <p style="margin: 0; font-size: var(--text-sm); color: var(--muted);">
+            Target: <%= m.target_date ? new Date(m.target_date).toLocaleDateString() : 'TBD' %>
+            <% if (m.assigned_region) { %> · Region: <%= m.assigned_region %><% } %>
+          </p>
+          <% if (m.description) { %>
+            <p style="margin: var(--space-1) 0 0; font-size: var(--text-sm);"><%= m.description %></p>
+          <% } %>
+        </div>
+        <span class="badge badge--<%= m.status === 'completed' ? 'success' : m.status === 'in_progress' ? 'primary' : 'warning' %>">
+          <%= m.status.replace('_', ' ') %>
+        </span>
+      </div>
+    <% }) %>
+  </div>
+<% } %>
+
+<h2 style="margin-top: var(--space-6);">Project Files</h2>
+<% if (!attachments || attachments.length === 0) { %>
+  <p style="color: var(--muted);">No files uploaded yet.</p>
+<% } else { %>
+  <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+    <% attachments.forEach(a => { %>
+      <div class="card" style="padding: var(--space-3); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-2);">
+        <div>
+          <strong style="font-size: var(--text-sm);"><%= a.title %></strong><br>
+          <span style="font-size: 10px; color: var(--muted);"><%= a.file_name %></span>
+          <% if (a.description) { %>
+            <p style="font-size: var(--text-xs); margin: var(--space-1) 0 0;"><%= a.description %></p>
+          <% } %>
+        </div>
+        <a href="<%= a.file_path %>" target="_blank" class="btn btn--ghost btn--sm">⬇ Download</a>
+      </div>
+    <% }) %>
+  </div>
+<% } %>

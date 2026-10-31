@@ -9,7 +9,7 @@
   <div class="card">
     <h2 style="margin-top: 0;">Make a Contribution</h2>
     <p style="font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-4);">
-      Submit your payment details below. The Treasurer will verify the transaction against the bank statement before it is credited to your account.
+      Submit your payment details below. The Treasurer will verify the transaction against the bank statement. Verified project donations update the selected project's funds raised and progress.
     </p>
 
     <form method="POST" action="/dashboard/contributions">
@@ -22,13 +22,31 @@
         </div>
         <div class="field">
           <label>Purpose</label>
-          <select name="purpose" required>
-            <option value="Annual Subscription">Annual Subscription (Dues)</option>
-            <option value="Project Donation">Project Donation</option>
-            <option value="General Fund">General Fund</option>
-            <option value="Other">Other</option>
+          <select name="purpose" id="purpose-select" required>
+            <option value="Annual Subscription" <%= preselectedPurpose === 'Annual Subscription' ? 'selected' : '' %>>Annual Subscription (Dues)</option>
+            <option value="Project Donation" <%= preselectedPurpose === 'Project Donation' ? 'selected' : '' %> <%= projects.length === 0 ? 'disabled' : '' %>>Project Donation</option>
+            <option value="General Fund" <%= preselectedPurpose === 'General Fund' ? 'selected' : '' %>>General Fund</option>
+            <option value="Other" <%= preselectedPurpose === 'Other' ? 'selected' : '' %>>Other</option>
           </select>
         </div>
+      </div>
+
+      <!-- Project Dropdown (hidden by default, shown when "Project Donation" is selected) -->
+      <div class="field" id="project-field" style="<%= preselectedPurpose === 'Project Donation' ? '' : 'display: none;' %>">
+        <label>Select Project</label>
+        <select name="project_id" id="project-select" <%= preselectedPurpose === 'Project Donation' ? 'required' : 'disabled' %>>
+          <option value="">-- Select an approved project --</option>
+          <% projects.forEach(p => { %>
+            <option value="<%= p.id %>" <%= preselectedProjectId === p.id ? 'selected' : '' %>>
+              <%= p.title %> (<%= p.region %>) — UGX <%= Number(p.funds_raised || 0).toLocaleString() %> raised
+            </option>
+          <% }) %>
+        </select>
+        <% if (projects.length === 0) { %>
+          <span class="field-hint">There are no approved projects accepting donations right now.</span>
+        <% } else { %>
+          <span class="field-hint">Choose an approved or in-progress project. Its progress updates after the Treasurer verifies your contribution.</span>
+        <% } %>
       </div>
 
       <div class="responsive-fields" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
@@ -75,6 +93,9 @@
                 </td>
                 <td data-label="Purpose">
                   <strong><%= c.purpose %></strong><br>
+                  <% if (c.project_title) { %>
+                    <span style="font-size: var(--text-xs); color: var(--green);">Project: <%= c.project_title %></span><br>
+                  <% } %>
                   <span style="font-size: var(--text-xs); color: var(--muted);"><%= c.payment_method %> <%= c.reference ? `(${c.reference})` : '' %></span>
                 </td>
                 <td data-label="Amount">

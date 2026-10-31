@@ -7,6 +7,12 @@ import {
   showContact,
   showMentorshipInfo,
 } from "../controllers/publicPageController.js";
+import {
+  showPublicProjects,
+  showProjectDetails,
+} from "../controllers/projectController.js";
+import { requireAuth } from "../middleware/auth.js";
+
 import { showArchive } from "../controllers/publicEjsController.js";
 import {
   actionMarkAnnouncementRead,
@@ -14,7 +20,6 @@ import {
 } from "../controllers/announcementController.js";
 import { query } from "../config/db.js";
 import { listActiveAnnouncements } from "../models/announcementModel.js";
-import { requireAuth } from "../middleware/auth.js";
 import { showBusinessDirectory } from "../controllers/businessController.js";
 import {
   downloadDocumentFile,
@@ -71,5 +76,8 @@ router.get("/contact", showContact);
 router.get("/mentorship", showMentorshipInfo);
 router.get("/businesses", showBusinessDirectory);
 router.get("/business-network", requireAuth, showNetworkBoard);
+
+router.get("/projects", requireAuth, showPublicProjects);
+router.get("/projects/:id", requireAuth, showProjectDetails);
 
 export default router;

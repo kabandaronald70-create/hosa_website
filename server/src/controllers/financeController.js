@@ -19,6 +19,7 @@ import {
   notifyExpenseRejected,
   notifyExpenseRejectedBySuperAdmin,
 } from "../services/notificationsService.js";
+import { listDonationProjects } from "../models/projectModel.js";
 
 export async function showFinanceDashboard(req, res, next) {
   try {
@@ -46,7 +47,15 @@ export async function showFinanceDashboard(req, res, next) {
 export async function actionVerifyContribution(req, res, next) {
   try {
     const { id } = req.params;
-    await verifyContribution(id, req.user.id);
+    const verified = await verifyContribution(id, req.user.id);
+
+    if (!verified) {
+      req.flash(
+        "error",
+        "This contribution was already verified or is no longer pending.",
+      );
+      return res.redirect("/admin/finance");
+    }
 
     await auditLog({
       req,
@@ -196,16 +205,44 @@ export async function actionUpdateExpenseStatus(req, res, next) {
 
 export async function showMyContributions(req, res, next) {
   try {
-    const { rows: contributions } = await query(
-      `SELECT * FROM contributions 
-       WHERE user_id = $1 
-       ORDER BY created_at DESC`,
-      [req.user.id],
+    const [{ rows: contributions }, projects] = await Promise.all([
+      query(
+        `SELECT c.*, p.title AS project_title
+         FROM contributions c
+         LEFT JOIN projects p ON c.project_id = p.id
+         WHERE c.user_id = $1
+         ORDER BY c.created_at DESC`,
+        [req.user.id],
+      ),
+      listDonationProjects(),
+    ]);
+
+    const purposeQuery =
+      typeof req.query.purpose === "string" ? req.query.purpose : "";
+    const projectQuery =
+      typeof req.query.project_id === "string" ? req.query.project_id : "";
+    const preselectedProject = projects.find(
+      (project) =>
+        project.id === projectQuery || project.title === purposeQuery,
     );
+    const purposes = [
+      "Annual Subscription",
+      "Project Donation",
+      "General Fund",
+      "Other",
+    ];
+    const preselectedPurpose = preselectedProject
+      ? "Project Donation"
+      : purposes.includes(purposeQuery)
+        ? purposeQuery
+        : "";
 
     res.render("dashboard/contributions", {
       title: "My Contributions",
       contributions,
+      projects,
+      preselectedPurpose,
+      preselectedProjectId: preselectedProject?.id || "",
       layout: "layouts/app",
     });
   } catch (err) {
@@ -215,15 +252,52 @@ export async function showMyContributions(req, res, next) {
 
 export async function actionSubmitContribution(req, res, next) {
   try {
-    const { amount, purpose, payment_method, reference } = req.body;
+    const { amount, purpose, payment_method, reference, project_id } = req.body;
 
-    await createContribution({
+    const parsedAmount = Number(amount);
+    const purposes = [
+      "Annual Subscription",
+      "Project Donation",
+      "General Fund",
+      "Other",
+    ];
+    const paymentMethods = ["Mobile Money", "Bank Transfer", "Cash"];
+
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      req.flash("error", "Enter a valid contribution amount greater than zero.");
+      return res.redirect("/dashboard/contributions");
+    }
+
+    if (!purposes.includes(purpose) || !paymentMethods.includes(payment_method)) {
+      req.flash("error", "Select a valid contribution purpose and payment method.");
+      return res.redirect("/dashboard/contributions");
+    }
+
+    if (
+      purpose === "Project Donation" &&
+      (typeof project_id !== "string" ||
+        !/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(project_id))
+    ) {
+      req.flash("error", "Select an approved project to donate to.");
+      return res.redirect("/dashboard/contributions");
+    }
+
+    const contribution = await createContribution({
       userId: req.user.id,
-      amount: parseFloat(amount),
+      amount: parsedAmount,
       purpose,
       paymentMethod: payment_method,
       reference,
+      projectId: purpose === "Project Donation" ? project_id : null,
     });
+
+    if (!contribution) {
+      req.flash(
+        "error",
+        "That project is no longer accepting donations. Select an approved project and try again.",
+      );
+      return res.redirect("/dashboard/contributions");
+    }
 
     req.flash(
       "success",

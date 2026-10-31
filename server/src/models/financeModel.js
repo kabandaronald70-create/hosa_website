@@ -1,4 +1,4 @@
-import { query } from "../config/db.js";
+import { query, withTransaction } from "../config/db.js";
 
 // --- Dashboard Totals ---
 export async function getFinancialSummary() {
@@ -34,10 +34,12 @@ export async function listContributions({ status = "pending", limit = 50 }) {
   }
 
   const { rows } = await query(
-    `SELECT c.*, u.email AS user_email, mp.first_name, mp.last_name
+    `SELECT c.*, u.email AS user_email, mp.first_name, mp.last_name,
+            p.title AS project_title
      FROM contributions c
      LEFT JOIN users u ON c.user_id = u.id
      LEFT JOIN member_profiles mp ON u.id = mp.user_id
+     LEFT JOIN projects p ON c.project_id = p.id
      ${where}
      ORDER BY c.created_at DESC LIMIT $${values.length + 1}`,
     [...values, limit],
@@ -46,12 +48,29 @@ export async function listContributions({ status = "pending", limit = 50 }) {
 }
 
 export async function verifyContribution(id, adminId) {
-  await query(
-    `UPDATE contributions 
-     SET status = 'verified', verified_by = $1, verified_at = now() 
-     WHERE id = $2`,
-    [adminId, id],
-  );
+  return withTransaction(async (client) => {
+    const { rows } = await client.query(
+      `UPDATE contributions
+       SET status = 'verified', verified_by = $1, verified_at = now()
+       WHERE id = $2 AND status = 'pending'
+       RETURNING amount, project_id`,
+      [adminId, id],
+    );
+    const contribution = rows[0];
+
+    if (!contribution) return false;
+
+    if (contribution.project_id) {
+      await client.query(
+        `UPDATE projects
+         SET funds_raised = COALESCE(funds_raised, 0) + $1
+         WHERE id = $2`,
+        [contribution.amount, contribution.project_id],
+      );
+    }
+
+    return true;
+  });
 }
 
 export async function createContribution({
@@ -60,13 +79,26 @@ export async function createContribution({
   purpose,
   paymentMethod,
   reference,
+  projectId,
 }) {
-  const { rows } = await query(
-    `INSERT INTO contributions (user_id, amount, purpose, payment_method, reference)
-     VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-    [userId, amount, purpose, paymentMethod, reference],
-  );
-  return rows[0];
+  return withTransaction(async (client) => {
+    if (projectId) {
+      const { rows: projects } = await client.query(
+        `SELECT id FROM projects
+         WHERE id = $1 AND status IN ('approved', 'in_progress')
+         FOR SHARE`,
+        [projectId],
+      );
+      if (projects.length === 0) return null;
+    }
+
+    const { rows } = await client.query(
+      `INSERT INTO contributions (user_id, amount, purpose, payment_method, reference, project_id)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [userId, amount, purpose, paymentMethod, reference, projectId || null],
+    );
+    return rows[0];
+  });
 }
 
 // --- Expenses ---
@@ -161,10 +193,11 @@ export async function deletePendingExpense(id, userId) {
 
 export async function listAllContributionsForExport() {
   const { rows } = await query(
-    `SELECT c.*, mp.first_name, mp.last_name
+    `SELECT c.*, mp.first_name, mp.last_name, p.title AS project_title
      FROM contributions c
      LEFT JOIN users u ON c.user_id = u.id
      LEFT JOIN member_profiles mp ON u.id = mp.user_id
+     LEFT JOIN projects p ON c.project_id = p.id
      WHERE c.status = 'verified'
      ORDER BY c.created_at DESC`,
   );

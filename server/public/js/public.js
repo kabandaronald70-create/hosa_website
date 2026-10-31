@@ -67,6 +67,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  // --- 0d. Contribution Project Toggle ---
+  const purposeSelect = document.getElementById("purpose-select");
+  const projectField = document.getElementById("project-field");
+  const projectSelect = document.getElementById("project-select");
+
+  if (purposeSelect && projectField && projectSelect) {
+    const updateProjectField = () => {
+      const needsProject = purposeSelect.value === "Project Donation";
+      projectField.style.display = needsProject ? "block" : "none";
+      projectSelect.required = needsProject;
+      projectSelect.disabled = !needsProject;
+    };
+
+    updateProjectField();
+    purposeSelect.addEventListener("change", updateProjectField);
+  }
+
   // --- 1. Load Saved Items to set initial button states ---
   const savedMap = new Map(); // Map of "type:id" -> savedId
 
