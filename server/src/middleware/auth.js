@@ -1,3 +1,5 @@
+import { query } from "../config/db.js"; // Add this import at the top
+
 export function requireAuth(req, res, next) {
   if (!req.user) {
     if (
@@ -10,7 +12,29 @@ export function requireAuth(req, res, next) {
     const next_ = encodeURIComponent(req.originalUrl);
     return res.redirect(`/login?next=${next_}`);
   }
-  next();
+
+  // We only do this for users who have leadership/admin access to save DB queries
+  const isAdmin = req.userRoles?.some(
+    (r) => r === "admin" || r === "super_admin",
+  );
+  const isChairperson = req.leadershipRoles?.includes("Chairperson");
+  const isProjectsManager = req.leadershipRoles?.includes("Projects Manager");
+
+  if (isAdmin || isChairperson || isProjectsManager) {
+    query(`SELECT COUNT(*) FROM regional_reports WHERE status = 'pending'`)
+      .then(({ rows }) => {
+        res.locals.pendingRegionalReports = parseInt(rows[0].count, 10);
+        next();
+      })
+      .catch((err) => {
+        // If it fails, just default to 0 and don't crash the app
+        res.locals.pendingRegionalReports = 0;
+        next();
+      });
+  } else {
+    res.locals.pendingRegionalReports = 0;
+    next();
+  }
 }
 
 export function requireGuest(req, res, next) {

@@ -57,6 +57,8 @@ import {
   actionCreateLeadershipRole,
   actionUpdateLeadershipRole,
   actionDeleteLeadershipRole,
+  showRegionalReportsAdmin,
+  actionMarkRegionalReportReviewed,
 } from "../controllers/adminController.js";
 import {
   showAdminCampaigns,
@@ -383,17 +385,18 @@ router.post(
   upload.single("file"),
   actionUploadProjectFile,
 );
-router.post(
-  "/admin/projects/:id/update",
-  requireRole("admin", "super_admin"),
-  requireProjectAccess,
-  actionUpdateProject,
-);
-router.post(
-  "/admin/projects/:id/delete",
-  requireRole("admin", "super_admin"),
-  requireProjectAccess,
-  actionDeleteProject,
-);
 
+// Regional Reports (Restricted to Super Admin, Chairperson, Projects Manager)
+router.get(
+  "/admin/regional-reports",
+  requireRole("admin", "super_admin"),
+  requireProjectAccess,
+  showRegionalReportsAdmin,
+);
+router.post(
+  "/admin/regional-reports/:id/review",
+  requireRole("admin", "super_admin"),
+  requireProjectAccess,
+  actionMarkRegionalReportReviewed,
+);
 export default router;

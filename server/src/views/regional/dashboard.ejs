@@ -1,11 +1,14 @@
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5);">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); flex-wrap: wrap; gap: var(--space-3);">
   <div>
     <h1 style="margin: 0;">Regional Dashboard</h1>
     <p style="color: var(--muted); margin: var(--space-1) 0 0; font-size: var(--text-sm);">
       You are managing the <strong><%= region %></strong> region.
     </p>
   </div>
-  <a href="/regional/proposals/new" class="btn btn--primary">+ New Proposal</a>
+  <div style="display: flex; gap: var(--space-2);">
+    <a href="/regional/reports" class="btn btn--ghost">📄 View Reports</a>
+    <a href="/regional/proposals/new" class="btn btn--primary">+ New Proposal</a>
+  </div>
 </div>
 
 <!-- Stats -->

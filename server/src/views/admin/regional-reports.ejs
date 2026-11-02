@@ -1,0 +1,59 @@
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5);">
+  <div>
+    <h1 style="margin: 0;">Regional Reports</h1>
+    <p style="color: var(--muted); margin: var(--space-1) 0 0; font-size: var(--text-sm);">
+      Review activity and incident reports submitted by Outreach Officers.
+    </p>
+  </div>
+  <a href="/admin" class="btn btn--ghost">← Back to Admin</a>
+</div>
+
+<% if (reports.length === 0) { %>
+  <div class="empty-state">
+    <p class="empty-state__title">No regional reports submitted yet.</p>
+  </div>
+<% } else { %>
+  <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+    <% reports.forEach(r => { %>
+      <article class="card">
+        <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: var(--space-2);">
+          <div>
+            <span class="badge badge--gold"><%= r.region %> Region</span>
+            <span class="badge badge--<%= r.status === 'reviewed' ? 'success' : 'warning' %>" style="margin-left: 4px;"><%= r.status %></span>
+            <h3 style="margin: var(--space-2) 0 0; font-size: var(--text-lg);"><%= r.title %></h3>
+          </div>
+          <div style="text-align: right;">
+            <span class="badge" style="background: var(--bg-soft); color: var(--ink);"><%= r.report_type %></span>
+          </div>
+        </div>
+
+        <p style="font-size: var(--text-sm); color: var(--muted); margin: var(--space-1) 0 var(--space-3);">
+          Submitted by <strong><%= r.first_name %> <%= r.last_name %></strong> on <%= new Date(r.created_at).toLocaleDateString('en-GB') %>
+        </p>
+
+        <div style="background: var(--ivory); padding: var(--space-3); border-radius: var(--radius-sm); white-space: pre-wrap; font-size: var(--text-sm);">
+          <%= r.content %>
+        </div>
+
+        <% if (r.file_name) { %>
+          <div style="margin-top: var(--space-3); display: flex; justify-content: space-between; align-items: center; background: var(--white); border: 1px solid var(--line); padding: var(--space-2); border-radius: var(--radius-sm);">
+            <span style="font-size: var(--text-sm);">📎 <%= r.file_name %></span>
+            <a href="<%= r.file_path %>" target="_blank" class="btn btn--ghost btn--sm">⬇ Download</a>
+          </div>
+        <% } %>
+
+        <!-- Mark as Reviewed Button -->
+        <% if (r.status === 'pending') { %>
+  <div style="margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px dashed var(--line); display: flex; justify-content: flex-end;">
+    <form method="POST" action="/admin/regional-reports/<%= r.id %>/review">
+      <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+      <button type="submit" class="btn btn--primary">
+        ✅ Mark as Reviewed
+      </button>
+    </form>
+  </div>
+<% } %>
+      </article>
+    <% }) %>
+  </div>
+<% } %>

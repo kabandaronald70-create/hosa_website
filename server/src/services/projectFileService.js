@@ -20,7 +20,12 @@ export async function uploadProjectFile(
     throw new Error(`Supabase upload failed: ${error.message}`);
   }
 
-  return { storagePath: fileName, originalName };
+  const { data: urlData } = supabase.storage
+    .from("project-files")
+    .getPublicUrl(fileName);
+
+  // ✅ Return the full URL instead of just the file name
+  return { storagePath: urlData.publicUrl, originalName };
 }
 
 export async function uploadProjectImage(
