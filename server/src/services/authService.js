@@ -16,10 +16,15 @@ export async function registerMember({
   password,
   firstName,
   lastName,
+  otherName,
   graduationYear,
   district,
   countryCode,
   mentorOptIn,
+  nationality,
+  profession,
+  phone,
+  region,
 }) {
   if (!email || !password || !firstName || !lastName) {
     const err = new Error("Registration payload is incomplete.");
@@ -43,10 +48,15 @@ export async function registerMember({
     passwordHash,
     firstName: firstName.trim(),
     lastName: lastName.trim(),
+    otherName,
     graduationYear,
     district,
     countryCode,
     mentorOptIn,
+    nationality,
+    profession,
+    phone,
+    region,
   });
 
   return { user, roles };
