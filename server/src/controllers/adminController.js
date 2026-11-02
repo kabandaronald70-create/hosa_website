@@ -270,7 +270,11 @@ export async function actionApproveMembership(req, res, next) {
     }
 
     await query(
-      `UPDATE users SET membership_approved_at = now(), membership_approved_by = $1 WHERE id = $2`,
+      `UPDATE users 
+       SET membership_approved_at = now(), 
+           membership_approved_by = $1,
+           status = 'active'  -- <-- ADD THIS
+       WHERE id = $2`,
       [req.user.id, id],
     );
 
