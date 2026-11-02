@@ -27,6 +27,8 @@ import {
   setReportStatus,
   deleteReportedOpportunity,
   deleteReportedStory,
+  listAllRegionalReports,
+  updateRegionalReportStatus,
 } from "../models/adminModel.js";
 import {
   getLeadershipRoles,
@@ -910,6 +912,45 @@ export async function actionDeleteLeadershipRole(req, res, next) {
     await deleteLeadershipRole(req.params.id);
     req.flash("success", "Leadership role removed.");
     res.redirect("/admin/leadership");
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function showRegionalReportsAdmin(req, res, next) {
+  try {
+    const reports = await listAllRegionalReports();
+    res.render("admin/regional-reports", {
+      title: "Regional Reports — Admin",
+      reports,
+      layout: "layouts/app",
+      csrfToken: res.locals.csrfToken,
+      csrfField: res.locals.csrfField,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+export async function actionMarkRegionalReportReviewed(req, res, next) {
+  try {
+    const { id } = req.params;
+    const updatedReport = await updateRegionalReportStatus(id, "reviewed");
+
+    if (!updatedReport) {
+      req.flash("error", "Report not found.");
+      return res.redirect("/admin/regional-reports");
+    }
+
+    await auditLog({
+      req,
+      action: "regional_report.reviewed",
+      targetType: "regional_report",
+      targetId: id,
+      metadata: { title: updatedReport.title, region: updatedReport.region },
+    });
+
+    req.flash("success", "Report marked as reviewed successfully.");
+    res.redirect("/admin/regional-reports");
   } catch (err) {
     next(err);
   }

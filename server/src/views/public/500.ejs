@@ -1,11 +1,17 @@
 <div style="text-align: center; padding: var(--space-8) var(--space-4)">
   <h1 style="font-size: 120px; margin: 0; color: var(--danger); line-height: 1">
-    500
+    <%= typeof statusCode === "number" ? statusCode : 500 %>
   </h1>
-  <h2 style="margin-top: var(--space-4)">Something Went Wrong</h2>
+  <h2 style="margin-top: var(--space-4)">
+    <%= typeof statusCode === "number" && statusCode < 500 ? "Request Failed" : "Something Went Wrong" %>
+  </h2>
   <p style="color: var(--muted); margin-top: var(--space-4)">
-    We've encountered an error. Our team has been notified. Please try again in
-    a moment.
+    <% if (typeof statusCode === "number" && statusCode < 500) { %>
+      The request could not be completed. Please check the error and try again.
+    <% } else { %>
+      We've encountered an error. Our team has been notified. Please try again in
+      a moment.
+    <% } %>
   </p>
 
   <!-- Debug Info (Only visible in Development) -->

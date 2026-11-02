@@ -1,0 +1,34 @@
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5);">
+  <div>
+    <h1 style="margin: 0;">Edit Report</h1>
+  </div>
+  <a href="/regional/reports" class="btn btn--ghost">← Back to Reports</a>
+</div>
+
+<div class="card">
+  <form method="POST" action="/regional/reports/<%= report.id %>/edit">
+    <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+    
+    <div class="field">
+      <label>Report Title</label>
+      <input type="text" name="title" value="<%= report.title %>" required>
+    </div>
+    
+    <div class="field">
+      <label>Report Type</label>
+      <select name="report_type" required>
+        <option value="monthly" <%= report.report_type === 'monthly' ? 'selected' : '' %>>Monthly Report</option>
+        <option value="quarterly" <%= report.report_type === 'quarterly' ? 'selected' : '' %>>Quarterly Report</option>
+        <option value="annual" <%= report.report_type === 'annual' ? 'selected' : '' %>>Annual Report</option>
+        <option value="incident" <%= report.report_type === 'incident' ? 'selected' : '' %>>Incident Report</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Report Content</label>
+      <textarea name="content" rows="6" required><%= report.content %></textarea>
+    </div>
+
+    <button type="submit" class="btn btn--primary" style="width: 100%;">Update Report</button>
+  </form>
+</div>

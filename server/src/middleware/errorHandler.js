@@ -35,10 +35,11 @@ export function errorHandler(err, req, res, next) {
   }
 
   // HTML response for browser routes
-  // Render the styled 500 page and pass a helpful error message in dev mode
+  // Render the styled error page and expose details only in development.
   return res.status(status).render("public/500", {
-    title: "Something went wrong",
+    title: status >= 500 ? "Something went wrong" : "Request failed",
     layout: "layouts/public",
-    errorMessage: env.isDev && isServerError ? err.message : null,
+    statusCode: status,
+    errorMessage: env.isDev ? err.message : null,
   });
 }

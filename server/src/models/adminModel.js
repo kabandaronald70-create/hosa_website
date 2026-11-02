@@ -671,3 +671,27 @@ export async function deleteReportedOpportunity(id) {
 export async function deleteReportedStory(id) {
   await query(`DELETE FROM stories WHERE id = $1`, [id]);
 }
+
+export async function listAllRegionalReports() {
+  const { rows } = await query(
+    `SELECT rr.*, 
+            u.email AS submitter_email,
+            mp.first_name, mp.last_name
+     FROM regional_reports rr
+     LEFT JOIN users u ON rr.submitted_by = u.id
+     LEFT JOIN member_profiles mp ON u.id = mp.user_id
+     ORDER BY rr.created_at DESC`,
+  );
+  return rows;
+}
+
+export async function updateRegionalReportStatus(reportId, status) {
+  const { rows } = await query(
+    `UPDATE regional_reports 
+     SET status = $1 
+     WHERE id = $2 
+     RETURNING *`,
+    [status, reportId],
+  );
+  return rows[0];
+}

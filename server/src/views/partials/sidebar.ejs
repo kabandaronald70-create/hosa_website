@@ -4,6 +4,11 @@
 <% const isMod = roles.includes('moderator'); %>
 <% const isSuper = roles.includes('super_admin'); %>
 
+<% 
+  // Check if the user is a Chairperson or Projects Manager based on leadership roles
+  const isProjectManager = currentLeadershipRoles && (currentLeadershipRoles.includes('Chairperson') || currentLeadershipRoles.includes('Projects Manager')); 
+%>
+
 <aside class="sidebar" id="app-sidebar">
   <div class="sidebar__user">
     <% if (currentProfile && currentProfile.avatar_path) { %>
@@ -32,17 +37,17 @@
 
     <!-- Regional Dashboard (only for Outreach Officers) -->
     <% if (currentLeadershipRoles && currentLeadershipRoles.some(r => r.startsWith('Outreach Officer'))) { %>
-  <a href="/regional/dashboard" class="sidebar__link" <%= activePath.startsWith('/regional') ? 'aria-current="page"' : '' %>>
-    <span class="sidebar__link-icon">🌍</span> Regional Dashboard
-  </a>
-<% } %>
+      <a href="/regional/dashboard" class="sidebar__link" <%= activePath.startsWith('/regional') ? 'aria-current="page"' : '' %>>
+        <span class="sidebar__link-icon">🌍</span> Regional Dashboard
+      </a>
+    <% } %>
 
     <a href="/dashboard/business-network" class="sidebar__link" <%= activePath.startsWith('/dashboard/business-network') ? 'aria-current="page"' : '' %>>
       <span class="sidebar__link-icon">📡</span> Business Network
     </a>
     <a href="/dashboard/contributions" class="sidebar__link" <%= activePath.startsWith('/dashboard/contributions') ? 'aria-current="page"' : '' %>>
-  <span class="sidebar__link-icon">💰</span> My Contributions
-</a>
+      <span class="sidebar__link-icon">💰</span> My Contributions
+    </a>
     <a href="/dashboard/saved" class="sidebar__link" <%= activePath === '/dashboard/saved' ? 'aria-current="page"' : '' %>>
       <span class="sidebar__link-icon">⭐</span> Saved
     </a>
@@ -78,16 +83,32 @@
       </a>
       
       <a href="/admin/finance" class="sidebar__link" <%= activePath.startsWith('/admin/finance') ? 'aria-current="page"' : '' %>>
-  <span class="sidebar__link-icon">💰</span> Financial Dashboard
-</a>
+        <span class="sidebar__link-icon">💰</span> Financial Dashboard
+      </a>
 
       <a href="/admin/reports" class="sidebar__link" <%= activePath.startsWith('/admin/reports') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">⚠</span> Reports
       </a>
 
-         <a href="/admin/projects" class="sidebar__link" <%= activePath.startsWith('/admin/projects') ? 'aria-current="page"' : '' %>>
+      <a href="/admin/projects" class="sidebar__link" <%= activePath.startsWith('/admin/projects') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">🏗️</span> Projects
       </a>
+
+      <!-- Regional Reports (Only visible to Super Admins, Chairperson, or Projects Manager) -->
+      <% if (isSuper || isProjectManager) { %>
+        <a href="/admin/regional-reports" class="sidebar__link" <%= activePath.startsWith('/admin/regional-reports') ? 'aria-current="page"' : '' %> style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span class="sidebar__link-icon">📄</span> Regional Reports
+          </div>
+          
+          <!-- 🚨 Pending Badge -->
+          <% if (typeof pendingRegionalReports !== 'undefined' && pendingRegionalReports > 0) { %>
+            <span class="badge badge--danger" style="background-color: #dc2626; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px;">
+              <%= pendingRegionalReports %>
+            </span>
+          <% } %>
+        </a>
+      <% } %>
 
       <a href="/admin/businesses" class="sidebar__link" <%= activePath.startsWith('/admin/businesses') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">🏪</span> Business Approvals
