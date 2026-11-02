@@ -2,9 +2,20 @@
 
 <article class="card" style="max-width: 800px; margin: var(--space-5) auto;">
   <header style="display: flex; gap: var(--space-4); align-items: center; margin-bottom: var(--space-5);">
-    <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--gold); color: var(--ink); display: grid; place-items: center; font-size: var(--text-2xl); font-weight: 700;">
-      <%= (member.first_name || '?')[0].toUpperCase() %>
-    </div>
+    
+    <!-- Avatar (Image or Fallback) -->
+    <% if (member.avatar_path) { %>
+      <img 
+        src="/dashboard/avatar/<%= member.user_id %>" 
+        alt="<%= member.first_name %>" 
+        style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold); flex-shrink: 0;"
+      >
+    <% } else { %>
+      <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--gold); color: var(--ink); display: grid; place-items: center; font-size: var(--text-2xl); font-weight: 700; flex-shrink: 0;">
+        <%= (member.first_name || '?')[0].toUpperCase() %>
+      </div>
+    <% } %>
+
     <div>
       <h1 style="margin: 0;"><%= member.display_name || `${member.first_name} ${member.last_name}` %></h1>
       <p style="margin: var(--space-1) 0 0; color: var(--muted);">
