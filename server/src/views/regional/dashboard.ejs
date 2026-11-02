@@ -1,0 +1,53 @@
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5);">
+  <div>
+    <h1 style="margin: 0;">Regional Dashboard</h1>
+    <p style="color: var(--muted); margin: var(--space-1) 0 0; font-size: var(--text-sm);">
+      You are managing the <strong><%= region %></strong> region.
+    </p>
+  </div>
+  <a href="/regional/proposals/new" class="btn btn--primary">+ New Proposal</a>
+</div>
+
+<!-- Stats -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-6);">
+  <div class="card" style="border-left: 4px solid var(--warning);">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0;">Proposed</p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--warning);"><%= stats.proposedProjects %></h2>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--primary);">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0;">Active</p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--primary);"><%= stats.activeProjects %></h2>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--success);">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0;">Completed</p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--success);"><%= stats.completedProjects %></h2>
+  </div>
+</div>
+
+<!-- Projects List -->
+<h2 style="margin-bottom: var(--space-4);">Projects in <%= region %> Region</h2>
+<% if (projects.length === 0) { %>
+  <div class="empty-state">
+    <p class="empty-state__title">No projects in your region yet.</p>
+    <p>Submit a proposal to get started.</p>
+  </div>
+<% } else { %>
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-4);">
+    <% projects.forEach(p => { %>
+      <article class="card" style="display: flex; flex-direction: column;">
+        <% if (p.image_path) { %>
+          <img src="<%= p.image_path %>" alt="<%= p.title %>" style="width: 100%; height: 150px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: var(--space-3);">
+        <% } %>
+        <div style="flex-grow: 1;">
+          <span class="badge badge--<%= p.status === 'approved' ? 'success' : p.status === 'completed' ? 'primary' : p.status === 'proposed' ? 'warning' : 'danger' %>"><%= p.status %></span>
+          <h3 style="margin: var(--space-2) 0;"><%= p.title %></h3>
+          <p style="font-size: var(--text-sm); color: var(--muted);">Budget: UGX <%= Number(p.budget).toLocaleString() %></p>
+          <p style="font-size: var(--text-sm);"><%= p.description.slice(0, 100) %>...</p>
+        </div>
+        <div style="margin-top: var(--space-3);">
+          <a href="/admin/projects/<%= p.id %>" class="btn btn--ghost btn--sm" style="width: 100%;">View Details</a>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+<% } %>

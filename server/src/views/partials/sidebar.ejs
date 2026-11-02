@@ -29,6 +29,14 @@
     <a href="/dashboard/profile" class="sidebar__link" <%= activePath === '/dashboard/profile' ? 'aria-current="page"' : '' %>>
       <span class="sidebar__link-icon">👤</span> My Profile
     </a>
+
+    <!-- Regional Dashboard (only for Outreach Officers) -->
+    <% if (currentLeadershipRoles && currentLeadershipRoles.some(r => r.startsWith('Outreach Officer'))) { %>
+      <a href="/regional/dashboard" class="sidebar__link" <%= activePath.startsWith('/regional') ? 'aria-current="page"' : '' %>>
+        <span class="sidebar__link-icon">🌍</span> Regional Dashboard
+      </a>
+    <% } %>
+
     <a href="/dashboard/business-network" class="sidebar__link" <%= activePath.startsWith('/dashboard/business-network') ? 'aria-current="page"' : '' %>>
       <span class="sidebar__link-icon">📡</span> Business Network
     </a>
@@ -44,6 +52,11 @@
     <a href="/dashboard/submissions" class="sidebar__link" <%= activePath === '/dashboard/submissions' ? 'aria-current="page"' : '' %>>
       <span class="sidebar__link-icon">📝</span> My Submissions
     </a>
+
+    <a href="/dashboard/contributions" class="sidebar__link" <%= activePath.startsWith('/dashboard/contributions') ? 'aria-current="page"' : '' %>>
+      <span class="sidebar__link-icon">💚</span> My Contributions
+    </a>
+    
     <a href="/dashboard/businesses" class="sidebar__link" <%= activePath.startsWith('/dashboard/businesses') ? 'aria-current="page"' : '' %>>
       <span class="sidebar__link-icon">💼</span> My Businesses
     </a>
@@ -77,19 +90,22 @@
       <a href="/admin/members" class="sidebar__link" <%= activePath.startsWith('/admin/members') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">👥</span> Members & Verification
       </a>
-       <a href="/admin/businesses" class="sidebar__link" <%= activePath.startsWith('/admin/businesses') ? 'aria-current="page"' : '' %>>
+       
+      <a href="/admin/businesses" class="sidebar__link" <%= activePath.startsWith('/admin/businesses') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">🏪</span> Business Approvals
       </a>
       
       <a href="/admin/events" class="sidebar__link" <%= activePath.startsWith('/admin/events') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">📅</span> Manage Events
       </a>
+      
       <a href="/admin/announcements" class="sidebar__link" <%= activePath.startsWith('/admin/announcements') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">📢</span> Announcements
       </a>
+
       <a href="/admin/campaigns" class="sidebar__link" <%= activePath.startsWith('/admin/campaigns') ? 'aria-current="page"' : '' %>>
-  <span class="sidebar__link-icon">📢</span> Campaigns
-</a>
+        <span class="sidebar__link-icon">📢</span> Campaigns
+      </a>
     </div>
   <% } %>
 
@@ -101,9 +117,10 @@
       <a href="/super/roles" class="sidebar__link" <%= activePath.startsWith('/super/roles') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">🔑</span> Role Management
       </a>
+
       <a href="/admin/leadership" class="sidebar__link" <%= activePath.startsWith('/admin/leadership') ? 'aria-current="page"' : '' %>>
-  <span class="sidebar__link-icon">🏛️</span> Leadership
-</a>
+        <span class="sidebar__link-icon">🏛️</span> Leadership
+      </a>
       
       <a href="/admin/audit" class="sidebar__link" <%= activePath.startsWith('/admin/audit') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">📜</span> Audit Log
@@ -112,7 +129,8 @@
       <a href="/super/health" class="sidebar__link" <%= activePath.startsWith('/super/health') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">⚙</span> System Health
       </a>
-            <a href="/super/documents" class="sidebar__link" <%= activePath.startsWith('/super/documents') ? 'aria-current="page"' : '' %>>
+      
+      <a href="/super/documents" class="sidebar__link" <%= activePath.startsWith('/super/documents') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">📁</span> Manage Documents
       </a>
     </div>

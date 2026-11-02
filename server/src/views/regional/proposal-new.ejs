@@ -1,0 +1,95 @@
+<div
+  style="
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-5);
+  "
+>
+  <h1 style="margin: 0">Submit New Proposal</h1>
+  <a href="/regional/dashboard" class="btn btn--ghost"
+    >← Back to Regional Dashboard</a
+  >
+</div>
+
+<div class="card" style="max-width: 700px">
+  <form
+    method="post"
+    action="/regional/proposals"
+    enctype="multipart/form-data"
+  >
+    <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>" />
+
+    <div class="field">
+      <label>Project Title</label>
+      <input
+        type="text"
+        name="title"
+        required
+        placeholder="e.g. Borehole Installation"
+      />
+    </div>
+
+    <div class="field">
+      <label>Category</label>
+      <select name="category" required>
+        <option value="Infrastructure">Infrastructure</option>
+        <option value="Scholarship">Scholarship</option>
+        <option value="Health">Health</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Budget (UGX)</label>
+      <input
+        type="number"
+        name="budget"
+        required
+        min="0"
+        placeholder="e.g. 15000000"
+      />
+    </div>
+
+    <div class="field">
+      <label>Description</label>
+      <textarea
+        name="description"
+        rows="5"
+        required
+        placeholder="Describe the project, its goals, and its impact..."
+      ></textarea>
+    </div>
+
+    <div class="field">
+      <label>Project Cover Image (Optional)</label>
+      <input type="file" name="image" accept="image/*" />
+    </div>
+
+    <div
+      style="
+        background: var(--ivory);
+        padding: var(--space-3);
+        border-radius: var(--radius-sm);
+        margin-bottom: var(--space-4);
+      "
+    >
+      <p style="margin: 0; font-size: var(--text-sm)">
+        <strong>Region:</strong> <%= region %>
+      </p>
+      <p
+        style="
+          margin: var(--space-1) 0 0;
+          font-size: var(--text-xs);
+          color: var(--muted);
+        "
+      >
+        Your proposal will be submitted under your assigned region.
+      </p>
+    </div>
+
+    <button type="submit" class="btn btn--primary" style="width: 100%">
+      Submit Proposal
+    </button>
+  </form>
+</div>

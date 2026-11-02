@@ -14,6 +14,7 @@ import publicRoutes from "./publicRoutes.js";
 import superAdminRoutes from "./superAdminRoutes.js";
 import { requireAuth } from "../middleware/auth.js";
 import { requireApproved } from "../middleware/requireApproved.js";
+import regionalRoutes from "./regional.js";
 
 const router = Router();
 
@@ -35,5 +36,6 @@ router.use(publicEjsRoutes);
 router.use(publicRoutes);
 router.use(adminRoutes);
 router.use(superAdminRoutes);
+router.use(regionalRoutes);
 
 export default router;

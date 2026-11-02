@@ -6,6 +6,7 @@ import {
 import { logger } from "../utils/logger.js";
 import { countUnread } from "../models/notificationModel.js";
 import { countAnnouncementBadge } from "../models/announcementModel.js";
+import { query } from "../config/db.js"; // <-- ADDED
 
 /**
  * Loads req.user, req.userRoles, req.profile from the session (if any).
@@ -17,9 +18,11 @@ export async function currentUser(req, res, next) {
   res.locals.currentUserRoles = [];
   res.locals.currentProfile = null;
   res.locals.isAuthenticated = false;
+  res.locals.currentLeadershipRoles = []; // <-- ADDED
   req.user = null;
   req.userRoles = [];
   req.profile = null;
+  req.leadershipRoles = []; // <-- ADDED
 
   try {
     // 2. If no session, we are done (user is a guest)
@@ -40,17 +43,25 @@ export async function currentUser(req, res, next) {
       return next();
     }
 
-    // 4. Fetch roles, profile, and unread notifications
-    const [roles, profile, unread, unreadAnnouncements] = await Promise.all([
-      getRolesForUser(user.id),
-      getProfileForUser(user.id),
-      countUnread(user.id),
-      countAnnouncementBadge(user.id),
-    ]);
+    // 4. Fetch roles, profile, leadership roles, and unread notifications
+    const [roles, profile, unread, unreadAnnouncements, leadershipRes] =
+      await Promise.all([
+        getRolesForUser(user.id),
+        getProfileForUser(user.id),
+        countUnread(user.id),
+        countAnnouncementBadge(user.id),
+        query(
+          `SELECT office_title FROM leadership_roles WHERE user_id = $1 AND status = 'active'`,
+          [user.id],
+        ),
+      ]);
+
+    const leadershipRoles = leadershipRes.rows.map((r) => r.office_title);
 
     req.user = user;
     req.userRoles = roles;
     req.profile = profile;
+    req.leadershipRoles = leadershipRoles; // <-- ADDED
 
     res.locals.currentUser = user;
     res.locals.currentUserRoles = roles;
@@ -58,6 +69,7 @@ export async function currentUser(req, res, next) {
     res.locals.isAuthenticated = true;
     res.locals.unreadNotifications = unread;
     res.locals.activeAnnouncements = unreadAnnouncements;
+    res.locals.currentLeadershipRoles = leadershipRoles; // <-- ADDED
   } catch (err) {
     logger.error({ err }, "Failed to load current user; treating as guest");
   }
