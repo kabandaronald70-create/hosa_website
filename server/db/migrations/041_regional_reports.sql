@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS regional_reports (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   region          TEXT NOT NULL,
   title           TEXT NOT NULL,
-  report_type     TEXT NOT NULL CHECK (report_type IN ('monthly', 'quarterly', 'annual', 'incident')),
+  -- 🚨 Updated to match the exact text from your HTML form
+  report_type     TEXT NOT NULL CHECK (report_type IN ('Monthly Report', 'Quarterly Report', 'Incident Report', 'Annual Report')),
   content         TEXT NOT NULL,
   file_path       TEXT,
   file_name       TEXT,
@@ -20,6 +21,9 @@ CREATE INDEX IF NOT EXISTS regional_reports_status_idx ON regional_reports (stat
 
 -- Supabase Grants & RLS
 ALTER TABLE public.regional_reports ENABLE ROW LEVEL SECURITY;
+
+-- 🚨 ADDED DROP POLICY IF EXISTS SO IT DOESN'T CRASH ON REDEPLOY
+DROP POLICY IF EXISTS "Admins can view all reports" ON public.regional_reports;
 
 CREATE POLICY "Admins can view all reports" 
 ON public.regional_reports FOR SELECT 
