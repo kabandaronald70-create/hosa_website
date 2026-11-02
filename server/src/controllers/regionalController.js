@@ -5,41 +5,37 @@ import { auditLog } from "../services/auditService.js";
 
 export async function showRegionalDashboard(req, res, next) {
   try {
-    // 1. Get the officer's assigned region from their leadership role
-    const { rows: roleRows } = await query(
+    const { rows } = await query(
       `SELECT office_title FROM leadership_roles 
        WHERE user_id = $1 AND office_title LIKE 'Outreach Officer%' AND status = 'active'`,
       [req.user.id],
     );
 
-    if (roleRows.length === 0) {
+    if (rows.length === 0) {
       req.flash("error", "You are not assigned as an Outreach Officer.");
       return res.redirect("/dashboard");
     }
 
-    // Extract region from "Outreach Officer (Central)" -> "Central"
-    const roleTitle = roleRows[0].office_title;
-    const region = roleTitle.replace("Outreach Officer (", "").replace(")", "");
+    const region = rows[0].office_title
+      .replace("Outreach Officer (", "")
+      .replace(")", "");
 
-    // 2. Fetch projects for that region
     const projects = await listProjects({ region });
 
-    // 3. Calculate stats
-    const activeProjects = projects.filter((p) =>
-      ["approved", "in_progress"].includes(p.status),
-    ).length;
-    const completedProjects = projects.filter(
-      (p) => p.status === "completed",
-    ).length;
-    const proposedProjects = projects.filter(
-      (p) => p.status === "proposed",
-    ).length;
+    const stats = {
+      activeProjects: projects.filter((p) =>
+        ["approved", "in_progress"].includes(p.status),
+      ).length,
+      completedProjects: projects.filter((p) => p.status === "completed")
+        .length,
+      proposedProjects: projects.filter((p) => p.status === "proposed").length,
+    };
 
     res.render("regional/dashboard", {
       title: `Regional Dashboard — ${region}`,
       region,
       projects,
-      stats: { activeProjects, completedProjects, proposedProjects },
+      stats,
       layout: "layouts/app",
     });
   } catch (err) {
@@ -78,7 +74,6 @@ export async function actionSubmitRegionalProposal(req, res, next) {
   try {
     const { title, description, category, budget } = req.body;
 
-    // 1. Get the officer's region
     const { rows } = await query(
       `SELECT office_title FROM leadership_roles 
        WHERE user_id = $1 AND office_title LIKE 'Outreach Officer%' AND status = 'active'`,
@@ -94,7 +89,6 @@ export async function actionSubmitRegionalProposal(req, res, next) {
       .replace("Outreach Officer (", "")
       .replace(")", "");
 
-    // 2. Upload image if provided
     let imagePath = null;
     if (req.file) {
       imagePath = await uploadProjectImage(
@@ -105,7 +99,6 @@ export async function actionSubmitRegionalProposal(req, res, next) {
       );
     }
 
-    // 3. Create the project as a proposal
     const created = await createProject({
       title,
       description,

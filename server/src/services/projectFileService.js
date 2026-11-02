@@ -9,7 +9,7 @@ export async function uploadProjectFile(
   const ext = originalName.split(".").pop();
   const fileName = `proj-${userId}-${Date.now()}.${ext}`;
 
-  const { data, error } = await supabase.storage
+  const { error } = await supabase.storage
     .from("project-files")
     .upload(fileName, fileBuffer, {
       contentType: mimetype,
@@ -32,7 +32,7 @@ export async function uploadProjectImage(
   const ext = originalName.split(".").pop();
   const fileName = `img-${userId}-${Date.now()}.${ext}`;
 
-  const { data, error } = await supabase.storage
+  const { error } = await supabase.storage
     .from("project-files")
     .upload(fileName, fileBuffer, {
       contentType: mimetype,

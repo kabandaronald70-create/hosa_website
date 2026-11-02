@@ -23,6 +23,7 @@ export async function listProjects({ region, status, limit = 50 } = {}) {
     `SELECT p.*, 
             u.email AS lead_email, 
             mp.first_name, mp.last_name,
+            -- Fetch the Outreach Officer for this region
             (SELECT u2.email FROM leadership_roles lr2 
              JOIN users u2 ON lr2.user_id = u2.id 
              WHERE lr2.office_title = 'Outreach Officer (' || p.region || ')' 
@@ -32,6 +33,7 @@ export async function listProjects({ region, status, limit = 50 } = {}) {
              JOIN member_profiles mp2 ON mp2.user_id = u2.id 
              WHERE lr2.office_title = 'Outreach Officer (' || p.region || ')' 
              AND lr2.status = 'active' LIMIT 1) AS outreach_phone,
+            -- Fetch the Outreach Officer's name
             (SELECT mp2.first_name FROM leadership_roles lr2 
              JOIN users u2 ON lr2.user_id = u2.id 
              JOIN member_profiles mp2 ON mp2.user_id = u2.id 
@@ -48,6 +50,16 @@ export async function listProjects({ region, status, limit = 50 } = {}) {
      ${whereClause}
      ORDER BY p.created_at DESC LIMIT $${i}`,
     [...values, limit],
+  );
+  return rows;
+}
+
+export async function listDonationProjects() {
+  const { rows } = await query(
+    `SELECT id, title, region, budget, funds_raised
+     FROM projects
+     WHERE status IN ('approved', 'in_progress')
+     ORDER BY created_at DESC`,
   );
   return rows;
 }
@@ -78,12 +90,13 @@ export async function createProject(data) {
     leadUserId,
     createdBy,
     imagePath,
+    fundsRaised,
   } = data;
 
   const { rows } = await query(
     `INSERT INTO projects 
-       (title, description, region, category, budget, start_date, end_date, lead_user_id, created_by, status, image_path)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'proposed', $10)
+       (title, description, region, category, budget, start_date, end_date, lead_user_id, created_by, status, image_path, funds_raised)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'proposed', $10, $11)
      RETURNING *`,
     [
       title,
@@ -96,33 +109,14 @@ export async function createProject(data) {
       leadUserId,
       createdBy,
       imagePath || null,
+      fundsRaised || 0,
     ],
   );
   return rows[0];
 }
-
 export async function updateProjectStatus(id, status) {
   await query(`UPDATE projects SET status = $1 WHERE id = $2`, [status, id]);
 }
-
-export async function updateProject(id, data) {
-  const { title, description, region, category, budget, startDate, endDate } =
-    data;
-  const { rows } = await query(
-    `UPDATE projects 
-     SET title = $1, description = $2, region = $3, category = $4, 
-         budget = $5, start_date = $6, end_date = $7
-     WHERE id = $8
-     RETURNING *`,
-    [title, description, region, category, budget, startDate, endDate, id],
-  );
-  return rows[0];
-}
-
-export async function deleteProject(id) {
-  await query(`DELETE FROM projects WHERE id = $1`, [id]);
-}
-
 // --- Milestones ---
 export async function listMilestones(projectId) {
   const { rows } = await query(
@@ -142,7 +136,13 @@ export async function createMilestone({
   const { rows } = await query(
     `INSERT INTO project_milestones (project_id, title, target_date, description, assigned_region)
      VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-    [projectId, title, targetDate, description, assignedRegion || null],
+    [
+      projectId,
+      title,
+      targetDate || null,
+      description || null,
+      assignedRegion || null,
+    ],
   );
   return rows[0];
 }
@@ -154,7 +154,10 @@ export async function updateMilestoneStatus(id, status) {
   ]);
 }
 
-// --- Attachments ---
+// ---------------------------------------------------------------------------
+// Project Attachments
+// ---------------------------------------------------------------------------
+
 export async function createAttachment({
   projectId,
   title,
@@ -185,11 +188,40 @@ export async function listAttachments(projectId) {
   return rows;
 }
 
-export async function updateFundsRaised(id, amount) {
-  await query(`UPDATE projects SET funds_raised = $1 WHERE id = $2`, [
-    amount,
-    id,
-  ]);
+export async function updateProject(id, data) {
+  const {
+    title,
+    description,
+    region,
+    category,
+    budget,
+    startDate,
+    endDate,
+    fundsRaised,
+  } = data;
+  const { rows } = await query(
+    `UPDATE projects 
+     SET title = $1, description = $2, region = $3, category = $4, 
+         budget = $5, start_date = $6, end_date = $7, funds_raised = $8
+     WHERE id = $9
+     RETURNING *`,
+    [
+      title,
+      description,
+      region,
+      category,
+      budget,
+      startDate,
+      endDate,
+      fundsRaised || 0,
+      id,
+    ],
+  );
+  return rows[0];
+}
+
+export async function deleteProject(id) {
+  await query(`DELETE FROM projects WHERE id = $1`, [id]);
 }
 
 export async function listOutreachOfficers() {
@@ -203,4 +235,11 @@ export async function listOutreachOfficers() {
      ORDER BY lr.office_title ASC`,
   );
   return rows;
+}
+
+export async function updateFundsRaised(id, amount) {
+  await query(`UPDATE projects SET funds_raised = $1 WHERE id = $2`, [
+    amount,
+    id,
+  ]);
 }

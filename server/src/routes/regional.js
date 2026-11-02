@@ -1,6 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
-import { requireAuth, requireOutreachOfficer } from "../middleware/auth.js";
+import { requireAuth } from "../middleware/auth.js";
+import { requireOutreachOfficer } from "../middleware/requireOutreachOfficer.js";
 import {
   showRegionalDashboard,
   showRegionalProposalForm,

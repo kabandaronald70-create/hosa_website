@@ -32,10 +32,10 @@
 
     <!-- Regional Dashboard (only for Outreach Officers) -->
     <% if (currentLeadershipRoles && currentLeadershipRoles.some(r => r.startsWith('Outreach Officer'))) { %>
-      <a href="/regional/dashboard" class="sidebar__link" <%= activePath.startsWith('/regional') ? 'aria-current="page"' : '' %>>
-        <span class="sidebar__link-icon">🌍</span> Regional Dashboard
-      </a>
-    <% } %>
+  <a href="/regional/dashboard" class="sidebar__link" <%= activePath.startsWith('/regional') ? 'aria-current="page"' : '' %>>
+    <span class="sidebar__link-icon">🌍</span> Regional Dashboard
+  </a>
+<% } %>
 
     <a href="/dashboard/business-network" class="sidebar__link" <%= activePath.startsWith('/dashboard/business-network') ? 'aria-current="page"' : '' %>>
       <span class="sidebar__link-icon">📡</span> Business Network
