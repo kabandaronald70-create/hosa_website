@@ -34,7 +34,7 @@ export async function showDirectory(req, res, next) {
         profession,
         mentorOnly,
         page,
-        limit: 24,
+        limit: 6,
       }),
       getDistinctDistricts(),
       getDistinctProfessions(),
@@ -85,7 +85,11 @@ export async function showMemberDetail(req, res, next) {
 export async function showEvents(req, res, next) {
   try {
     const page = Math.max(1, Number(req.query.page) || 1);
-    const result = await listPublishedEvents({ page, limit: 20 });
+    const result = await listPublishedEvents({
+      page,
+      limit: 20,
+      from: new Date(),
+    });
     res.render("public/events", {
       title: "Events — HOSA",
       layout: "layouts/public",

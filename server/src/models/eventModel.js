@@ -36,7 +36,7 @@ export async function listPublishedEvents({
             published_at, created_at
        FROM events
       WHERE ${where.join(" AND ")}
-      ORDER BY starts_at DESC
+      ORDER BY starts_at ASC
       LIMIT $${i} OFFSET $${i + 1}`,
     [...values, limit, offset],
   );

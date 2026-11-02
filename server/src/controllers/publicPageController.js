@@ -75,12 +75,16 @@ export async function showArchive(req, res, next) {
         LIMIT 20`,
     );
 
-    // Fetch published stories
+    // Fetch published stories older than 30 days
     const storiesResult = await query(
-      `SELECT slug, title, excerpt, published_at, category
-         FROM stories 
-        WHERE status = 'published' 
-        ORDER BY published_at ASC 
+      `SELECT s.slug, s.title, s.excerpt, s.published_at, s.category,
+              COALESCE(mp.first_name || ' ' || mp.last_name, s.author_name) AS author_name,
+              COALESCE(mp.graduation_year, s.class_year) AS class_year
+         FROM stories s
+         LEFT JOIN member_profiles mp ON s.author_user_id = mp.user_id
+        WHERE s.status = 'published' 
+          AND s.published_at < now() - interval '30 days'
+        ORDER BY s.published_at DESC 
         LIMIT 20`,
     );
 

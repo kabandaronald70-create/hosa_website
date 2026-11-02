@@ -60,7 +60,10 @@
               <% if (s.category) { %>
                 <span class="badge badge--muted" style="margin-bottom: var(--space-2);"><%= s.category %></span>
               <% } %>
-              <h3 style="font-size: var(--text-lg); margin: 0 0 var(--space-2);"><%= s.title %></h3>
+              <h3 style="font-size: var(--text-lg); margin: 0 0 var(--space-1);"><%= s.title %></h3>
+              <p style="color: var(--muted); font-size: var(--text-xs); margin-bottom: var(--space-2);">
+                By <strong><%= s.author_name || 'Alumni' %></strong> <%= s.class_year ? `· Class of ${s.class_year}` : '' %>
+              </p>
               <% if (s.excerpt) { %>
                 <p style="color: var(--muted); font-size: var(--text-sm);"><%= s.excerpt %></p>
               <% } %>

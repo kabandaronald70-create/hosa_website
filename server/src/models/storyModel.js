@@ -8,12 +8,15 @@ export async function listPublishedStories({ page = 1, limit = 20 } = {}) {
   );
 
   const { rows } = await query(
-    `SELECT id, external_ref, slug, title, body, excerpt, image_path,
-            author_name, author_ref, class_year, category,
-            story_date, published_at, created_at
-       FROM stories
-      WHERE status = 'published'
-      ORDER BY published_at DESC NULLS LAST, created_at DESC
+    `SELECT s.id, s.external_ref, s.slug, s.title, s.body, s.excerpt, s.image_path,
+            COALESCE(mp.first_name || ' ' || mp.last_name, s.author_name) AS author_name,
+            COALESCE(mp.graduation_year, s.class_year) AS class_year,
+            s.category, s.story_date, s.published_at, s.created_at
+       FROM stories s
+       LEFT JOIN member_profiles mp ON s.author_user_id = mp.user_id
+      WHERE s.status = 'published'
+        AND (s.published_at >= now() - interval '30 days' OR s.published_at IS NULL)
+      ORDER BY s.published_at DESC NULLS LAST, s.created_at DESC
       LIMIT $1 OFFSET $2`,
     [limit, offset],
   );

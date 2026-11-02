@@ -19,9 +19,13 @@
             <span class="badge badge--gold" style="margin-bottom: var(--space-3);"><%= s.category %></span>
           <% } %>
           
-          <h2 style="font-size: var(--text-xl); margin: 0 0 var(--space-3); line-height: 1.2;">
+          <h2 style="font-size: var(--text-xl); margin: 0 0 var(--space-1); line-height: 1.2;">
             <%= s.title %>
           </h2>
+          
+          <p style="color: var(--muted); font-size: var(--text-xs); margin-bottom: var(--space-3);">
+            By <strong><%= s.author_name || 'Alumni' %></strong> <%= s.class_year ? `· Class of ${s.class_year}` : '' %>
+          </p>
           
           <% if (s.excerpt) { %>
             <p style="color: var(--muted); font-size: var(--text-sm); margin-bottom: var(--space-4);">

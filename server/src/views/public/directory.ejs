@@ -62,67 +62,67 @@
       <div class="directory-card-grid">
         <% members.forEach((m) => { %>
           
-          <article class="card directory-card">
-            <div>
-              <!-- Avatar + Name -->
-              <div class="card__header">
+          <article class="card hosa-member-card">
+            <!-- Header -->
+            <div class="hosa-member-card__header">
+              <div class="hosa-member-card__cap">🎓</div>
+              <div class="hosa-member-card__identity">
+                <strong class="hosa-member-card__name">
+                  <%= m.display_name || `${m.first_name} ${m.last_name}` %>
+                </strong>
+                <span class="hosa-member-card__class">
+                  Class of <%= m.graduation_year || '—' %>
+                </span>
+              </div>
+            </div>
+
+            <!-- Body -->
+            <div class="hosa-member-card__body">
+              <div class="hosa-member-card__image-container">
                 <% if (m.avatar_path) { %>
                   <img
                     src="/dashboard/avatar/<%= m.user_id %>"
-                    alt="<%= m.first_name %> <%= m.last_name %>"
-                    class="directory-card__avatar"
+                    alt="<%= m.first_name %>"
+                    class="hosa-member-card__avatar"
                   >
                 <% } else { %>
-                  <div class="directory-card__avatar directory-card__avatar--placeholder">
+                  <div class="hosa-member-card__avatar hosa-member-card__avatar--placeholder">
                     <%= (m.first_name || m.display_name || '?')[0].toUpperCase() %>
                   </div>
                 <% } %>
-                <div class="directory-card__identity">
-                  <strong class="directory-card__name">
-                    <%= m.display_name || `${m.first_name} ${m.last_name}` %>
-                  </strong>
-                  <p class="directory-card__class">
-                    Class of <%= m.graduation_year || '—' %>
-                  </p>
-                </div>
               </div>
 
-              <!-- Profession + Organization -->
-              <% if (m.profession || m.organization) { %>
-                <p class="directory-card__profession">
-                  <% if (m.profession) { %><strong><%= m.profession %></strong><% } %>
-                  <% if (m.organization) { %><br><span style="color: var(--muted);"><%= m.organization %></span><% } %>
-                </p>
-              <% } %>
-
-              <!-- Contact & details list -->
-              <ul class="directory-card__details">
-                <% if (m.district) { %>
-                  <li>📍 <%= m.district %><% if (m.country_code) { %>, <%= m.country_code %><% } %></li>
-                <% } %>
-                <% if (m.phone) { %>
-                  <li>📞 <a href="tel:<%= m.phone %>"><%= m.phone %></a></li>
-                <% } %>
+              <div class="hosa-member-card__details">
+                <div class="hosa-member-card__detail-item">
+                  <span class="hosa-member-card__icon">📍</span>
+                  <span><%= m.district || 'Mityana' %>, <%= m.country_code || 'UG' %></span>
+                </div>
                 <% if (m.account_email) { %>
-                  <li>✉️ <a href="mailto:<%= m.account_email %>"><%= m.account_email %></a></li>
+                  <div class="hosa-member-card__detail-item">
+                    <span class="hosa-member-card__icon">✉️</span>
+                    <a href="mailto:<%= m.account_email %>" class="hosa-member-card__link"><%= m.account_email %></a>
+                  </div>
                 <% } %>
-              </ul>
-
-              <!-- Mentor badge -->
-              <% if (m.mentor_opt_in) { %>
-                <span class="badge badge--gold directory-card__mentor">
-                  Mentor<% if (m.mentor_field) { %> · <%= m.mentor_field %><% } %>
-                </span>
-              <% } %>
+                <% if (m.mentor_opt_in) { %>
+                  <div class="hosa-member-card__detail-item">
+                    <span class="hosa-member-card__icon">👤</span>
+                    <span class="badge badge--gold hosa-member-card__mentor-badge">MENTOR</span>
+                  </div>
+                <% } %>
+              </div>
             </div>
             
             <!-- Actions -->
-            <div class="directory-card__actions">
-              <a href="/directory/<%= m.seed_ref || m.user_id %>" class="btn btn--ghost">View Profile</a>
-              
-              <% if (currentUser) { %>
-                <button type="button" class="btn btn--ghost directory-card__save" data-save="member" data-id="<%= m.user_id %>" data-action="save" title="Save Profile">☆</button>
-              <% } %>
+            <div class="hosa-member-card__footer">
+              <div class="hosa-member-card__actions">
+                <button type="button" class="btn btn--ghost hosa-member-card__btn hosa-member-card__btn--like" data-save="member" data-id="<%= m.user_id %>">
+                  <span class="hosa-member-card__btn-icon">❤️</span> Like
+                </button>
+                <a href="/directory/<%= m.seed_ref || m.user_id %>" class="btn btn--primary hosa-member-card__btn hosa-member-card__btn--follow">
+                  <span class="hosa-member-card__btn-icon">👤+</span> View Profile
+                </a>
+              </div>
+              <div class="hosa-member-card__wave"></div>
             </div>
           </article>
           
@@ -130,17 +130,21 @@
       </div>
 
       <% if (pagination.pages > 1) { %>
-        <nav class="pagination" aria-label="Pagination">
-          <% if (pagination.page > 1) { %>
-            <a href="?<%= new URLSearchParams({ ...filters, page: pagination.page - 1 }).toString() %>">← Prev</a>
-          <% } %>
-          <span class="active"><%= pagination.page %> / <%= pagination.pages %></span>
-          <% if (pagination.page < pagination.pages) { %>
-            <a href="?<%= new URLSearchParams({ ...filters, page: pagination.page + 1 }).toString() %>">Next →</a>
-          <% } %>
+        <nav class="hosa-pagination" aria-label="Pagination">
+          <div class="hosa-pagination__status">
+            Page <strong><%= pagination.page %></strong> of <strong><%= pagination.pages %></strong>
+          </div>
+          <div class="hosa-pagination__actions">
+            <% if (pagination.page > 1) { %>
+              <a href="?<%= new URLSearchParams({ ...filters, page: pagination.page - 1 }).toString() %>" class="btn btn--ghost">← Previous</a>
+            <% } %>
+            <% if (pagination.page < pagination.pages) { %>
+              <a href="?<%= new URLSearchParams({ ...filters, page: pagination.page + 1 }).toString() %>" class="btn btn--primary">Next →</a>
+            <% } %>
+          </div>
         </nav>
       <% } %>
-    <% } %>
+<% } %>
   </div>
 </div>
 
@@ -189,95 +193,226 @@
     grid-template-columns: minmax(0, 1fr);
     align-items: stretch;
     justify-items: stretch;
-    gap: var(--space-4);
+    gap: var(--space-6);
     width: 100%;
     max-width: 100%;
     margin-inline: auto;
   }
 
-  .directory-card {
+  /* --- HOSA Member Card Redesign --- */
+  .hosa-member-card {
+    padding: 0 !important;
+    overflow: hidden;
+    position: relative;
     display: flex;
-    min-width: 0;
-    width: 100%;
-    height: 100%;
     flex-direction: column;
+    background: #f8fbff;
+    border: none !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important;
+    border-radius: 24px !important;
+  }
+
+  .hosa-member-card__header {
+    background: #0a2b5e;
+    color: white;
+    padding: var(--space-4) var(--space-5);
+    display: flex;
+    align-items: center;
     justify-content: space-between;
+    position: relative;
+    z-index: 2;
   }
 
-  .directory-card__avatar {
-    width: 48px;
-    height: 48px;
-    flex: 0 0 48px;
-    border: 2px solid var(--gold);
-    border-radius: 50%;
+  .hosa-member-card__identity {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hosa-member-card__name {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .hosa-member-card__class {
+    font-size: var(--text-sm);
+    opacity: 0.9;
+  }
+
+  .hosa-member-card__body {
+    padding: var(--space-5);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-image: radial-gradient(circle at 80% 80%, rgba(10, 43, 94, 0.03) 0%, transparent 50%);
+  }
+
+  .hosa-member-card__image-container {
+    width: 100%;
+    margin-bottom: var(--space-5);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .hosa-member-card__avatar {
+    width: 100%;
+    aspect-ratio: 4/3;
     object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
   }
 
-  .directory-card__avatar--placeholder {
+  .hosa-member-card:hover .hosa-member-card__avatar {
+    transform: scale(1.05);
+  }
+
+  .hosa-member-card__avatar--placeholder {
+    width: 100%;
+    aspect-ratio: 4/3;
     display: grid;
     place-items: center;
     background: var(--gold);
     color: var(--ink);
-    font-weight: 600;
+    font-size: 64px;
+    font-weight: 700;
   }
 
-  .directory-card__identity {
-    min-width: 0;
-  }
-
-  .directory-card__name {
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .directory-card__class {
-    margin: 0;
-    color: var(--muted);
-    font-size: var(--text-xs);
-  }
-
-  .directory-card__profession {
-    margin: var(--space-3) 0 var(--space-1);
-    font-size: var(--text-sm);
-  }
-
-  .directory-card__details {
+  .hosa-member-card__details {
+    width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    margin: var(--space-2) 0 0;
-    padding: 0;
+    gap: var(--space-2);
+  }
+
+  .hosa-member-card__detail-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: var(--text-sm);
+    color: #0a2b5e;
+    font-weight: 500;
+  }
+
+  .hosa-member-card__icon {
+    width: 28px;
+    height: 28px;
+    background: #0a2b5e;
+    color: white;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .hosa-member-card__link {
+    color: #0a2b5e;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .hosa-member-card__mentor-badge {
+    background: #ffd700;
+    color: #856404;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  .hosa-member-card__footer {
+    padding: 0 var(--space-5) var(--space-6);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hosa-member-card__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+    position: relative;
+    z-index: 2;
+  }
+
+  .hosa-member-card__btn {
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: var(--text-sm);
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+  }
+
+  .hosa-member-card__btn--like {
+    background: white;
+    border: 2px solid #0a2b5e;
+    color: #0a2b5e;
+  }
+
+  .hosa-member-card__btn--follow {
+    background: #0a2b5e;
+    color: white;
+    border: none;
+  }
+
+  .hosa-member-card__btn--follow:hover {
+    background: #082148;
+    transform: translateY(-2px);
+  }
+
+  .hosa-member-card__btn--like:hover {
+    background: #f0f7ff;
+    transform: translateY(-2px);
+  }
+
+  .hosa-member-card__wave {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    background: linear-gradient(135deg, transparent 40%, #ffd700 40%, #ffd700 45%, transparent 45%);
+    background-size: 20px 40px;
+    opacity: 0.3;
+    pointer-events: none;
+  }
+
+  /* --- Pagination Redesign --- */
+  .hosa-pagination {
+    margin-top: var(--space-8);
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+    background: white;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .hosa-pagination__status {
     color: var(--muted);
     font-size: var(--text-sm);
-    list-style: none;
   }
 
-  .directory-card__details a {
-    overflow-wrap: anywhere;
-  }
-
-  .directory-card__mentor {
-    display: inline-block;
-    margin-top: var(--space-2);
-  }
-
-  .directory-card__actions {
+  .hosa-pagination__actions {
     display: flex;
-    gap: var(--space-2);
-    margin-top: var(--space-4);
-  }
-
-  .directory-card__actions > a {
-    flex-grow: 1;
-  }
-
-  .directory-card__save {
-    padding-inline: var(--space-3);
+    gap: var(--space-3);
   }
 
   @media (min-width: 640px) {
+    .hosa-pagination {
+      flex-direction: row;
+      justify-content: space-between;
+    }
+
     .filter-grid {
       grid-template-columns: 1fr;
     }

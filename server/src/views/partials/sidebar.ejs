@@ -76,32 +76,23 @@
       <a href="/admin" class="sidebar__link" <%= activePath === '/admin' ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">📊</span> Admin Dashboard
       </a>
+      
       <a href="/admin/finance" class="sidebar__link" <%= activePath.startsWith('/admin/finance') ? 'aria-current="page"' : '' %>>
   <span class="sidebar__link-icon">💰</span> Financial Dashboard
 </a>
-      
-      <a href="/admin/moderation" class="sidebar__link" <%= activePath.startsWith('/admin/moderation') ? 'aria-current="page"' : '' %>>
-        <span class="sidebar__link-icon">✅</span> Moderation Queue
-      </a>
 
       <a href="/admin/reports" class="sidebar__link" <%= activePath.startsWith('/admin/reports') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">⚠</span> Reports
       </a>
+
          <a href="/admin/projects" class="sidebar__link" <%= activePath.startsWith('/admin/projects') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">🏗️</span> Projects
       </a>
-      <a href="/admin/members" class="sidebar__link" <%= activePath.startsWith('/admin/members') ? 'aria-current="page"' : '' %>>
-        <span class="sidebar__link-icon">👥</span> Members & Verification
-      </a>
-       
+
       <a href="/admin/businesses" class="sidebar__link" <%= activePath.startsWith('/admin/businesses') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">🏪</span> Business Approvals
-      </a>
-      
-      <a href="/admin/events" class="sidebar__link" <%= activePath.startsWith('/admin/events') ? 'aria-current="page"' : '' %>>
-        <span class="sidebar__link-icon">📅</span> Manage Events
-      </a>
-      
+      </a>  
+
       <a href="/admin/announcements" class="sidebar__link" <%= activePath.startsWith('/admin/announcements') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">📢</span> Announcements
       </a>
