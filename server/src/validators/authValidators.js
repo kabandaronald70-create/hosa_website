@@ -8,14 +8,27 @@ export const registerSchema = z
       .min(5, "Password must be at least 5 characters.")
       .max(200, "Password is too long."),
     confirm_password: z.string(),
+
+    // Names
     first_name: z.string().trim().min(1, "First name is required.").max(80),
     last_name: z.string().trim().min(1, "Last name is required.").max(80),
+    other_name: z.string().trim().max(80).optional().or(z.literal("")), // Optional
+
+    // Profile Info
     graduation_year: z.preprocess(
       (v) =>
         v === "" || v === undefined || v === null ? undefined : Number(v),
       z.number().int().min(1950).max(2100).optional(),
     ),
-    district: z.string().trim().max(120).optional().or(z.literal("")),
+    district: z.string().trim().min(1, "District is required.").max(120),
+
+    // New Fields
+    nationality: z.string().trim().min(1, "Nationality is required."),
+    profession: z.string().trim().min(1, "Profession is required.").max(120),
+    phone: z.string().trim().min(1, "Phone number is required.").max(40),
+    region: z.string().trim().min(1, "Region is required."),
+
+    // Existing / Optional Fields
     country_code: z
       .string()
       .trim()

@@ -40,7 +40,9 @@
     <a href="/dashboard/business-network" class="sidebar__link" <%= activePath.startsWith('/dashboard/business-network') ? 'aria-current="page"' : '' %>>
       <span class="sidebar__link-icon">📡</span> Business Network
     </a>
-    
+    <a href="/dashboard/contributions" class="sidebar__link" <%= activePath.startsWith('/dashboard/contributions') ? 'aria-current="page"' : '' %>>
+  <span class="sidebar__link-icon">💰</span> My Contributions
+</a>
     <a href="/dashboard/saved" class="sidebar__link" <%= activePath === '/dashboard/saved' ? 'aria-current="page"' : '' %>>
       <span class="sidebar__link-icon">⭐</span> Saved
     </a>
@@ -78,6 +80,9 @@
       <a href="/admin" class="sidebar__link" <%= activePath === '/admin' ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">📊</span> Admin Dashboard
       </a>
+      <a href="/admin/finance" class="sidebar__link" <%= activePath.startsWith('/admin/finance') ? 'aria-current="page"' : '' %>>
+  <span class="sidebar__link-icon">💰</span> Financial Dashboard
+</a>
       
       <a href="/admin/moderation" class="sidebar__link" <%= activePath.startsWith('/admin/moderation') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">✅</span> Moderation Queue
@@ -86,7 +91,9 @@
       <a href="/admin/reports" class="sidebar__link" <%= activePath.startsWith('/admin/reports') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">⚠</span> Reports
       </a>
-      
+         <a href="/admin/projects" class="sidebar__link" <%= activePath.startsWith('/admin/projects') ? 'aria-current="page"' : '' %>>
+        <span class="sidebar__link-icon">🏗️</span> Projects
+      </a>
       <a href="/admin/members" class="sidebar__link" <%= activePath.startsWith('/admin/members') ? 'aria-current="page"' : '' %>>
         <span class="sidebar__link-icon">👥</span> Members & Verification
       </a>

@@ -1,0 +1,184 @@
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5);">
+  <h1 style="margin: 0;">Projects Management</h1>
+  <a href="/admin" class="btn btn--ghost">← Back to Admin</a>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr; gap: var(--space-5);">
+  <!-- Add New Project Form -->
+  <div class="card">
+    <h2 style="margin-top: 0;">Submit New Project Proposal</h2>
+    <form method="post" action="/admin/projects" enctype="multipart/form-data" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+      <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+      <div class="field">
+        <label>Title</label>
+        <input type="text" name="title" required>
+      </div>
+      <div class="field">
+        <label>Region</label>
+        <select name="region" required>
+          <option value="Central">Central</option>
+          <option value="Eastern">Eastern</option>
+          <option value="Northern">Northern</option>
+          <option value="Western">Western</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <select name="category" required>
+          <option value="Infrastructure">Infrastructure</option>
+          <option value="Scholarship">Scholarship</option>
+          <option value="Health">Health</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Budget (UGX)</label>
+        <input type="number" name="budget" required min="0">
+      </div>
+      <div class="field" style="grid-column: 1 / -1;">
+        <label>Description</label>
+        <textarea name="description" rows="3" required></textarea>
+      </div>
+      
+      <!-- Image Upload Field -->
+      <div class="field" style="grid-column: 1 / -1;">
+        <label>Project Cover Image (Optional)</label>
+        <input type="file" name="image" accept="image/*" style="padding: 4px; font-size: 12px;">
+      </div>
+      
+      <button type="submit" class="btn btn--primary" style="grid-column: 1 / -1;">Submit Proposal</button>
+    </form>
+  </div>
+
+  <!-- Projects List -->
+  <% projects.forEach(p => { %>
+    <div class="card">
+      <div style="display: flex; justify-content: space-between;">
+        <h2><%= p.title %></h2>
+        <span class="badge badge--<%= p.status === 'approved' ? 'success' : p.status === 'completed' ? 'primary' : 'warning' %>"><%= p.status %></span>
+      </div>
+      <p><%= p.region %> Region · Budget: UGX <%= Number(p.budget).toLocaleString() %></p>
+      
+      <!-- Actions -->
+      <div style="margin-top: var(--space-3); display: flex; gap: var(--space-2); flex-wrap: wrap;">
+        <% if (p.status === 'proposed') { %>
+          <form method="post" action="/admin/projects/<%= p.id %>/status" style="display:inline;">
+            <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+            <input type="hidden" name="status" value="approved">
+            <button type="submit" class="btn btn--primary btn--sm">Approve</button>
+          </form>
+        <% } %>
+        <a href="/admin/projects/<%= p.id %>" class="btn btn--ghost btn--sm">View Milestones</a>
+        
+        <!-- EDIT BUTTON -->
+        <button type="button" class="btn btn--ghost btn--sm" onclick="document.getElementById('edit-project-<%= p.id %>').style.display = document.getElementById('edit-project-<%= p.id %>').style.display === 'none' ? 'block' : 'none';">Edit</button>
+        
+        <!-- DELETE BUTTON -->
+        <form method="post" action="/admin/projects/<%= p.id %>/delete" onsubmit="return confirm('Delete this project permanently? This will also delete all milestones and files.')" style="display:inline;">
+          <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn--ghost btn--sm" style="color: var(--danger);">Delete</button>
+        </form>
+      </div>
+
+      <!-- Hidden Edit Form -->
+      <div id="edit-project-<%= p.id %>" style="display: none; margin-top: var(--space-4); background: var(--ivory); padding: var(--space-3); border-radius: var(--radius-sm);">
+        <h3 style="margin-top: 0; font-size: var(--text-sm);">Edit Project</h3>
+        <form method="post" action="/admin/projects/<%= p.id %>/update" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
+          <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+          
+          <div class="field" style="margin: 0; grid-column: 1 / -1;">
+            <label style="font-size: 10px;">Title</label>
+            <input type="text" name="title" value="<%= p.title %>" required style="padding: 4px; font-size: 12px;">
+          </div>
+          <div class="field" style="margin: 0;">
+            <label style="font-size: 10px;">Region</label>
+            <select name="region" required style="padding: 4px; font-size: 12px;">
+              <% ['Central', 'Eastern', 'Northern', 'Western'].forEach(r => { %>
+                <option value="<%= r %>" <%= p.region === r ? 'selected' : '' %>><%= r %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="field" style="margin: 0;">
+            <label style="font-size: 10px;">Category</label>
+            <select name="category" required style="padding: 4px; font-size: 12px;">
+              <% ['Infrastructure', 'Scholarship', 'Health', 'Other'].forEach(c => { %>
+                <option value="<%= c %>" <%= p.category === c ? 'selected' : '' %>><%= c %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="field" style="margin: 0;">
+            <label style="font-size: 10px;">Budget (UGX)</label>
+            <input type="number" name="budget" value="<%= p.budget %>" required style="padding: 4px; font-size: 12px;">
+          </div>
+          <div class="field" style="margin: 0; grid-column: 1 / -1;">
+            <label style="font-size: 10px;">Description</label>
+            <textarea name="description" rows="2" required style="padding: 4px; font-size: 12px; width: 100%;"><%= p.description %></textarea>
+          </div>
+          
+          <div style="grid-column: 1 / -1; display: flex; gap: 4px; margin-top: 4px;">
+            <button type="submit" class="btn btn--primary btn--sm" style="padding: 2px 8px; font-size: 12px;">Save Changes</button>
+            <button type="button" class="btn btn--ghost btn--sm" style="padding: 2px 8px; font-size: 12px;" onclick="document.getElementById('edit-project-<%= p.id %>').style.display = 'none';">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Add Milestone Form -->
+      <div style="margin-top: var(--space-4); background: var(--ivory); padding: var(--space-3); border-radius: var(--radius-sm);">
+        <h3 style="margin-top: 0; font-size: var(--text-sm);">Add Milestone</h3>
+        <form method="post" action="/admin/projects/milestones" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
+          <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+          <input type="hidden" name="project_id" value="<%= p.id %>">
+          
+          <div class="field" style="margin: 0;">
+            <label style="font-size: 10px;">Title</label>
+            <input type="text" name="title" required style="padding: 4px; font-size: 12px;">
+          </div>
+          <div class="field" style="margin: 0;">
+            <label style="font-size: 10px;">Target Date</label>
+            <input type="date" name="target_date" style="padding: 4px; font-size: 12px;">
+          </div>
+          <div class="field" style="margin: 0;">
+            <label style="font-size: 10px;">Description</label>
+            <input type="text" name="description" style="padding: 4px; font-size: 12px;">
+          </div>
+                    <div class="field" style="margin: 0;">
+            <label style="font-size: 10px;">Assign Outreach Officer</label>
+            <select name="assigned_region" style="padding: 4px; font-size: 12px;">
+              <option value="">None</option>
+              <% outreachOfficers.forEach(o => { %>
+                <option value="<%= o.office_title.replace('Outreach Officer (', '').replace(')', '') %>">
+                  <%= o.first_name %> <%= o.last_name %> — <%= o.office_title.replace('Outreach Officer (', '').replace(')', '') %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+          
+          <button type="submit" class="btn btn--ghost btn--sm" style="grid-column: 1 / -1; margin-top: 4px;">Add Milestone</button>
+        </form>
+      </div>
+
+      <!-- Upload Project File Form -->
+      <div style="margin-top: var(--space-4); background: var(--ivory); padding: var(--space-3); border-radius: var(--radius-sm);">
+        <h3 style="margin-top: 0; font-size: var(--text-sm);">Upload Project File</h3>
+        <form method="post" action="/admin/projects/<%= p.id %>/files" enctype="multipart/form-data" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
+          <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+          
+          <div class="field" style="margin: 0;">
+            <label style="font-size: 10px;">File Title</label>
+            <input type="text" name="title" required style="padding: 4px; font-size: 12px;">
+          </div>
+          <div class="field" style="margin: 0;">
+            <label style="font-size: 10px;">Select File</label>
+            <input type="file" name="file" required style="padding: 4px; font-size: 12px;">
+          </div>
+          <div class="field" style="margin: 0; grid-column: 1 / -1;">
+            <label style="font-size: 10px;">Description (Optional)</label>
+            <input type="text" name="description" style="padding: 4px; font-size: 12px;">
+          </div>
+          
+          <button type="submit" class="btn btn--ghost btn--sm" style="grid-column: 1 / -1; margin-top: 4px;">Upload File</button>
+        </form>
+      </div>
+    </div>
+  <% }) %>
+</div>

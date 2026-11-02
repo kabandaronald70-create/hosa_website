@@ -5,13 +5,15 @@ import {
 } from "../models/profileModel.js";
 import { listMyUpcomingRsvps } from "../models/rsvpModel.js";
 import { listMyRequests } from "../models/mentorshipModel.js";
+import { getFinancialSummary } from "../models/financeModel.js";
 
 export async function showDashboard(req, res, next) {
   try {
-    const [profile, rsvps, requests] = await Promise.all([
+    const [profile, rsvps, requests, finance] = await Promise.all([
       getProfileByUserId(req.user.id),
       listMyUpcomingRsvps(req.user.id, 5),
       listMyRequests(req.user.id),
+      getFinancialSummary(),
     ]);
     const completion = profileCompletion(profile);
     const activeMentorship =
@@ -24,6 +26,7 @@ export async function showDashboard(req, res, next) {
       completion,
       rsvps,
       activeMentorship,
+      finance,
       layout: "layouts/app",
     });
   } catch (err) {
@@ -33,9 +36,6 @@ export async function showDashboard(req, res, next) {
 
 export async function showPendingApproval(req, res, next) {
   try {
-    // Contact details for the site administrators, shown to unapproved members
-    // so they can request approval. DISTINCT avoids duplicates when someone
-    // holds more than one admin role.
     const result = await query(`
       SELECT DISTINCT
         u.email,

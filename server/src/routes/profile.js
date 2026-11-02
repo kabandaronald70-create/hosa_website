@@ -34,7 +34,7 @@ router.post("/dashboard/avatar/delete", requireAuth, removeAvatar);
 
 // Serving (order matters: 'me' must precede ':userId')
 router.get("/dashboard/avatar/me", requireAuth, serveAvatar);
-router.get("/dashboard/avatar/:userId", requireAuth, serveAvatar);
+router.get("/dashboard/avatar/:userId", serveAvatar);
 
 // Password
 router.get("/dashboard/password", requireAuth, showChangePassword);

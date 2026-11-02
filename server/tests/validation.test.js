@@ -16,6 +16,14 @@ describe("Auth Validators", () => {
       confirm_password: "different",
       first_name: "Test",
       last_name: "User",
+      other_name: "",
+      graduation_year: 2015,
+      district: "Kampala",
+      country_code: "UG",
+      nationality: "Uganda",
+      profession: "Software Engineer",
+      phone: "+256 700 000000",
+      region: "Central",
     });
     expect(result.success).toBe(false);
   });
@@ -27,7 +35,14 @@ describe("Auth Validators", () => {
       confirm_password: "password123",
       first_name: "Test",
       last_name: "User",
+      other_name: "",
+      graduation_year: 2015,
+      district: "Kampala",
       country_code: "UG",
+      nationality: "Uganda",
+      profession: "Software Engineer",
+      phone: "+256 700 000000",
+      region: "Central",
     });
     expect(result.success).toBe(true);
   });

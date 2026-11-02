@@ -1,0 +1,190 @@
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); flex-wrap: wrap; gap: var(--space-3);">
+  <div>
+    <h1 style="margin: 0;"><%= project.title %></h1>
+    <p style="color: var(--muted); margin: var(--space-1) 0 0; font-size: var(--text-sm);">
+      <%= project.region %> Region · <%= project.category %>
+    </p>
+  </div>
+  <a href="/admin/projects" class="btn btn--ghost">← Back to Projects</a>
+</div>
+
+<!-- Project Summary Card -->
+<div class="card" style="margin-bottom: var(--space-6);">
+  <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: var(--space-3);">
+    <div>
+      <p style="margin: 0;"><strong>Budget:</strong> UGX <%= Number(project.budget).toLocaleString() %></p>
+      <p style="margin: var(--space-1) 0 0;"><strong>Funds Raised:</strong> UGX <%= Number(project.funds_raised || 0).toLocaleString() %></p>
+      
+      <!-- Progress Bar -->
+      <div style="margin-top: var(--space-2); width: 300px; max-width: 100%;">
+        <% const pct = project.budget > 0 ? Math.min(100, Math.round((project.funds_raised / project.budget) * 100)) : 0; %>
+        <div style="display: flex; justify-content: space-between; font-size: var(--text-xs); color: var(--muted);">
+          <span>Funding Progress</span>
+          <span><%= pct %>%</span>
+        </div>
+        <div style="height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; margin-top: 4px;">
+          <div style="height: 100%; width: <%= pct %>%; background: var(--success); transition: width 0.3s ease;"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div>
+      <p style="margin: 0;"><strong>Status:</strong> 
+        <span class="badge badge--<%= project.status === 'approved' ? 'success' : project.status === 'completed' ? 'primary' : project.status === 'proposed' ? 'warning' : 'danger' %>">
+          <%= project.status %>
+        </span>
+      </p>
+      <div style="margin-top: var(--space-2);">
+        <% if (project.status === 'proposed') { %>
+          <form method="post" action="/admin/projects/<%= project.id %>/status" style="display:inline;">
+            <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+            <input type="hidden" name="status" value="approved">
+            <button type="submit" class="btn btn--primary btn--sm">Approve</button>
+          </form>
+        <% } else if (project.status === 'approved') { %>
+          <form method="post" action="/admin/projects/<%= project.id %>/status" style="display:inline;">
+            <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+            <input type="hidden" name="status" value="in_progress">
+            <button type="submit" class="btn btn--accent btn--sm">Mark as In Progress</button>
+          </form>
+        <% } else if (project.status === 'in_progress') { %>
+          <form method="post" action="/admin/projects/<%= project.id %>/status" style="display:inline;">
+            <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+            <input type="hidden" name="status" value="completed">
+            <button type="submit" class="btn btn--success btn--sm">Mark as Completed</button>
+          </form>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Update Funds Raised Form -->
+  <div style="margin-top: var(--space-4); background: var(--ivory); padding: var(--space-3); border-radius: var(--radius-sm); max-width: 400px;">
+    <h4 style="margin: 0 0 var(--space-2); font-size: var(--text-sm);">Update Funds Raised</h4>
+    <form method="post" action="/admin/projects/<%= project.id %>/funds" style="display: flex; gap: var(--space-2);">
+      <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+      <input type="number" name="funds_raised" value="<%= project.funds_raised || 0 %>" required step="0.01" style="padding: 6px; border: 1px solid var(--line); border-radius: var(--radius-sm); flex-grow: 1;">
+      <button type="submit" class="btn btn--primary btn--sm">Update</button>
+    </form>
+  </div>
+
+  <p style="margin-top: var(--space-3);"><%= project.description %></p>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5);">
+  
+  <!-- Milestones Section -->
+  <div class="card">
+    <h2 style="margin-top: 0;">Project Milestones</h2>
+    
+    <!-- Add New Milestone Form -->
+    <div style="background: var(--ivory); padding: var(--space-3); border-radius: var(--radius-sm); margin-bottom: var(--space-4);">
+      <h3 style="margin-top: 0; font-size: var(--text-sm);">Add New Milestone</h3>
+      <form method="post" action="/admin/projects/milestones" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
+        <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+        <input type="hidden" name="project_id" value="<%= project.id %>">
+        
+        <div class="field" style="margin: 0;">
+          <label style="font-size: 10px;">Title</label>
+          <input type="text" name="title" required style="padding: 4px; font-size: 12px;">
+        </div>
+        <div class="field" style="margin: 0;">
+          <label style="font-size: 10px;">Target Date</label>
+          <input type="date" name="target_date" style="padding: 4px; font-size: 12px;">
+        </div>
+        <div class="field" style="margin: 0;">
+          <label style="font-size: 10px;">Description</label>
+          <input type="text" name="description" style="padding: 4px; font-size: 12px;">
+        </div>
+        <div class="field" style="margin: 0;">
+          <label style="font-size: 10px;">Assigned Region (Outreach Officer)</label>
+          <select name="assigned_region" style="padding: 4px; font-size: 12px;">
+            <option value="">None</option>
+            <option value="Central">Central (Outreach Officer)</option>
+            <option value="Eastern">Eastern (Outreach Officer)</option>
+            <option value="Northern">Northern (Outreach Officer)</option>
+            <option value="Western">Western (Outreach Officer)</option>
+          </select>
+        </div>
+        
+        <button type="submit" class="btn btn--primary btn--sm" style="grid-column: 1 / -1; margin-top: 4px;">Add Milestone</button>
+      </form>
+    </div>
+
+    <!-- List of Milestones -->
+    <% if (milestones.length === 0) { %>
+      <p style="color: var(--muted);">No milestones added yet.</p>
+    <% } else { %>
+      <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+        <% milestones.forEach(m => { %>
+          <div style="border: 1px solid var(--line); padding: var(--space-3); border-radius: var(--radius-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+              <div>
+                <strong style="display: block;"><%= m.title %></strong>
+                <span style="font-size: var(--text-xs); color: var(--muted);">
+                  Target: <%= m.target_date ? new Date(m.target_date).toLocaleDateString() : 'TBD' %>
+                  <% if (m.assigned_region) { %> · Region: <%= m.assigned_region %><% } %>
+                </span>
+              </div>
+              <span class="badge badge--<%= m.status === 'completed' ? 'success' : 'warning' %>"><%= m.status %></span>
+            </div>
+            <% if (m.description) { %><p style="font-size: var(--text-sm); margin: var(--space-2) 0 0;"><%= m.description %></p><% } %>
+            
+            <form method="post" action="/admin/projects/milestones/<%= m.id %>/status" style="margin-top: var(--space-2);">
+              <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+              <input type="hidden" name="project_id" value="<%= project.id %>">
+              <select name="status" onchange="this.form.submit()" style="padding: 2px; font-size: 12px;">
+                <option value="pending" <%= m.status === 'pending' ? 'selected' : '' %>>Pending</option>
+                <option value="in_progress" <%= m.status === 'in_progress' ? 'selected' : '' %>>In Progress</option>
+                <option value="completed" <%= m.status === 'completed' ? 'selected' : '' %>>Completed</option>
+              </select>
+            </form>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Files Section -->
+  <div class="card">
+    <h2 style="margin-top: 0;">Project Files</h2>
+    
+    <!-- Upload Form -->
+    <div style="background: var(--ivory); padding: var(--space-3); border-radius: var(--radius-sm); margin-bottom: var(--space-4);">
+      <h3 style="margin-top: 0; font-size: var(--text-sm);">Upload New File</h3>
+      <form method="post" action="/admin/projects/<%= project.id %>/files" enctype="multipart/form-data">
+        <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+        <div class="field">
+          <label style="font-size: 10px;">File Title</label>
+          <input type="text" name="title" required style="padding: 4px; font-size: 12px; width: 100%;">
+        </div>
+        <div class="field">
+          <label style="font-size: 10px;">Select File</label>
+          <input type="file" name="file" required style="font-size: 12px; width: 100%;">
+        </div>
+        <div class="field">
+          <label style="font-size: 10px;">Description (Optional)</label>
+          <input type="text" name="description" style="padding: 4px; font-size: 12px; width: 100%;">
+        </div>
+        <button type="submit" class="btn btn--primary btn--sm" style="width: 100%;">Upload File</button>
+      </form>
+    </div>
+
+    <!-- List of Uploaded Files -->
+    <% if (!attachments || attachments.length === 0) { %>
+      <p style="color: var(--muted);">No files uploaded yet.</p>
+    <% } else { %>
+      <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+        <% attachments.forEach(a => { %>
+          <div style="border: 1px solid var(--line); padding: var(--space-2); border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong style="font-size: var(--text-sm);"><%= a.title %></strong><br>
+              <span style="font-size: 10px; color: var(--muted);"><%= a.file_name %></span>
+            </div>
+            <a href="<%= a.file_path %>" target="_blank" class="btn btn--ghost btn--sm">⬇ Download</a>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</div>

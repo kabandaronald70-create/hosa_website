@@ -36,5 +36,3 @@ jobs:
           CSRF_SECRET: ci-csrf-secret-48-chars-minimum-length-for-validation
           SUPABASE_URL: https://ci-test.supabase.co
           SUPABASE_SERVICE_ROLE_KEY: ci-fake-service-role-key
-          RESEND_API_KEY: ci-fake-resend-key
-          EMAIL_FROM: HOSA <test@example.com>

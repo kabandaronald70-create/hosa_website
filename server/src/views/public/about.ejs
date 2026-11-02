@@ -121,49 +121,82 @@
     </div>
   </section>
 
-    <!-- Current Leadership (Executive Committee) -->
-  <section>
-    <h2 style="color: var(--green); margin-bottom: var(--space-4);">Current Leadership</h2>
-    <p style="margin-bottom: var(--space-4);">Meet the leaders currently serving the HOSA community.</p>
+     <!-- Current Leadership -->
+  <section style="margin-top: var(--space-7);">
+    <h2 style="color: var(--green); margin-bottom: var(--space-4); font-size: var(--text-3xl); text-align: center;">Current Leadership</h2>
+    <p style="text-align: center; color: var(--muted); margin-bottom: var(--space-6);">Meet the leaders currently serving the HOSA community.</p>
 
     <% if (roles.length === 0) { %>
       <div class="empty-state">
         <p class="empty-state__title">Leadership details coming soon.</p>
       </div>
     <% } else { %>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: var(--space-4);">
-        
-        <% roles.forEach((role) => { %>
-          <article class="card" style="text-align: center; padding: var(--space-6) var(--space-4);">
-            
-            <% if (role.first_name) { %>
-              <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--gold); color: var(--ink); display: grid; place-items: center; font-size: var(--text-2xl); font-weight: 700; margin: 0 auto var(--space-3);">
-                <%= role.first_name[0].toUpperCase() %>
-              </div>
-              <h3 style="margin: 0; font-size: var(--text-lg);"><%= role.first_name %> <%= role.last_name %></h3>
-            <% } else { %>
-              <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--line); color: var(--muted); display: grid; place-items: center; font-size: var(--text-2xl); font-weight: 700; margin: 0 auto var(--space-3);">
-                ?
-              </div>
-              <h3 style="margin: 0; font-size: var(--text-lg); color: var(--muted);">To Be Appointed</h3>
-            <% } %>
+      
+      <% 
+        // Group the roles by category
+        const categories = ['Board of Trustees', 'Executive Committee', 'Secretariat'];
+        const groupedRoles = {};
+        categories.forEach(cat => {
+          groupedRoles[cat] = roles.filter(r => r.category === cat);
+        });
+      %>
 
-            <p class="badge badge--gold" style="margin: var(--space-2) 0;"><%= role.office_title %></p>
-            
-            <% if (role.term_start) { %>
-              <p style="font-size: var(--text-xs); color: var(--muted); margin-top: var(--space-2);">
-                Term: <%= new Date(role.term_start).getFullYear() %> – <%= role.term_end ? new Date(role.term_end).getFullYear() : 'Present' %>
-              </p>
-            <% } %>
+      <% categories.forEach(category => { %>
+        <% if (groupedRoles[category].length > 0) { %>
+          
+          <h3 style="color: var(--green); font-size: var(--text-2xl); margin-top: var(--space-6); margin-bottom: var(--space-4); border-bottom: 2px solid var(--gold); padding-bottom: var(--space-2);">
+            <%= category %>
+          </h3>
 
-            <% if (role.biography) { %>
-              <p style="font-size: var(--text-sm); color: var(--muted); margin: var(--space-2) 0 0;"><%= role.biography %></p>
-            <% } %>
-            
-          </article>
-        <% }); %>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-5);">
+            <% groupedRoles[category].forEach((role) => { %>
+              <article class="card" style="text-align: center; padding: var(--space-6) var(--space-4); display: flex; flex-direction: column;">
+                
+                <div style="flex-grow: 1;">
+                  <!-- Avatar -->
+                  <% if (role.avatar_path) { %>
+                    <img src="/dashboard/avatar/<%= role.user_id %>" alt="<%= role.first_name %>" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--gold); margin: 0 auto var(--space-3);">
+                  <% } else if (role.first_name) { %>
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--gold); color: var(--ink); display: grid; place-items: center; font-size: var(--text-2xl); font-weight: 700; margin: 0 auto var(--space-3);">
+                      <%= role.first_name[0].toUpperCase() %>
+                    </div>
+                  <% } else { %>
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--line); color: var(--muted); display: grid; place-items: center; font-size: var(--text-2xl); font-weight: 700; margin: 0 auto var(--space-3);">
+                      ?
+                    </div>
+                  <% } %>
 
-      </div>
+                  <!-- Name & Title -->
+                  <h3 style="margin: 0; font-size: var(--text-xl); font-family: var(--font-heading);">
+                    <%= role.first_name ? `${role.first_name} ${role.last_name}` : 'To Be Appointed' %>
+                  </h3>
+                  <p class="badge badge--gold" style="margin: var(--space-2) 0;"><%= role.office_title %></p>
+                  
+                  <!-- Bio -->
+                  <% if (role.biography) { %>
+                    <p style="font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-3);"><%= role.biography %></p>
+                  <% } %>
+
+                  <!-- Contact Info -->
+                  <div style="font-size: var(--text-sm); color: var(--ink); display: flex; flex-direction: column; gap: 4px; margin-top: auto; text-align: left; background: var(--bg-soft); padding: var(--space-3); border-radius: var(--radius-sm);">
+                    <% if (role.location) { %><div>📍 <%= role.location %></div><% } %>
+                    <% if (role.email) { %><div>✉️ <a href="mailto:<%= role.email %>" style="color: var(--green);"><%= role.email %></a></div><% } %>
+                    <% if (role.phone) { %><div>📞 <%= role.phone %></div><% } %>
+                  </div>
+                </div>
+
+                <!-- Term -->
+                <% if (role.term_start) { %>
+                  <p style="font-size: var(--text-xs); color: var(--muted); margin-top: var(--space-3); border-top: 1px solid var(--line); padding-top: var(--space-2);">
+                    Term: <%= new Date(role.term_start).getFullYear() %> – <%= role.term_end ? new Date(role.term_end).getFullYear() : 'Present' %>
+                  </p>
+                <% } %>
+              </article>
+            <% }) %>
+          </div>
+        <% } %>
+      <% }) %>
+
     <% } %>
   </section>
   <!-- Call to Action -->

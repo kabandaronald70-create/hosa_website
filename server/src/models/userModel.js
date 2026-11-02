@@ -69,10 +69,15 @@ export async function createMember({
   passwordHash,
   firstName,
   lastName,
+  otherName,
   graduationYear,
   district,
   countryCode,
   mentorOptIn,
+  nationality,
+  profession,
+  phone,
+  region,
 }) {
   const emailNormalized = normalizeEmail(email);
 
@@ -87,16 +92,21 @@ export async function createMember({
 
     await client.query(
       `INSERT INTO member_profiles
-         (user_id, first_name, last_name, graduation_year, district, country_code, mentor_opt_in)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+         (user_id, first_name, last_name, other_name, graduation_year, district, country_code, mentor_opt_in, nationality, profession, phone, region)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
       [
         user.id,
         firstName,
         lastName,
+        otherName,
         graduationYear ?? null,
         district ?? null,
         countryCode ?? null,
         Boolean(mentorOptIn),
+        nationality,
+        profession,
+        phone,
+        region,
       ],
     );
 

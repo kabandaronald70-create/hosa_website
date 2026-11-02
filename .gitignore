@@ -19,3 +19,6 @@ server/public/dist/
 backups/
 *.sql.bak
 hosa_backup_*.sql
+
+# Uploads
+server/public/uploads/

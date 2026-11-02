@@ -1,0 +1,85 @@
+<header style="margin-bottom: var(--space-6);">
+  <h1>HOSA Projects & Regional Development</h1>
+  <p>Discover the initiatives we are implementing to support our school and community.</p>
+</header>
+
+<% if (!currentUser) { %>
+  <!-- Locked for guests -->
+  <div class="card" style="text-align: center; padding: var(--space-8) var(--space-4); background: var(--ivory); border: 1px dashed var(--line);">
+    <p style="font-size: 32px; margin: 0 0 var(--space-2);">🔒</p>
+    <h2 style="margin: 0 0 var(--space-2); font-size: var(--text-xl);">Member Only</h2>
+    <p style="color: var(--muted); margin-bottom: var(--space-4);">
+      Please log in to view our projects and regional development initiatives.
+    </p>
+    <a href="/login" class="btn btn--primary">Log In</a>
+  </div>
+<% } else { %>
+  <% if (!projects || projects.length === 0) { %>
+    <div class="empty-state">
+      <p class="empty-state__title">No projects published yet.</p>
+    </div>
+  <% } else { %>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-4);">
+      <% projects.forEach(p => { %>
+        <article class="card" style="display: flex; flex-direction: column; padding: 0; overflow: hidden;">
+          
+          <!-- Project Image -->
+          <% if (p.image_path) { %>
+            <img src="<%= p.image_path %>" alt="<%= p.title %>" style="width: 100%; height: 180px; object-fit: cover;">
+          <% } else { %>
+            <div style="width: 100%; height: 180px; background: var(--ivory); display: grid; place-items: center; color: var(--muted);">
+              <span style="font-size: 48px;">🏗️</span>
+            </div>
+          <% } %>
+          
+          <div style="padding: var(--space-4); flex-grow: 1; display: flex; flex-direction: column;">
+            <div style="flex-grow: 1;">
+              <span class="badge badge--gold"><%= p.region %> Region</span>
+              <h2 style="font-size: var(--text-xl); margin: var(--space-2) 0;"><%= p.title %></h2>
+              
+              <!-- Budget & Progress -->
+              <div style="margin-bottom: var(--space-3);">
+                <p style="color: var(--muted); font-size: var(--text-sm); margin: 0;">
+                  Budget: <strong>UGX <%= Number(p.budget).toLocaleString() %></strong>
+                </p>
+                <p style="color: var(--muted); font-size: var(--text-xs); margin: var(--space-1) 0 0;">
+                  Raised: UGX <%= Number(p.funds_raised || 0).toLocaleString() %>
+                </p>
+                
+                <% const pct = p.budget > 0 ? Math.min(100, Math.round((p.funds_raised / p.budget) * 100)) : 0; %>
+                <div style="height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-top: 4px;">
+                  <div style="height: 100%; width: <%= pct %>%; background: var(--success);"></div>
+                </div>
+                <p style="font-size: 10px; color: var(--muted); margin: 2px 0 0; text-align: right;"><%= pct %>% funded</p>
+              </div>
+
+              <p style="font-size: var(--text-sm);"><%= p.description ? p.description.slice(0, 150) + '...' : '' %></p>
+            </div>
+            
+            <div style="margin-top: var(--space-4); border-top: 1px solid var(--line); padding-top: var(--space-3);">
+              
+              <!-- Outreach Officer Contact -->
+              <% if (p.outreach_email) { %>
+                <div style="font-size: var(--text-xs); color: var(--muted); margin-bottom: var(--space-2); border-top: 1px dashed var(--line); padding-top: var(--space-2);">
+                  <strong>Outreach Officer:</strong><br>
+                  <% if (p.outreach_first_name) { %>
+                    👤 <%= p.outreach_first_name %> <%= p.outreach_last_name %><br>
+                  <% } %>
+                  ✉️ <a href="mailto:<%= p.outreach_email %>" style="color: var(--green);"><%= p.outreach_email %></a>
+                  <% if (p.outreach_phone) { %>
+                    <br>📞 <%= p.outreach_phone %>
+                  <% } %>
+                  <div style="margin-top: 4px; font-style: italic; color: var(--green-700); font-size: 10px;">
+                    * Contact for project inquiries.
+                  </div>
+                </div>
+              <% } %>
+              
+              <a href="/projects/<%= p.id %>" class="btn btn--ghost btn--sm" style="width: 100%;">View Project</a>
+            </div>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+  <% } %>
+<% } %>

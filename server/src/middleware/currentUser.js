@@ -17,7 +17,11 @@ export async function currentUser(req, res, next) {
   req.user = null;
   req.userRoles = [];
   req.profile = null;
+<<<<<<< HEAD
   req.leadershipRoles = [];
+=======
+  req.leadershipRoles = []; // <-- ADD THIS DEFAULT
+>>>>>>> origin/main
 
   try {
     if (!req.session?.userId) {
@@ -33,6 +37,10 @@ export async function currentUser(req, res, next) {
       return next();
     }
 
+<<<<<<< HEAD
+=======
+    // 4. Fetch roles, profile, leadership roles, and unread counts
+>>>>>>> origin/main
     const [roles, profile, unread, unreadAnnouncements, leadershipRes] =
       await Promise.all([
         getRolesForUser(user.id),
@@ -50,7 +58,11 @@ export async function currentUser(req, res, next) {
     req.user = user;
     req.userRoles = roles;
     req.profile = profile;
+<<<<<<< HEAD
     req.leadershipRoles = leadershipRoles;
+=======
+    req.leadershipRoles = leadershipRoles; // <-- ADD THIS
+>>>>>>> origin/main
 
     res.locals.currentUser = user;
     res.locals.currentUserRoles = roles;
