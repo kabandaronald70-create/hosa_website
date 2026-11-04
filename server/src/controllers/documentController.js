@@ -32,22 +32,6 @@ export const upload = multer({
   },
 }).single("document");
 
-// --- Show Document Library on Archive Page ---
-export async function getArchiveDocuments(req, res, next) {
-  try {
-    const documents = await listDocuments();
-    res.render("public/archive", {
-      title: "Archive — HOSA",
-      layout: "layouts/public",
-      pastEvents: [],
-      stories: [],
-      documents: documents,
-    });
-  } catch (err) {
-    next(err);
-  }
-}
-
 // --- Super Admin Upload ---
 export async function showUploadForm(req, res, next) {
   try {
@@ -95,8 +79,7 @@ async function sendDocumentFile(req, res, next, disposition) {
     const fileName = document.file_name || "document";
     const encodedFileName = encodeURIComponent(fileName).replace(
       /[!'()*]/g,
-      (character) =>
-        `%${character.charCodeAt(0).toString(16).toUpperCase()}`,
+      (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`,
     );
     res.set({
       "Cache-Control": "private, no-store",
