@@ -1,0 +1,279 @@
+<div
+  style="
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-5);
+  "
+>
+  <div>
+    <h1 style="margin: 0">Analytics & Monitoring</h1>
+    <p
+      style="
+        color: var(--muted);
+        margin: var(--space-1) 0 0;
+        font-size: var(--text-sm);
+      "
+    >
+      Overview of HOSA's membership, finances, projects, and engagement.
+    </p>
+  </div>
+  <a href="/admin" class="btn btn--ghost">← Back to Admin</a>
+</div>
+
+<!-- 1. MEMBERSHIP -->
+<h2
+  style="
+    margin-top: var(--space-6);
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: var(--space-2);
+  "
+>
+  Membership
+</h2>
+<div
+  style="
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+  "
+>
+  <div class="card" style="border-left: 4px solid var(--primary)">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0">
+      Total Registered
+    </p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--primary)">
+      <%= membership.total %>
+    </h2>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--success)">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0">
+      Approved Members
+    </p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--success)">
+      <%= membership.approved %>
+    </h2>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--warning)">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0">
+      Pending Approval
+    </p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--warning)">
+      <%= membership.pending %>
+    </h2>
+  </div>
+</div>
+
+<!-- 2. FINANCIALS -->
+<h2
+  style="
+    margin-top: var(--space-6);
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: var(--space-2);
+  "
+>
+  Financials
+</h2>
+<div
+  style="
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+  "
+>
+  <div class="card" style="border-left: 4px solid var(--success)">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0">
+      Verified Income
+    </p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--success)">
+      UGX <%= financial.totalIncome.toLocaleString() %>
+    </h2>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--danger)">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0">
+      Total Expenses
+    </p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--danger)">
+      UGX <%= financial.totalExpenses.toLocaleString() %>
+    </h2>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--green)">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0">
+      Net Balance
+    </p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--green)">
+      UGX <%= financial.netBalance.toLocaleString() %>
+    </h2>
+  </div>
+</div>
+
+<!-- 3. PROJECTS -->
+<h2
+  style="
+    margin-top: var(--space-6);
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: var(--space-2);
+  "
+>
+  Projects & Development
+</h2>
+<div
+  style="
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+  "
+>
+  <div class="card" style="border-left: 4px solid var(--primary)">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0">
+      Total Projects
+    </p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--primary)">
+      <%= projects.total %>
+    </h2>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--success)">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0">
+      Active
+    </p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--success)">
+      <%= projects.active %>
+    </h2>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--gold)">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0">
+      Completed
+    </p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--gold)">
+      <%= projects.completed %>
+    </h2>
+  </div>
+</div>
+
+<!-- 4. REGIONAL REPORTS -->
+<h2
+  style="
+    margin-top: var(--space-6);
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: var(--space-2);
+  "
+>
+  Regional Reports
+</h2>
+<div
+  style="
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+  "
+>
+  <div class="card" style="border-left: 4px solid var(--primary)">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0">
+      Total Reports
+    </p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--primary)">
+      <%= regional.totalReports %>
+    </h2>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--success)">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0">
+      Reviewed
+    </p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--success)">
+      <%= regional.reviewedReports %>
+    </h2>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--warning)">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0">
+      Pending Review
+    </p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--warning)">
+      <%= regional.pendingReports %>
+    </h2>
+  </div>
+</div>
+
+<!-- 5. BUSINESS DIRECTORY -->
+<h2
+  style="
+    margin-top: var(--space-6);
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: var(--space-2);
+  "
+>
+  Business Directory
+</h2>
+<div
+  style="
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+  "
+>
+  <div class="card" style="border-left: 4px solid var(--primary)">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0">
+      Total Listings
+    </p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--primary)">
+      <%= businesses.total %>
+    </h2>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--success)">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0">
+      Approved
+    </p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--success)">
+      <%= businesses.approved %>
+    </h2>
+  </div>
+</div>
+
+<!-- 6. ENGAGEMENT -->
+<h2
+  style="
+    margin-top: var(--space-6);
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: var(--space-2);
+  "
+>
+  Engagement
+</h2>
+<div
+  style="
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+    margin-bottom: var(--space-6);
+  "
+>
+  <div class="card" style="border-left: 4px solid var(--gold)">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0">
+      Events
+    </p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--gold)">
+      <%= engagement.events %>
+    </h2>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--gold)">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0">
+      Stories
+    </p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--gold)">
+      <%= engagement.stories %>
+    </h2>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--gold)">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0">
+      Jobs & Opportunities
+    </p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--gold)">
+      <%= engagement.opportunities %>
+    </h2>
+  </div>
+</div>
