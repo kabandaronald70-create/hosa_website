@@ -7,6 +7,7 @@ import {
   actionRejectBusiness,
   actionToggleFeatured,
 } from "../controllers/businessController.js";
+import { showAnalyticsDashboard } from "../controllers/analyticsController.js";
 import {
   showAdminProjects,
   showAdminProjectDetail,
@@ -398,5 +399,11 @@ router.post(
   requireRole("admin", "super_admin"),
   requireProjectAccess,
   actionMarkRegionalReportReviewed,
+);
+// Analytics
+router.get(
+  "/admin/analytics",
+  requireRole("super_admin"),
+  showAnalyticsDashboard,
 );
 export default router;
