@@ -82,7 +82,7 @@ export function createApp() {
   app.set("view engine", "ejs");
   app.set("views", path.join(__dirname, "views"));
   app.use(expressLayouts);
-  app.set("layout", "layouts/base");
+  app.set("layout", "layouts/public");
 
   // Make env available to all EJS views
   app.locals.env = env;

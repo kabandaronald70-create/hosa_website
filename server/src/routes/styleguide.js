@@ -7,7 +7,10 @@ router.get("/styleguide", (req, res, next) => {
   if (env.isProd) {
     return res.status(404).type("text/plain").send("Not found");
   }
-  res.render("styleguide", { title: "Styleguide — HOSA" });
+  res.render("styleguide", {
+    title: "Styleguide — HOSA",
+    layout: "layouts/public",
+  });
 });
 
 export default router;
