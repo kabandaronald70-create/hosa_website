@@ -5,19 +5,6 @@ let announcementReadsTableAvailable;
 let announcementReadsTableCheckedAt = 0;
 const SCHEMA_CHECK_TTL_MS = 60_000;
 
-export async function showAnnouncements(req, res, next) {
-  try {
-    const announcements = await listAnnouncements(20);
-    res.render("announcements/list", {
-      title: "Announcements — HOSA",
-      layout: "layouts/public",
-      announcements,
-    });
-  } catch (err) {
-    next(err);
-  }
-}
-
 async function hasAnnouncementReadsTable() {
   if (Date.now() - announcementReadsTableCheckedAt < SCHEMA_CHECK_TTL_MS) {
     return announcementReadsTableAvailable;
