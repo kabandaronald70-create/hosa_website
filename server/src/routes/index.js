@@ -1,5 +1,4 @@
 import { Router } from "express";
-import healthRoutes from "./health.js";
 import styleguideRoutes from "./styleguide.js";
 import authRoutes from "./auth.js";
 import profileRoutes from "./profile.js";
@@ -19,7 +18,6 @@ import regionalRoutes from "./regional.js";
 const router = Router();
 
 router.use(apiPublicRoutes);
-router.use(healthRoutes);
 router.use(styleguideRoutes);
 router.use(authRoutes);
 

@@ -15,6 +15,7 @@ import { csrf } from "./middleware/csrf.js";
 import { flash } from "./middleware/flash.js";
 import { notFound } from "./middleware/notFound.js";
 import { errorHandler } from "./middleware/errorHandler.js";
+import healthRoutes from "./routes/health.js";
 import routes from "./routes/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -57,6 +58,9 @@ export function createApp() {
         : false,
     }),
   );
+
+  // Health checks bypass sessions, user loading and CSRF middleware.
+  app.use(healthRoutes);
 
   app.use(compression());
   app.use(express.urlencoded({ extended: false }));
