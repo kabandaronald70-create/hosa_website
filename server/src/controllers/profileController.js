@@ -186,7 +186,7 @@ export async function serveAvatar(req, res, next) {
     }
 
     // Cache for longer since avatars don't change often
-    res.set("Cache-Control", "public, max-age=3600");
+    res.set("Cache-Control", "private, no-store");
     res.redirect(302, url);
   } catch (err) {
     next(err);

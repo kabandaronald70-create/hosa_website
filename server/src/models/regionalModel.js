@@ -19,28 +19,36 @@ export async function createRegionalReport({
   return rows[0];
 }
 
-export async function listRegionalReports({ region, status } = {}) {
-  let where = [];
-  let values = [];
-  let i = 1;
+export async function listRegionalReports({
+  region,
+  status,
+  submittedBy,
+} = {}) {
+  const where = [];
+  const values = [];
 
   if (region) {
-    where.push(`rr.region = $${i}`);
     values.push(region);
-    i++;
-  }
-  if (status) {
-    where.push(`rr.status = $${i}`);
-    values.push(status);
-    i++;
+    where.push(`rr.region = $${values.length}`);
   }
 
-  const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
+  if (status) {
+    values.push(status);
+    where.push(`rr.status = $${values.length}`);
+  }
+
+  if (submittedBy) {
+    values.push(submittedBy);
+    where.push(`rr.submitted_by = $${values.length}`);
+  }
+
+  const whereClause = where.length ? `WHERE ${where.join(" AND ")}` : "";
 
   const { rows } = await query(
-    `SELECT rr.*, 
+    `SELECT rr.*,
             u.email AS submitter_email,
-            mp.first_name, mp.last_name
+            mp.first_name,
+            mp.last_name
      FROM regional_reports rr
      LEFT JOIN users u ON rr.submitted_by = u.id
      LEFT JOIN member_profiles mp ON u.id = mp.user_id
@@ -48,6 +56,7 @@ export async function listRegionalReports({ region, status } = {}) {
      ORDER BY rr.created_at DESC`,
     values,
   );
+
   return rows;
 }
 

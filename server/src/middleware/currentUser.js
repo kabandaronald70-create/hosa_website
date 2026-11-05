@@ -40,12 +40,19 @@ export async function currentUser(req, res, next) {
         countUnread(user.id),
         countAnnouncementBadge(user.id),
         query(
-          `SELECT office_title FROM leadership_roles WHERE user_id = $1 AND status = 'active'`,
+          `SELECT office_title
+   FROM leadership_roles
+   WHERE user_id = $1
+     AND status = 'active'
+     AND (term_start IS NULL OR term_start <= CURRENT_DATE)
+     AND (term_end IS NULL OR term_end >= CURRENT_DATE)`,
           [user.id],
         ),
       ]);
 
-    const leadershipRoles = leadershipRes.rows.map((r) => r.office_title);
+    const leadershipRoles = leadershipRes.rows
+      .map((r) => r.office_title?.trim())
+      .filter(Boolean);
 
     req.user = user;
     req.userRoles = roles;

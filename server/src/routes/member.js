@@ -14,6 +14,7 @@ import {
   actionUpdateBusiness,
 } from "../controllers/businessController.js";
 import { requireAuth } from "../middleware/auth.js";
+import { csrfCheck } from "../middleware/csrf.js";
 import { uploadLogo } from "../middleware/upload.js";
 import {
   showMyNetworkRequests,
@@ -43,6 +44,7 @@ router.post(
   "/dashboard/businesses",
   requireAuth,
   uploadLogo,
+  csrfCheck,
   actionCreateBusiness,
 );
 
@@ -52,6 +54,7 @@ router.post(
   "/dashboard/businesses/:id/edit",
   requireAuth,
   uploadLogo,
+  csrfCheck,
   actionUpdateBusiness,
 );
 router.get("/dashboard/business-network", requireAuth, showMyNetworkRequests);

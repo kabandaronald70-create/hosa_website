@@ -55,6 +55,8 @@ import {
 } from "../validators/eventValidators.js";
 
 import { uniqueEventSlug } from "../services/eventService.js";
+import { getRegionalReportById } from "../models/regionalModel.js";
+import { createRegionalReportSignedUrl } from "../services/regionalReportFileService.js";
 
 export async function showAdminOverview(req, res, next) {
   try {
@@ -931,6 +933,29 @@ export async function showRegionalReportsAdmin(req, res, next) {
     next(err);
   }
 }
+export async function actionDownloadRegionalReportAttachmentAdmin(
+  req,
+  res,
+  next,
+) {
+  try {
+    const { id } = req.params;
+
+    const report = await getRegionalReportById(id);
+
+    if (!report || !report.file_path) {
+      return res.status(404).send("Report attachment not found.");
+    }
+
+    const signedUrl = await createRegionalReportSignedUrl(report.file_path);
+
+    res.set("Cache-Control", "private, no-store");
+    return res.redirect(302, signedUrl);
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function actionMarkRegionalReportReviewed(req, res, next) {
   try {
     const { id } = req.params;

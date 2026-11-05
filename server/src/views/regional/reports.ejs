@@ -35,7 +35,12 @@
         <% if (r.file_name) { %>
           <div style="background: var(--ivory); padding: var(--space-2); border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center;">
             <span style="font-size: var(--text-sm);">📎 <%= r.file_name %></span>
-            <a href="<%= r.file_path %>" target="_blank" class="btn btn--ghost btn--sm">Download</a>
+          <a
+  href="/regional/reports/<%= r.id %>/attachment"
+  class="btn btn--ghost btn--sm"
+>
+  Download
+</a>
           </div>
         <% } %>
 

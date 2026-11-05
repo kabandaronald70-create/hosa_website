@@ -1,11 +1,12 @@
 import { query } from "../config/db.js";
-import { supabase } from "../config/supabase.js";
 import { createProject, listProjects } from "../models/projectModel.js";
-import {
-  uploadProjectImage,
-  uploadProjectFile,
-} from "../services/projectFileService.js";
+import { uploadProjectImage } from "../services/projectFileService.js";
 import { auditLog } from "../services/auditService.js";
+import {
+  uploadRegionalReportFile,
+  cleanupRegionalReportFile,
+  createRegionalReportSignedUrl,
+} from "../services/regionalReportFileService.js";
 import {
   createRegionalReport,
   listRegionalReports,
@@ -20,8 +21,13 @@ import {
 export async function showRegionalDashboard(req, res, next) {
   try {
     const { rows } = await query(
-      `SELECT office_title FROM leadership_roles 
-       WHERE user_id = $1 AND office_title LIKE 'Outreach Officer%' AND status = 'active'`,
+      `SELECT office_title
+       FROM leadership_roles
+       WHERE user_id = $1
+         AND office_title LIKE 'Outreach Officer%'
+         AND status = 'active'
+         AND (term_start IS NULL OR term_start <= CURRENT_DATE)
+         AND (term_end IS NULL OR term_end >= CURRENT_DATE)`,
       [req.user.id],
     );
 
@@ -64,8 +70,13 @@ export async function showRegionalDashboard(req, res, next) {
 export async function showRegionalProposalForm(req, res, next) {
   try {
     const { rows } = await query(
-      `SELECT office_title FROM leadership_roles 
-       WHERE user_id = $1 AND office_title LIKE 'Outreach Officer%' AND status = 'active'`,
+      `SELECT office_title
+       FROM leadership_roles
+       WHERE user_id = $1
+         AND office_title LIKE 'Outreach Officer%'
+         AND status = 'active'
+         AND (term_start IS NULL OR term_start <= CURRENT_DATE)
+         AND (term_end IS NULL OR term_end >= CURRENT_DATE)`,
       [req.user.id],
     );
 
@@ -93,8 +104,13 @@ export async function actionSubmitRegionalProposal(req, res, next) {
     const { title, description, category, budget } = req.body;
 
     const { rows } = await query(
-      `SELECT office_title FROM leadership_roles 
-       WHERE user_id = $1 AND office_title LIKE 'Outreach Officer%' AND status = 'active'`,
+      `SELECT office_title
+       FROM leadership_roles
+       WHERE user_id = $1
+         AND office_title LIKE 'Outreach Officer%'
+         AND status = 'active'
+         AND (term_start IS NULL OR term_start <= CURRENT_DATE)
+         AND (term_end IS NULL OR term_end >= CURRENT_DATE)`,
       [req.user.id],
     );
 
@@ -108,6 +124,7 @@ export async function actionSubmitRegionalProposal(req, res, next) {
       .replace(")", "");
 
     let imagePath = null;
+
     if (req.file) {
       imagePath = await uploadProjectImage(
         req.user.id,
@@ -142,6 +159,7 @@ export async function actionSubmitRegionalProposal(req, res, next) {
       "success",
       "Proposal submitted successfully. Awaiting admin approval.",
     );
+
     res.redirect("/regional/dashboard");
   } catch (err) {
     next(err);
@@ -155,8 +173,13 @@ export async function actionSubmitRegionalProposal(req, res, next) {
 export async function showRegionalReports(req, res, next) {
   try {
     const { rows } = await query(
-      `SELECT office_title FROM leadership_roles 
-       WHERE user_id = $1 AND office_title LIKE 'Outreach Officer%' AND status = 'active'`,
+      `SELECT office_title
+       FROM leadership_roles
+       WHERE user_id = $1
+         AND office_title LIKE 'Outreach Officer%'
+         AND status = 'active'
+         AND (term_start IS NULL OR term_start <= CURRENT_DATE)
+         AND (term_end IS NULL OR term_end >= CURRENT_DATE)`,
       [req.user.id],
     );
 
@@ -169,7 +192,10 @@ export async function showRegionalReports(req, res, next) {
       .replace("Outreach Officer (", "")
       .replace(")", "");
 
-    const reports = await listRegionalReports({ region });
+    const reports = await listRegionalReports({
+      region,
+      submittedBy: req.user.id,
+    });
 
     res.render("regional/reports", {
       title: `Regional Reports — ${region}`,
@@ -182,11 +208,42 @@ export async function showRegionalReports(req, res, next) {
   }
 }
 
+export async function actionDownloadRegionalReportAttachment(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    // Only the submitting officer can access this attachment.
+    const { rows } = await query(
+      `SELECT file_path
+       FROM regional_reports
+       WHERE id = $1
+         AND submitted_by = $2`,
+      [id, req.user.id],
+    );
+
+    if (rows.length === 0 || !rows[0].file_path) {
+      return res.status(404).send("Report attachment not found.");
+    }
+
+    const signedUrl = await createRegionalReportSignedUrl(rows[0].file_path);
+
+    res.set("Cache-Control", "private, no-store");
+    return res.redirect(302, signedUrl);
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function showNewReportForm(req, res, next) {
   try {
     const { rows } = await query(
-      `SELECT office_title FROM leadership_roles 
-       WHERE user_id = $1 AND office_title LIKE 'Outreach Officer%' AND status = 'active'`,
+      `SELECT office_title
+       FROM leadership_roles
+       WHERE user_id = $1
+         AND office_title LIKE 'Outreach Officer%'
+         AND status = 'active'
+         AND (term_start IS NULL OR term_start <= CURRENT_DATE)
+         AND (term_end IS NULL OR term_end >= CURRENT_DATE)`,
       [req.user.id],
     );
 
@@ -213,10 +270,32 @@ export async function actionSubmitReport(req, res, next) {
   try {
     const { title, report_type, content } = req.body;
 
-    // Get the officer's region
+    const allowedReportTypes = [
+      "Monthly Report",
+      "Quarterly Report",
+      "Annual Report",
+      "Incident Report",
+    ];
+
+    if (!allowedReportTypes.includes(report_type)) {
+      req.flash("error", "Select a valid report type.");
+      return res.redirect("/regional/reports/new");
+    }
+
+    if (!title?.trim() || !content?.trim()) {
+      req.flash("error", "Report title and content are required.");
+      return res.redirect("/regional/reports/new");
+    }
+
+    // Confirm the officer's active regional assignment and appointment dates.
     const { rows } = await query(
-      `SELECT office_title FROM leadership_roles 
-       WHERE user_id = $1 AND office_title LIKE 'Outreach Officer%' AND status = 'active'`,
+      `SELECT office_title
+       FROM leadership_roles
+       WHERE user_id = $1
+         AND office_title LIKE 'Outreach Officer%'
+         AND status = 'active'
+         AND (term_start IS NULL OR term_start <= CURRENT_DATE)
+         AND (term_end IS NULL OR term_end >= CURRENT_DATE)`,
       [req.user.id],
     );
 
@@ -229,64 +308,86 @@ export async function actionSubmitReport(req, res, next) {
       .replace("Outreach Officer (", "")
       .replace(")", "");
 
-    let filePath = null;
-    let fileName = null;
+    // Upload the attachment to private storage, if provided.
+    let uploadResult = null;
+
     if (req.file) {
-      const uploadResult = await uploadProjectFile(
+      uploadResult = await uploadRegionalReportFile(
         req.user.id,
         req.file.buffer,
-        req.file.mimetype,
         req.file.originalname,
       );
-      filePath = uploadResult.storagePath;
-      fileName = uploadResult.originalName;
     }
 
-    await createRegionalReport({
-      region,
-      title,
-      reportType: report_type,
-      content,
-      filePath,
-      fileName,
-      submittedBy: req.user.id,
-    });
+    // Create the database record.
+    let report;
+
+    try {
+      report = await createRegionalReport({
+        region,
+        title: title.trim(),
+        reportType: report_type,
+        content: content.trim(),
+        filePath: uploadResult?.storagePath || null,
+        fileName: uploadResult?.originalName || null,
+        submittedBy: req.user.id,
+      });
+    } catch (dbErr) {
+      // Prevent orphaned storage objects if database insertion fails.
+      if (uploadResult?.storagePath) {
+        await cleanupRegionalReportFile(uploadResult.storagePath);
+      }
+
+      throw dbErr;
+    }
 
     await auditLog({
       req,
       action: "regional_report.submitted",
       targetType: "regional_report",
-      targetId: null,
-      metadata: { title, region },
+      targetId: report.id,
+      metadata: { title: title.trim(), region },
     });
 
     req.flash("success", "Report submitted successfully.");
-    res.redirect("/regional/reports");
+    return res.redirect("/regional/reports");
   } catch (err) {
     next(err);
   }
 }
 
-// --- Edit Report ---
+// ---------------------------------------------------------------------------
+// Edit Regional Report
+// ---------------------------------------------------------------------------
+
 export async function showEditReportForm(req, res, next) {
   try {
     const { id } = req.params;
 
-    // Verify the user is an outreach officer and get their region
+    // Verify the user is an outreach officer and get their region.
     const { rows: roles } = await query(
-      `SELECT office_title FROM leadership_roles 
-       WHERE user_id = $1 AND office_title LIKE 'Outreach Officer%' AND status = 'active'`,
+      `SELECT office_title
+       FROM leadership_roles
+       WHERE user_id = $1
+         AND office_title LIKE 'Outreach Officer%'
+         AND status = 'active'
+         AND (term_start IS NULL OR term_start <= CURRENT_DATE)
+         AND (term_end IS NULL OR term_end >= CURRENT_DATE)`,
       [req.user.id],
     );
+
     if (roles.length === 0) {
       req.flash("error", "You are not assigned as an Outreach Officer.");
       return res.redirect("/dashboard");
     }
 
-    // Fetch the specific report to ensure it belongs to this officer
+    // Fetch the specific report to ensure it belongs to this officer.
     const { rows: reportRows } = await query(
-      `SELECT * FROM regional_reports
-       WHERE id = $1 AND submitted_by = $2 AND status = 'pending'`,
+      `SELECT *
+       FROM regional_reports
+       WHERE id = $1
+         AND submitted_by = $2
+         AND status = 'pending'`,
       [id, req.user.id],
     );
 
@@ -313,15 +414,33 @@ export async function actionUpdateReport(req, res, next) {
     const { id } = req.params;
     const { title, report_type, content } = req.body;
 
-    if (!["monthly", "quarterly", "annual", "incident"].includes(report_type)) {
+    const allowedReportTypes = [
+      "Monthly Report",
+      "Quarterly Report",
+      "Annual Report",
+      "Incident Report",
+    ];
+
+    if (!allowedReportTypes.includes(report_type)) {
       req.flash("error", "Select a valid report type.");
       return res.redirect(`/regional/reports/${id}/edit`);
     }
 
+    // Validate and normalize the report title and content.
+    const normalizedTitle = typeof title === "string" ? title.trim() : "";
+
+    const normalizedContent = typeof content === "string" ? content.trim() : "";
+
+    if (!normalizedTitle || !normalizedContent) {
+      req.flash("error", "Report title and content are required.");
+      return res.redirect(`/regional/reports/${id}/edit`);
+    }
+
+    // Update only a pending report belonging to the current officer.
     const updated = await updateRegionalReport(id, req.user.id, {
-      title,
+      title: normalizedTitle,
       reportType: report_type,
-      content,
+      content: normalizedContent,
     });
 
     if (!updated) {
@@ -334,7 +453,7 @@ export async function actionUpdateReport(req, res, next) {
       action: "regional_report.updated",
       targetType: "regional_report",
       targetId: id,
-      metadata: { title },
+      metadata: { title: normalizedTitle },
     });
 
     req.flash("success", "Report updated successfully.");
@@ -344,36 +463,45 @@ export async function actionUpdateReport(req, res, next) {
   }
 }
 
-// --- Delete Report ---
+// ---------------------------------------------------------------------------
+// Delete Regional Report
+// ---------------------------------------------------------------------------
+
 export async function actionDeleteReport(req, res, next) {
   try {
     const { id } = req.params;
 
-    // 1. Fetch the report first to get the file path
-    const { rows } = await query(
-      `SELECT * FROM regional_reports WHERE id = $1 AND submitted_by = $2`,
-      [id, req.user.id],
-    );
+    // Delete only a pending report submitted by the current officer.
+    const deletedReport = await deleteRegionalReport(id, req.user.id);
 
-    if (rows.length === 0) {
-      req.flash("error", "Report not found or you don't have permission.");
+    if (!deletedReport) {
+      req.flash(
+        "error",
+        "Report not found or cannot be deleted. Only your pending reports can be deleted.",
+      );
       return res.redirect("/regional/reports");
     }
 
-    const report = rows[0];
-
-    // 2. If it has a file, delete it from Supabase Storage
-    if (report.file_path) {
-      // Extract just the filename from the full URL
-      const fileName = report.file_path.split("/").pop();
-      await supabase.storage.from("project-files").remove([fileName]);
+    // Clean up the private attachment after successful database deletion.
+    // Cleanup failures are logged without hiding the successful deletion.
+    if (deletedReport.file_path) {
+      await cleanupRegionalReportFile(deletedReport.file_path);
     }
 
-    // 3. Delete the database row
-    await deleteRegionalReport(id, req.user.id);
+    await auditLog({
+      req,
+      action: "regional_report.deleted",
+      targetType: "regional_report",
+      targetId: id,
+      metadata: {
+        title: deletedReport.title,
+        region: deletedReport.region,
+        hadAttachment: Boolean(deletedReport.file_path),
+      },
+    });
 
-    req.flash("success", "Report and attachment deleted successfully.");
-    res.redirect("/regional/reports");
+    req.flash("success", "Report deleted successfully.");
+    return res.redirect("/regional/reports");
   } catch (err) {
     next(err);
   }

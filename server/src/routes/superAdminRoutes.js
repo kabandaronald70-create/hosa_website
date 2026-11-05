@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { requireRole } from "../middleware/auth.js";
+import { csrfCheck } from "../middleware/csrf.js";
 import {
   showRoleManagement,
   actionChangeRole,
@@ -22,7 +23,7 @@ router.get("/super/health", showSystemHealth);
 
 // Document Management
 router.get("/super/documents", showUploadForm);
-router.post("/super/documents", upload, handleUpload);
+router.post("/super/documents", upload, csrfCheck, handleUpload);
 router.post("/super/documents/:id/delete", handleDelete);
 
 export default router;

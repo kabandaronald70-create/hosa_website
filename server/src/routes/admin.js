@@ -1,6 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import { requireRole } from "../middleware/auth.js";
+import { csrfCheck } from "../middleware/csrf.js";
 import {
   showPendingBusinesses,
   actionApproveBusiness,
@@ -60,6 +61,7 @@ import {
   actionDeleteLeadershipRole,
   showRegionalReportsAdmin,
   actionMarkRegionalReportReviewed,
+  actionDownloadRegionalReportAttachmentAdmin,
 } from "../controllers/adminController.js";
 import {
   showAdminCampaigns,
@@ -79,6 +81,7 @@ import {
   actionExportAllExpenses,
   actionExportSingleExpense,
 } from "../controllers/financeController.js";
+import { requireRegionalReportsAccess } from "../middleware/requireRegionalReportsAccess.js";
 
 const router = Router();
 const upload = multer({
@@ -86,7 +89,18 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 },
 });
 
-router.use("/admin", requireRole("admin", "super_admin", "moderator"));
+router.use("/admin", (req, res, next) => {
+  const isRegionalReportsRoute =
+    req.path === "/regional-reports" ||
+    req.path.startsWith("/regional-reports/");
+
+  // Regional reports have their own dedicated authorization.
+  if (isRegionalReportsRoute) {
+    return next();
+  }
+
+  return requireRole("admin", "super_admin", "moderator")(req, res, next);
+});
 
 router.get("/admin", showAdminOverview);
 
@@ -311,15 +325,16 @@ router.get(
 // ---------------------------------------------------------------------------
 
 const requireProjectAccess = (req, res, next) => {
-  const isSuperAdmin = req.userRoles.includes("super_admin");
+  const isSuperAdmin = req.userRoles?.includes("super_admin");
   const isChairperson = req.leadershipRoles?.includes("Chairperson");
   const isProjectsManager = req.leadershipRoles?.includes("Projects Manager");
 
   if (isSuperAdmin || isChairperson || isProjectsManager) {
     return next();
   }
+
   req.flash("error", "You do not have permission to manage projects.");
-  res.redirect("/dashboard");
+  return res.redirect("/dashboard");
 };
 
 router.get(
@@ -333,6 +348,7 @@ router.post(
   requireRole("admin", "super_admin"),
   requireProjectAccess,
   upload.single("image"),
+  csrfCheck,
   actionCreateProject,
 );
 router.get(
@@ -384,20 +400,24 @@ router.post(
   requireRole("admin", "super_admin"),
   requireProjectAccess,
   upload.single("file"),
+  csrfCheck,
   actionUploadProjectFile,
 );
 
 // Regional Reports (Restricted to Super Admin, Chairperson, Projects Manager)
 router.get(
   "/admin/regional-reports",
-  requireRole("admin", "super_admin"),
-  requireProjectAccess,
+  requireRegionalReportsAccess,
   showRegionalReportsAdmin,
+);
+router.get(
+  "/admin/regional-reports/:id/attachment",
+  requireRegionalReportsAccess,
+  actionDownloadRegionalReportAttachmentAdmin,
 );
 router.post(
   "/admin/regional-reports/:id/review",
-  requireRole("admin", "super_admin"),
-  requireProjectAccess,
+  requireRegionalReportsAccess,
   actionMarkRegionalReportReviewed,
 );
 // Analytics

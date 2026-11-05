@@ -16,13 +16,38 @@ function optional(name, fallback) {
 function toInt(name, fallback) {
   const v = process.env[name];
   if (v === undefined || v === "") return fallback;
+
   const n = Number.parseInt(v, 10);
+
   if (Number.isNaN(n)) {
     throw new Error(
       `Environment variable ${name} must be an integer, got: ${v}`,
     );
   }
+
   return n;
+}
+
+function boundedInt(name, fallback, min, max) {
+  const value = process.env[name];
+
+  if (value === undefined || value === "") {
+    return fallback;
+  }
+
+  if (!/^\d+$/.test(value)) {
+    throw new Error(`Environment variable ${name} must be a whole number.`);
+  }
+
+  const number = Number(value);
+
+  if (!Number.isSafeInteger(number) || number < min || number > max) {
+    throw new Error(
+      `Environment variable ${name} must be between ${min} and ${max}.`,
+    );
+  }
+
+  return number;
 }
 
 const NODE_ENV = optional("NODE_ENV", "development");
@@ -60,7 +85,16 @@ export const env = Object.freeze({
     url: required("SUPABASE_URL"),
     serviceRoleKey: required("SUPABASE_SERVICE_ROLE_KEY"),
     avatarBucket: optional("SUPABASE_AVATAR_BUCKET", "avatars"),
-    signedUrlTtlSeconds: toInt("SUPABASE_SIGNED_URL_TTL_SECONDS", 60),
+    regionalReportBucket: optional(
+      "SUPABASE_REGIONAL_REPORT_BUCKET",
+      "regional-reports",
+    ),
+    signedUrlTtlSeconds: boundedInt(
+      "SUPABASE_SIGNED_URL_TTL_SECONDS",
+      60,
+      1,
+      600,
+    ),
   },
 
   log: {

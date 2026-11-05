@@ -17,11 +17,11 @@
     <div class="field">
       <label>Report Type</label>
       <select name="report_type" required>
-        <option value="monthly" <%= report.report_type === 'monthly' ? 'selected' : '' %>>Monthly Report</option>
-        <option value="quarterly" <%= report.report_type === 'quarterly' ? 'selected' : '' %>>Quarterly Report</option>
-        <option value="annual" <%= report.report_type === 'annual' ? 'selected' : '' %>>Annual Report</option>
-        <option value="incident" <%= report.report_type === 'incident' ? 'selected' : '' %>>Incident Report</option>
-      </select>
+  <option value="Monthly Report" <%= report.report_type === 'Monthly Report' ? 'selected' : '' %>>Monthly Report</option>
+  <option value="Quarterly Report" <%= report.report_type === 'Quarterly Report' ? 'selected' : '' %>>Quarterly Report</option>
+  <option value="Annual Report" <%= report.report_type === 'Annual Report' ? 'selected' : '' %>>Annual Report</option>
+  <option value="Incident Report" <%= report.report_type === 'Incident Report' ? 'selected' : '' %>>Incident Report</option>
+</select>
     </div>
 
     <div class="field">

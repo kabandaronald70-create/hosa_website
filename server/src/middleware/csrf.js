@@ -37,12 +37,6 @@ export function csrf(req, res, next) {
 
   if (SAFE_METHODS.has(req.method)) return next();
 
-  // JSON API bypass: these requests are protected by SameSite cookies and
-  // require JSON Content-Type, which cannot be sent cross-site without CORS.
-  if (req.path.startsWith("/api/") || req.originalUrl.startsWith("/api/")) {
-    return next();
-  }
-
   const contentType = req.get("content-type") || "";
   if (contentType.startsWith("multipart/form-data")) return next();
 

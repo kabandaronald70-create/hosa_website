@@ -27,10 +27,11 @@
     <div class="field">
       <label>Report Type</label>
       <select name="report_type" required>
-        <option value="monthly">Monthly Report</option>
-        <option value="quarterly">Quarterly Report</option>
-        <option value="annual">Annual Report</option>
-        <option value="incident">Incident Report</option>
+        <option value="">Select report type</option>
+        <option value="Monthly Report">Monthly Report</option>
+        <option value="Quarterly Report">Quarterly Report</option>
+        <option value="Annual Report">Annual Report</option>
+        <option value="Incident Report">Incident Report</option>
       </select>
     </div>
 
@@ -46,7 +47,10 @@
 
     <div class="field">
       <label>Attach Document (Optional PDF)</label>
-      <input type="file" name="file" accept=".pdf,.doc,.docx" />
+      <input type="file" name="file" accept=".pdf,application/pdf" />
+      <small class="field__hint">
+        PDF documents only. Maximum file size: 10 MB.
+      </small>
     </div>
 
     <div
