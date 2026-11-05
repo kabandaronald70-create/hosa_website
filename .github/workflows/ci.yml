@@ -17,7 +17,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: "npm"
           # Point the cache to the server folder since that's where the lockfile is
           cache-dependency-path: server/package-lock.json

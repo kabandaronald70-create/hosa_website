@@ -5,7 +5,7 @@
   "type": "module",
   "description": "HOSA alumni platform backend (Express + PostgreSQL)",
   "engines": {
-    "node": ">=20"
+    "node": ">=22 <23"
   },
   "scripts": {
     "dev": "node --watch src/server.js",
