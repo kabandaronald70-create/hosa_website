@@ -35,7 +35,7 @@ export function canAccessDocument(
 
 export async function listDocuments() {
   const { rows } = await query(
-    `SELECT id, title, description, file_name,
+    `SELECT id, title, description, file_name, file_path,
        access_level, created_at
        FROM documents
       ORDER BY created_at DESC`,
@@ -50,7 +50,7 @@ export async function listAccessibleDocuments({
   hasCurrentLeadership = false,
 } = {}) {
   const { rows } = await query(
-    `SELECT id, title, description, file_name, file_path,
+    `SELECT id, title, description, file_name,
             access_level, created_at
        FROM documents
       WHERE
