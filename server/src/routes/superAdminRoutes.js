@@ -10,7 +10,8 @@ import {
   showUploadForm,
   handleUpload,
   handleDelete,
-  upload, // The multer middleware
+  handleUpdateAccessLevel,
+  upload,
 } from "../controllers/documentController.js";
 
 const router = Router();
@@ -21,9 +22,21 @@ router.get("/super/roles", showRoleManagement);
 router.post("/super/roles/:id", actionChangeRole);
 router.get("/super/health", showSystemHealth);
 
-// Document Management
+// --- Document Management ---
+
 router.get("/super/documents", showUploadForm);
+
+// Multipart upload: Multer first, followed by explicit CSRF validation.
 router.post("/super/documents", upload, csrfCheck, handleUpload);
-router.post("/super/documents/:id/delete", handleDelete);
+
+// Change a document's access level.
+router.post(
+  "/super/documents/:id/access-level",
+  csrfCheck,
+  handleUpdateAccessLevel,
+);
+
+// Delete document metadata.
+router.post("/super/documents/:id/delete", csrfCheck, handleDelete);
 
 export default router;

@@ -1,0 +1,527 @@
+/* =========================================================
+   HOSA Registration Wizard
+   Scoped to the registration page to protect shared styles.
+   ========================================================= */
+
+.registration-page {
+  width: 100%;
+  max-width: 1180px;
+  min-width: 0;
+  margin: var(--space-6) auto;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--white);
+}
+
+.registration-page [hidden] {
+  display: none !important;
+}
+
+.registration-form-panel {
+  min-width: 0;
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+}
+
+.registration-hero {
+  position: relative;
+  min-height: 100%;
+  align-items: flex-end;
+  background-color: var(--green);
+  background-position: center;
+  background-size: cover;
+  isolation: isolate;
+}
+
+.registration-hero__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 35, 27, 0.28),
+    rgba(8, 35, 27, 0.94)
+  );
+}
+
+.registration-hero__content {
+  width: 100%;
+  padding: clamp(1.5rem, 4vw, 3rem);
+}
+
+.registration-eyebrow {
+  display: inline-block;
+  margin-bottom: var(--space-3);
+  color: var(--green-700);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1.5;
+}
+
+.registration-hero .registration-eyebrow {
+  color: var(--gold-100);
+}
+
+.registration-hero__note {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+  padding: var(--space-4);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--white);
+  line-height: var(--leading-normal);
+}
+
+.registration-hero__note span {
+  color: var(--gold-100);
+  font-size: var(--text-sm);
+}
+
+.registration-heading {
+  margin-bottom: var(--space-5);
+}
+
+.registration-heading h2 {
+  margin: 0 0 var(--space-2);
+  color: var(--ink);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  line-height: 1.2;
+}
+
+.registration-heading > p {
+  max-width: 62ch;
+  color: var(--muted);
+  line-height: var(--leading-loose);
+}
+
+.registration-required-note {
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.registration-page .required-mark {
+  color: var(--danger);
+  font-weight: 800;
+}
+
+.registration-error-summary {
+  margin-bottom: var(--space-5);
+}
+
+.registration-error-summary ul {
+  margin: var(--space-2) 0 0;
+  padding-left: 1.25rem;
+}
+
+.registration-wizard {
+  min-width: 0;
+}
+
+.registration-progress {
+  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--ivory);
+}
+
+.registration-progress__heading {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.registration-progress__track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+#progress-fill {
+  display: block;
+  width: 14.2857%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--green);
+  transition: width 180ms ease;
+}
+
+.registration-steps {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.registration-steps li {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.registration-steps li > span {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--white);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.registration-steps li small {
+  overflow-wrap: anywhere;
+  font-size: 0.65rem;
+  line-height: 1.2;
+}
+
+.registration-steps li.is-current {
+  color: var(--green);
+  font-weight: 800;
+}
+
+.registration-steps li.is-current > span {
+  border-color: var(--green);
+  background: var(--green);
+  color: var(--white);
+}
+
+.registration-steps li.is-complete > span {
+  border-color: var(--green);
+  background: var(--success-bg);
+  color: var(--green);
+}
+
+.registration-step {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.registration-step__heading {
+  margin-bottom: var(--space-5);
+}
+
+.registration-step__number {
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--green-700);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.registration-step__heading h3 {
+  margin: 0 0 var(--space-2);
+  color: var(--ink);
+  font-size: clamp(1.25rem, 2.5vw, 1.65rem);
+}
+
+.registration-step__heading p {
+  color: var(--muted);
+  line-height: var(--leading-loose);
+}
+
+.registration-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0 var(--space-4);
+}
+
+.registration-grid--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.registration-page .field {
+  min-width: 0;
+}
+
+.registration-page .field input,
+.registration-page .field select,
+.registration-page .field textarea {
+  min-width: 0;
+}
+
+.registration-page .field textarea {
+  min-height: 110px;
+}
+
+.registration-page .field-optional {
+  margin-left: 0.25rem;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-weight: 400;
+}
+
+.registration-page .field-hint {
+  line-height: var(--leading-normal);
+}
+
+.registration-page .field-error {
+  overflow-wrap: anywhere;
+}
+
+.registration-fieldset {
+  min-width: 0;
+  margin: 0 0 var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+.registration-fieldset legend {
+  padding: 0 var(--space-2);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.registration-choice-list,
+.registration-interest-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.registration-choice {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  cursor: pointer;
+  line-height: var(--leading-normal);
+}
+
+.registration-choice:has(input:checked) {
+  border-color: var(--green);
+  background: var(--success-bg);
+}
+
+.registration-choice input {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: 0.15rem;
+  accent-color: var(--green);
+}
+
+.registration-choice > span {
+  min-width: 0;
+}
+
+.registration-choice small {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
+.registration-divider {
+  height: 1px;
+  margin: var(--space-5) 0;
+  background: var(--line);
+}
+
+.registration-declaration,
+.registration-security-note,
+.registration-pending-note {
+  margin: var(--space-4) 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--ivory);
+  line-height: var(--leading-loose);
+}
+
+.registration-declaration {
+  border-left: 4px solid var(--green);
+}
+
+.registration-declaration h4 {
+  margin: 0 0 var(--space-3);
+  color: var(--ink);
+}
+
+.registration-declaration p:last-child,
+.registration-pending-note p:last-child {
+  margin-bottom: 0;
+}
+
+.registration-pending-note {
+  border: 1px solid var(--line);
+}
+
+.registration-pending-note strong {
+  color: var(--green);
+}
+
+.registration-review {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.registration-review__section {
+  min-width: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+.registration-review__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.registration-review__heading h4 {
+  margin: 0;
+  color: var(--ink);
+}
+
+.registration-edit {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: var(--green);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.registration-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+.registration-navigation .btn {
+  min-width: 112px;
+}
+
+.registration-navigation #registration-submit {
+  margin-left: auto;
+}
+
+.registration-login-link {
+  margin: var(--space-5) 0 0;
+  color: var(--muted);
+  text-align: center;
+  font-size: var(--text-sm);
+}
+
+.registration-login-link a {
+  color: var(--green);
+  font-weight: 700;
+}
+
+.registration-page .registration-password {
+  position: relative;
+}
+
+.registration-page .registration-acceptances {
+  margin-top: var(--space-4);
+}
+
+@media (min-width: 560px) {
+  .registration-choice-list,
+  .registration-interest-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .registration-grid:not(.registration-grid--two) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  .registration-page {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 1080px;
+    min-height: 0;
+  }
+
+  .registration-form-panel {
+    width: 100%;
+    padding: clamp(1.5rem, 3vw, 3rem);
+  }
+}
+
+@media (max-width: 559px) {
+  .registration-page {
+    margin: var(--space-3) auto;
+    border-radius: var(--radius-md);
+  }
+
+  .registration-form-panel {
+    padding: var(--space-4);
+  }
+
+  .registration-grid--two {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .registration-steps {
+    gap: 0.15rem;
+  }
+
+  .registration-steps li small {
+    font-size: 0.58rem;
+  }
+
+  .registration-steps li > span {
+    width: 26px;
+    height: 26px;
+  }
+
+  .registration-progress {
+    padding: var(--space-3);
+  }
+
+  .registration-navigation {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .registration-navigation .btn {
+    width: 100%;
+  }
+
+  .registration-navigation #registration-submit {
+    grid-column: 1 / -1;
+    margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #progress-fill {
+    transition: none;
+  }
+}

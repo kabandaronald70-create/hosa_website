@@ -1,11 +1,15 @@
 <div class="auth-layout">
-  <!-- Left Panel with Background Image -->
-  <div class="auth-layout__panel" style="background-image: url('/images/log.webp'); background-size: cover; background-position: center; position: relative;">
-    <!-- Dark green overlay -->
-    <div style="position: absolute; inset: 0; background: rgba(15, 76, 58, 0.20); z-index: 1;"></div>
-    
+  <div
+    class="auth-layout__panel"
+    style="background-image: url('/images/log.webp'); background-size: cover; background-position: center; position: relative;"
+  >
+    <div
+      style="position: absolute; inset: 0; background: rgba(15, 76, 58, 0.35); z-index: 1;"
+    ></div>
+
     <div class="auth-layout__brand" style="position: relative; z-index: 2;">
       <h1 class="auth-layout__title">Reconnect. Mentor. Grow.</h1>
+
       <p class="auth-layout__lede">
         Welcome back to the Highway Old Students' Association.
         The Mighty. For a Bright Future.
@@ -17,42 +21,78 @@
     <h2>Welcome back</h2>
 
     <% if (fieldErrors._form) { %>
-      <div class="alert alert--error" role="alert"><%= fieldErrors._form %></div>
+      <div class="alert alert--error" role="alert">
+        <%= fieldErrors._form %>
+      </div>
     <% } %>
 
     <form method="post" action="/login" novalidate>
-      <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+      <input
+        type="hidden"
+        name="<%= csrfField %>"
+        value="<%= csrfToken %>"
+      >
+
       <% if (next) { %>
         <input type="hidden" name="next" value="<%= next %>">
       <% } %>
 
       <div class="field">
-        <label for="email">Email</label>
-        <input id="email" name="email" type="email" autocomplete="email"
-               required maxlength="254" value="<%= values.email || '' %>">
-        <% if (fieldErrors.email) { %><span class="field-error"><%= fieldErrors.email %></span><% } %>
+        <label for="identifier">Email address or username</label>
+
+        <input
+          id="identifier"
+          name="identifier"
+          type="text"
+          autocomplete="username"
+          autocapitalize="none"
+          spellcheck="false"
+          required
+          maxlength="254"
+          value="<%= values.identifier || '' %>"
+          aria-describedby="<%= fieldErrors.identifier ? 'identifier-error' : '' %>"
+        >
+
+        <% if (fieldErrors.identifier) { %>
+          <span id="identifier-error" class="field-error">
+            <%= fieldErrors.identifier %>
+          </span>
+        <% } %>
       </div>
 
       <div class="field">
         <label for="password">Password</label>
+
         <div style="position: relative;">
-          <input id="password" name="password" type="password"
-                 autocomplete="current-password" required
-                 style="width: 100%; padding-right: 44px;">
-          <button 
-            type="button" 
-            class="password-toggle" 
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+            style="width: 100%; padding-right: 44px;"
+          >
+
+          <button
+            type="button"
+            class="password-toggle"
             data-target="password"
             aria-label="Show password"
+            aria-pressed="false"
             style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; font-size: 1.2rem; padding: 4px 8px; color: var(--muted);"
           >
             👁
           </button>
         </div>
-        <% if (fieldErrors.password) { %><span class="field-error"><%= fieldErrors.password %></span><% } %>
+
+        <% if (fieldErrors.password) { %>
+          <span class="field-error"><%= fieldErrors.password %></span>
+        <% } %>
       </div>
 
-      <button type="submit" class="btn btn--primary" style="width: 100%;">Log in</button>
+      <button type="submit" class="btn btn--primary" style="width: 100%;">
+        Log in
+      </button>
     </form>
 
     <p style="margin-top: var(--space-4); text-align: center; font-size: var(--text-sm);">

@@ -1,5 +1,6 @@
 import {
   getProfileByUserId,
+  getPublicAvatarProfileByUserId,
   profileCompletion,
 } from "../models/profileModel.js";
 import {
@@ -165,14 +166,13 @@ export async function serveAvatar(req, res, next) {
       return res.status(401).type("text/plain").send("Not authenticated");
     }
 
-    const profile = await getProfileByUserId(targetId);
-    if (!profile) {
-      return res.status(404).type("text/plain").send("Not found");
-    }
+    const isOwner = targetId === req.user?.id;
 
-    // If asking for someone else, require public visibility.
-    // BUT allow guests to see public avatars (no req.user check).
-    if (targetId !== req.user?.id && profile.public_visibility !== true) {
+    const profile = isOwner
+      ? await getProfileByUserId(targetId)
+      : await getPublicAvatarProfileByUserId(targetId);
+
+    if (!profile) {
       return res.status(404).type("text/plain").send("Not found");
     }
 
@@ -181,13 +181,13 @@ export async function serveAvatar(req, res, next) {
     }
 
     const url = await signAvatarPath(profile.avatar_path);
+
     if (!url) {
       return res.status(502).type("text/plain").send("Storage error");
     }
 
-    // Cache for longer since avatars don't change often
     res.set("Cache-Control", "public, max-age=3600");
-    res.redirect(302, url);
+    return res.redirect(302, url);
   } catch (err) {
     next(err);
   }

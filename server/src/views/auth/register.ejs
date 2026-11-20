@@ -1,148 +1,996 @@
-<div class="auth-layout">
-  <!-- Left Panel with Background Image -->
-  <div class="auth-layout__panel" style="background-image: url('/images/register-1.webp'); background-size: cover; background-position: center; position: relative;">
-    <!-- Dark green overlay to make text readable -->
-    <div style="position: absolute; inset: 0; background: rgba(15, 76, 58, 0.35); z-index: 1;"></div>
-    <div class="auth-layout__brand" style="position: relative; z-index: 2;">
-      <h1 class="auth-layout__title">Join the HOSA network.</h1>
-      <p class="auth-layout__lede">
-        Reconnect with classmates, find a mentor, and help build the next generation of Highway alumni.
+
+<%
+  const v = values || {};
+  const errors = fieldErrors || {};
+  const interests = Array.isArray(v.interests)
+    ? v.interests
+    : (v.interests ? [v.interests] : []);
+
+  const selected = (field, value) => String(v[field] ?? "") === String(value);
+  const checked = (field, value = true) => {
+  const current = v[field];
+
+  if (value === true) {
+    return current === true ||
+      current === "true" ||
+      current === "on" ||
+      current === "1" ||
+      current === 1;
+  }
+
+  return String(current ?? "") === String(value);
+};
+  const hasInterest = (value) => interests.includes(value);
+  const error = (field) => errors[field] || "";
+%>
+
+<div class="auth-layout registration-page">
+  <main class="auth-layout__form registration-form-panel">
+    <div class="registration-heading">
+      <span class="registration-eyebrow">MEMBERSHIP APPLICATION</span>
+      <h2>Create your HOSA account</h2>
+      <p>
+        Complete the seven sections below. Your application will be reviewed
+        by the authorized HOSA administrators.
+      </p>
+      <p class="registration-required-note">
+        Fields marked <span class="required-mark" aria-hidden="true">*</span>
+        <span class="sr-only">with an asterisk</span> are required.
       </p>
     </div>
-  </div>
 
-  <div class="auth-layout__form" style="max-height: 90vh; overflow-y: auto;">
-    <h2>Create your account</h2>
-
-    <% if (Object.keys(fieldErrors).length > 0) { %>
-      <div class="alert alert--error" role="alert">
-        <strong>Please fix the following:</strong>
-        <ul style="margin: var(--space-2) 0 0 var(--space-4); padding: 0;">
-          <% Object.entries(fieldErrors).forEach(([k, msg]) => { %>
-            <li><%= k.replace(/_/g, ' ') %>: <%= msg %></li>
+    <% if (Object.keys(errors).length > 0) { %>
+      <div class="alert alert--error registration-error-summary"
+           role="alert"
+           aria-labelledby="registration-error-title">
+        <strong id="registration-error-title">
+          Please review the following information:
+        </strong>
+        <ul>
+          <% Object.entries(errors).forEach(([field, message]) => { %>
+            <li>
+              <%= field === "_form"
+                ? message
+                : `${field.replace(/_/g, " ")}: ${message}` %>
+            </li>
           <% }) %>
         </ul>
       </div>
     <% } %>
 
-    <form method="post" action="/register" novalidate>
-      <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+    <form id="registration-form"
+          class="registration-wizard"
+          method="post"
+          action="/register"
+          novalidate>
 
-      <!-- Email -->
-      <div class="field">
-        <label for="email">Email</label>
-        <input id="email" name="email" type="email" autocomplete="email" required maxlength="254" value="<%= values.email || '' %>">
-        <% if (fieldErrors.email) { %><span class="field-error"><%= fieldErrors.email %></span><% } %>
+      <input type="hidden"
+             name="<%= csrfField %>"
+             value="<%= csrfToken %>">
+
+      <div class="registration-progress" aria-label="Registration progress">
+        <div class="registration-progress__heading">
+          <span id="step-counter">Step 1 of 7</span>
+          <span id="step-percentage">14% complete</span>
+        </div>
+
+        <div class="registration-progress__track"
+             role="progressbar"
+             aria-label="Registration progress"
+             aria-valuemin="1"
+             aria-valuemax="7"
+             aria-valuenow="1"
+             id="progress-bar">
+          <span id="progress-fill"></span>
+        </div>
+
+        <ol class="registration-steps" aria-label="Registration steps">
+          <li class="is-current" data-step-indicator="1" aria-current="step">
+            <span>1</span><small>Personal</small>
+          </li>
+          <li data-step-indicator="2"><span>2</span><small>School</small></li>
+          <li data-step-indicator="3"><span>3</span><small>Contact</small></li>
+          <li data-step-indicator="4"><span>4</span><small>Professional</small></li>
+          <li data-step-indicator="5"><span>5</span><small>Interests</small></li>
+          <li data-step-indicator="6"><span>6</span><small>Account</small></li>
+          <li data-step-indicator="7"><span>7</span><small>Review</small></li>
+        </ol>
       </div>
 
-      <!-- Names -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
-        <div class="field">
-          <label for="first_name">First name</label>
-          <input id="first_name" name="first_name" type="text" autocomplete="given-name" required maxlength="80" value="<%= values.first_name || '' %>">
-          <% if (fieldErrors.first_name) { %><span class="field-error"><%= fieldErrors.first_name %></span><% } %>
+      <!-- STEP 1: PERSONAL -->
+      <section class="registration-step"
+               data-step-panel="1"
+               aria-labelledby="step-1-title">
+        <div class="registration-step__heading">
+          <span class="registration-step__number">01 / 07</span>
+          <h3 id="step-1-title" tabindex="-1">Personal information</h3>
+          <p>Tell us the name you use and how you identify yourself.</p>
         </div>
-        <div class="field">
-          <label for="last_name">Last name</label>
-          <input id="last_name" name="last_name" type="text" autocomplete="family-name" required maxlength="80" value="<%= values.last_name || '' %>">
-          <% if (fieldErrors.last_name) { %><span class="field-error"><%= fieldErrors.last_name %></span><% } %>
-        </div>
-      </div>
 
-      <div class="field">
-        <label for="other_name">Other name</label>
-        <input id="other_name" name="other_name" type="text" required maxlength="80" value="<%= values.other_name || '' %>">
-        <% if (fieldErrors.other_name) { %><span class="field-error"><%= fieldErrors.other_name %></span><% } %>
-      </div>
+        <div class="registration-grid registration-grid--two">
+          <div class="field">
+            <label for="first_name">
+              First name <span class="required-mark" aria-hidden="true">*</span>
+              <span class="sr-only">Required</span>
+            </label>
+            <input id="first_name" name="first_name" type="text"
+                   autocomplete="given-name" required minlength="2" maxlength="60"
+                   value="<%= v.first_name || '' %>"
+                   aria-invalid="<%= error('first_name') ? 'true' : 'false' %>">
+            <% if (error("first_name")) { %><span class="field-error"><%= error("first_name") %></span><% } %>
+          </div>
 
-      <!-- Graduation & District -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
-        <div class="field">
-          <label for="graduation_year">Graduation year</label>
-          <input id="graduation_year" name="graduation_year" type="number" min="1950" max="2100" required value="<%= values.graduation_year || '' %>">
-          <% if (fieldErrors.graduation_year) { %><span class="field-error"><%= fieldErrors.graduation_year %></span><% } %>
+          <div class="field">
+            <label for="last_name">
+              Last name <span class="required-mark" aria-hidden="true">*</span>
+              <span class="sr-only">Required</span>
+            </label>
+            <input id="last_name" name="last_name" type="text"
+                   autocomplete="family-name" required minlength="2" maxlength="60"
+                   value="<%= v.last_name || '' %>"
+                   aria-invalid="<%= error('last_name') ? 'true' : 'false' %>">
+            <% if (error("last_name")) { %><span class="field-error"><%= error("last_name") %></span><% } %>
+          </div>
         </div>
-        <div class="field">
-          <label for="district">District</label>
-          <input id="district" name="district" type="text" required maxlength="120" value="<%= values.district || '' %>">
-          <% if (fieldErrors.district) { %><span class="field-error"><%= fieldErrors.district %></span><% } %>
-        </div>
-      </div>
 
-      <!-- Nationality & Region -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
         <div class="field">
-          <label for="nationality">Nationality</label>
-          <select id="nationality" name="nationality" required>
-            <option value="">-- Select Country --</option>
-            <option value="Uganda">Uganda</option>
-            <option value="Kenya">Kenya</option>
-            <option value="Tanzania">Tanzania</option>
-            <option value="Rwanda">Rwanda</option>
-            <option value="Burundi">Burundi</option>
-            <option value="South Sudan">South Sudan</option>
-            <option value="DR Congo">DR Congo</option>
+          <label for="other_name">Other name <span class="field-optional">(optional)</span></label>
+          <input id="other_name" name="other_name" type="text"
+                 autocomplete="additional-name" maxlength="80"
+                 value="<%= v.other_name || '' %>">
+          <% if (error("other_name")) { %><span class="field-error"><%= error("other_name") %></span><% } %>
+        </div>
+      </section>
+
+      <!-- STEP 2: SCHOOL -->
+      <section class="registration-step"
+               data-step-panel="2"
+               aria-labelledby="step-2-title">
+        <div class="registration-step__heading">
+          <span class="registration-step__number">02 / 07</span>
+          <h3 id="step-2-title" tabindex="-1">Your Highway school history</h3>
+          <p>Help us connect you with the right alumni generation.</p>
+        </div>
+
+        <div class="field">
+          <label for="school_name">School</label>
+          <input id="school_name" type="text"
+                 value="Highway Secondary School, Kiganda"
+                 readonly aria-readonly="true">
+          <span class="field-hint">This is the HOSA member school.</span>
+        </div>
+
+        <div class="field">
+          <label for="school_status">
+            School status <span class="required-mark" aria-hidden="true">*</span>
+            <span class="sr-only">Required</span>
+          </label>
+          <select id="school_status" name="school_status" required>
+            <option value="">Select your status</option>
+            <option value="current_student" <%= selected("school_status", "current_student") ? "selected" : "" %>>Current student</option>
+            <option value="old_student" <%= selected("school_status", "old_student") ? "selected" : "" %>>Old student / alumnus</option>
           </select>
-          <% if (fieldErrors.nationality) { %><span class="field-error"><%= fieldErrors.nationality %></span><% } %>
+          <% if (error("school_status")) { %><span class="field-error"><%= error("school_status") %></span><% } %>
         </div>
+
+        <div class="registration-grid registration-grid--two">
+          <div class="field">
+            <label for="admission_year">
+              Admission year <span class="required-mark" aria-hidden="true">*</span>
+              <span class="sr-only">Required</span>
+            </label>
+            <input id="admission_year" name="admission_year" type="number"
+                   min="1950" max="2100" required
+                   value="<%= v.admission_year || '' %>">
+            <% if (error("admission_year")) { %><span class="field-error"><%= error("admission_year") %></span><% } %>
+          </div>
+
+          <div class="field">
+            <label for="last_class_attended">
+              Last class attended <span class="required-mark" aria-hidden="true">*</span>
+              <span class="sr-only">Required</span>
+            </label>
+            <select id="last_class_attended" name="last_class_attended" required>
+              <option value="">Select class</option>
+              <% ["S1","S2","S3","S4","S5","S6"].forEach((item) => { %>
+                <option value="<%= item %>" <%= selected("last_class_attended", item) ? "selected" : "" %>><%= item %></option>
+              <% }) %>
+              <option value="other" <%= selected("last_class_attended", "other") ? "selected" : "" %>>Other</option>
+              <option value="not_sure" <%= selected("last_class_attended", "not_sure") ? "selected" : "" %>>Not sure</option>
+            </select>
+            <% if (error("last_class_attended")) { %><span class="field-error"><%= error("last_class_attended") %></span><% } %>
+          </div>
+        </div>
+
+        <div class="field" data-conditional="class-explanation" hidden>
+          <label for="last_class_explanation">
+            Explain your last class
+            <span class="required-mark" data-required-mark aria-hidden="true">*</span>
+            <span class="sr-only">Required when applicable</span>
+          </label>
+          <input id="last_class_explanation" name="last_class_explanation"
+                 type="text" maxlength="300"
+                 value="<%= v.last_class_explanation || '' %>" disabled>
+          <% if (error("last_class_explanation")) { %><span class="field-error"><%= error("last_class_explanation") %></span><% } %>
+        </div>
+
+        <div class="registration-grid registration-grid--two"
+             data-conditional="old-student" hidden>
+          <div class="field">
+            <label for="completion_year">
+              Actual completion year
+              <span class="required-mark" data-required-mark aria-hidden="true">*</span>
+              <span class="sr-only">Required for old students</span>
+            </label>
+            <input id="completion_year" name="completion_year" type="number"
+                   min="1950" max="2100"
+                   value="<%= v.completion_year || '' %>" disabled>
+            <% if (error("completion_year")) { %><span class="field-error"><%= error("completion_year") %></span><% } %>
+          </div>
+        </div>
+
+        <div class="field" data-conditional="current-student" hidden>
+          <label for="expected_completion_year">
+            Expected completion year
+            <span class="required-mark" data-required-mark aria-hidden="true">*</span>
+            <span class="sr-only">Required for current students</span>
+          </label>
+          <input id="expected_completion_year" name="expected_completion_year"
+                 type="number" min="1950" max="2100"
+                 value="<%= v.expected_completion_year || '' %>" disabled>
+          <% if (error("expected_completion_year")) { %><span class="field-error"><%= error("expected_completion_year") %></span><% } %>
+        </div>
+
+        <div class="registration-grid registration-grid--two">
+          <div class="field">
+            <label for="school_house">School house <span class="field-optional">(optional)</span></label>
+            <select id="school_house" name="school_house">
+              <option value="">Select house</option>
+              <% ["Nyerere","Nkrumah","Muteesa","Lumumba","Mandela","Other"].forEach((item) => { %>
+                <option value="<%= item %>" <%= selected("school_house", item) ? "selected" : "" %>><%= item %></option>
+              <% }) %>
+            </select>
+            <% if (error("school_house")) { %><span class="field-error"><%= error("school_house") %></span><% } %>
+          </div>
+
+          <div class="field" data-conditional="school-house-other" hidden>
+            <label for="school_house_other">
+              Specify house
+              <span class="required-mark" data-required-mark aria-hidden="true">*</span>
+              <span class="sr-only">Required when Other is selected</span>
+            </label>
+            <input id="school_house_other" name="school_house_other"
+                   type="text" maxlength="100"
+                   value="<%= v.school_house_other || '' %>" disabled>
+            <% if (error("school_house_other")) { %><span class="field-error"><%= error("school_house_other") %></span><% } %>
+          </div>
+        </div>
+
+        <div class="registration-divider"></div>
+        <h4>Examination details <span class="field-optional">Optional</span></h4>
+
+        <div class="registration-grid registration-grid--two">
+          <div class="field">
+            <label for="examination_level">Examination level</label>
+            <select id="examination_level" name="examination_level">
+              <option value="">Select level</option>
+              <option value="UCE" <%= selected("examination_level", "UCE") ? "selected" : "" %>>UCE</option>
+              <option value="UACE" <%= selected("examination_level", "UACE") ? "selected" : "" %>>UACE</option>
+              <option value="other" <%= selected("examination_level", "other") ? "selected" : "" %>>Other</option>
+              <option value="not_applicable" <%= selected("examination_level", "not_applicable") ? "selected" : "" %>>Not applicable</option>
+            </select>
+            <% if (error("examination_level")) { %><span class="field-error"><%= error("examination_level") %></span><% } %>
+          </div>
+
+          <div class="field" data-conditional="examination-other" hidden>
+            <label for="examination_level_other">
+              Specify examination level
+              <span class="required-mark" data-required-mark aria-hidden="true">*</span>
+              <span class="sr-only">Required when Other is selected</span>
+            </label>
+            <input id="examination_level_other" name="examination_level_other"
+                   type="text" maxlength="200"
+                   value="<%= v.examination_level_other || '' %>" disabled>
+            <% if (error("examination_level_other")) { %><span class="field-error"><%= error("examination_level_other") %></span><% } %>
+          </div>
+        </div>
+
+        <div class="registration-grid registration-grid--two">
+          <div class="field">
+            <label for="examination_year">Examination year</label>
+            <input id="examination_year" name="examination_year" type="number"
+                   min="1950" max="2100"
+                   value="<%= v.examination_year || '' %>">
+            <% if (error("examination_year")) { %><span class="field-error"><%= error("examination_year") %></span><% } %>
+          </div>
+
+          <div class="field">
+            <label for="examination_index_number">Examination index number</label>
+            <input id="examination_index_number" name="examination_index_number"
+                   type="text" maxlength="60" autocomplete="off"
+                   value="<%= v.examination_index_number || '' %>">
+            <span class="field-hint">Private information. It will not appear in the public directory.</span>
+            <% if (error("examination_index_number")) { %><span class="field-error"><%= error("examination_index_number") %></span><% } %>
+          </div>
+        </div>
+
         <div class="field">
-          <label for="region">Region</label>
+          <label for="former_teacher">Former teacher <span class="field-optional">(optional)</span></label>
+          <input id="former_teacher" name="former_teacher" type="text"
+                 maxlength="120" value="<%= v.former_teacher || '' %>">
+          <% if (error("former_teacher")) { %><span class="field-error"><%= error("former_teacher") %></span><% } %>
+        </div>
+      </section>
+
+      <!-- STEP 3: CONTACT -->
+      <section class="registration-step"
+               data-step-panel="3"
+               aria-labelledby="step-3-title">
+        <div class="registration-step__heading">
+          <span class="registration-step__number">03 / 07</span>
+          <h3 id="step-3-title" tabindex="-1">Contact information</h3>
+          <p>Provide reliable contact details for HOSA communication.</p>
+        </div>
+
+        <div class="field">
+          <label for="email">
+            Email address <span class="required-mark" aria-hidden="true">*</span>
+            <span class="sr-only">Required</span>
+          </label>
+          <input id="email" name="email" type="email"
+                 autocomplete="email" maxlength="254" required
+                 value="<%= v.email || '' %>">
+          <% if (error("email")) { %><span class="field-error"><%= error("email") %></span><% } %>
+        </div>
+
+        <div class="registration-grid registration-grid--two">
+          <div class="field">
+            <label for="phone">
+              Primary phone number <span class="required-mark" aria-hidden="true">*</span>
+              <span class="sr-only">Required</span>
+            </label>
+            <input id="phone" name="phone" type="tel"
+                   autocomplete="tel" maxlength="40" required
+                   value="<%= v.phone || '' %>">
+            <% if (error("phone")) { %><span class="field-error"><%= error("phone") %></span><% } %>
+          </div>
+
+          <div class="field">
+            <label for="whatsapp_phone">WhatsApp / alternate phone <span class="field-optional">(optional)</span></label>
+            <input id="whatsapp_phone" name="whatsapp_phone" type="tel"
+                   maxlength="40" value="<%= v.whatsapp_phone || '' %>">
+            <% if (error("whatsapp_phone")) { %><span class="field-error"><%= error("whatsapp_phone") %></span><% } %>
+          </div>
+        </div>
+
+        <div class="field">
+  <label for="country_code">
+    Country / phone calling code
+    <span class="required-mark" aria-hidden="true">*</span>
+    <span class="sr-only">Required</span>
+  </label>
+  <select id="country_code" name="country_code" autocomplete="country" required>
+    <option value="">Select your country</option>
+    <% for (const country of eastAfricanCountries || []) { %>
+      <option value="<%= country.code %>"
+        <%= selected("country_code", country.code) ? "selected" : "" %>>
+        <%= country.name %> (<%= country.dialCode %>)
+      </option>
+    <% } %>
+  </select>
+  <span class="field-hint">Choose the country associated with your phone number.</span>
+  <% if (error("country_code")) { %><span class="field-error"><%= error("country_code") %></span><% } %>
+</div>
+
+        <div class="registration-grid registration-grid--two">
+          <div class="field">
+  <label for="district">
+    District <span class="required-mark" aria-hidden="true">*</span>
+    <span class="sr-only">Required</span>
+  </label>
+  <select id="district" name="district" autocomplete="address-level2" required>
+    <option value="">Select your district</option>
+    <% for (const district of ugandaDistricts || []) { %>
+      <option value="<%= district %>"
+        <%= selected("district", district) ? "selected" : "" %>>
+        <%= district %>
+      </option>
+    <% } %>
+  </select>
+  <% if (error("district")) { %><span class="field-error"><%= error("district") %></span><% } %>
+</div>
+
+          <div class="field">
+  <label for="town_city">Town / city <span class="field-optional">(optional)</span></label>
+  <select id="town_city" name="town_city" autocomplete="address-level2">
+    <option value="">Select a city, or leave blank</option>
+    <% for (const city of ugandaCities || []) { %>
+      <option value="<%= city %>"
+        <%= selected("town_city", city) ? "selected" : "" %>>
+        <%= city %>
+      </option>
+    <% } %>
+    <option value="Other" <%= selected("town_city", "Other") ? "selected" : "" %>>Other town or city</option>
+  </select>
+  <% if (error("town_city")) { %><span class="field-error"><%= error("town_city") %></span><% } %>
+</div>
+
+<div class="field" data-conditional="town-city-other"
+     <% if (v.town_city !== "Other") { %>hidden<% } %>>
+  <label for="town_city_other">
+    Enter your town or city
+    <span class="required-mark" aria-hidden="true">*</span>
+    <span class="sr-only">Required when Other is selected</span>
+  </label>
+  <input id="town_city_other" name="town_city_other" type="text"
+         maxlength="120" autocomplete="address-level2"
+         value="<%= v.town_city_other || '' %>"
+         <%= v.town_city === "Other" ? "required" : "disabled" %>>
+  <% if (error("town_city_other")) { %><span class="field-error"><%= error("town_city_other") %></span><% } %>
+</div>
+        </div>
+
+        <div class="field">
+          <label for="region">
+            HOSA region <span class="required-mark" aria-hidden="true">*</span>
+            <span class="sr-only">Required</span>
+          </label>
           <select id="region" name="region" required>
-            <option value="">-- Select Region --</option>
-            <option value="North">North</option>
-            <option value="East">East</option>
-            <option value="South">South</option>
-            <option value="West">West</option>
+            <option value="">Select HOSA region</option>
+            <% ["Eastern","Central","Western","Northern"].forEach((item) => { %>
+              <option value="<%= item %>" <%= selected("region", item) ? "selected" : "" %>><%= item %></option>
+            <% }) %>
           </select>
-          <% if (fieldErrors.region) { %><span class="field-error"><%= fieldErrors.region %></span><% } %>
+          <span class="field-hint">Select the HOSA region you identify with for alumni coordination.</span>
+          <% if (error("region")) { %><span class="field-error"><%= error("region") %></span><% } %>
         </div>
-      </div>
 
-      <!-- Profession & Phone -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+        <div class="registration-grid registration-grid--two">
+          <div class="field">
+            <label for="preferred_contact">Preferred contact method <span class="field-optional">(optional)</span></label>
+            <select id="preferred_contact" name="preferred_contact">
+              <option value="">No preference</option>
+              <option value="email" <%= selected("preferred_contact", "email") ? "selected" : "" %>>Email</option>
+              <option value="phone" <%= selected("preferred_contact", "phone") ? "selected" : "" %>>Phone</option>
+              <option value="whatsapp" <%= selected("preferred_contact", "whatsapp") ? "selected" : "" %>>WhatsApp</option>
+              <option value="none" <%= selected("preferred_contact", "none") ? "selected" : "" %>>Do not contact me directly</option>
+            </select>
+            <% if (error("preferred_contact")) { %><span class="field-error"><%= error("preferred_contact") %></span><% } %>
+          </div>
+
+          <div class="field">
+  <label for="nationality">Nationality <span class="field-optional">(optional)</span></label>
+  <select id="nationality" name="nationality">
+    <option value="">Select nationality, or leave blank</option>
+    <% for (const nationality of nationalityOptions || []) { %>
+      <option value="<%= nationality %>"
+        <%= selected("nationality", nationality) ? "selected" : "" %>>
+        <%= nationality %>
+      </option>
+    <% } %>
+  </select>
+  <% if (error("nationality")) { %><span class="field-error"><%= error("nationality") %></span><% } %>
+</div>
+
+<div class="field" data-conditional="nationality-other"
+     <% if (v.nationality !== "Other") { %>hidden<% } %>>
+  <label for="nationality_other">
+    Enter your nationality
+    <span class="required-mark" aria-hidden="true">*</span>
+    <span class="sr-only">Required when Other is selected</span>
+  </label>
+  <input id="nationality_other" name="nationality_other" type="text"
+         maxlength="100" autocomplete="country-name"
+         value="<%= v.nationality_other || '' %>"
+         <%= v.nationality === "Other" ? "required" : "disabled" %>>
+  <% if (error("nationality_other")) { %><span class="field-error"><%= error("nationality_other") %></span><% } %>
+</div>
+        </div>
+      </section>
+
+      <!-- STEP 4: PROFESSIONAL -->
+      <section class="registration-step"
+               data-step-panel="4"
+               aria-labelledby="step-4-title">
+        <div class="registration-step__heading">
+          <span class="registration-step__number">04 / 07</span>
+          <h3 id="step-4-title" tabindex="-1">Professional information</h3>
+          <p>Share your current professional background and experience.</p>
+        </div>
+
         <div class="field">
-          <label for="profession">Profession</label>
-          <input id="profession" name="profession" type="text" required maxlength="120" value="<%= values.profession || '' %>">
-          <% if (fieldErrors.profession) { %><span class="field-error"><%= fieldErrors.profession %></span><% } %>
+          <label for="employment_status">
+            Employment status <span class="required-mark" aria-hidden="true">*</span>
+            <span class="sr-only">Required</span>
+          </label>
+          <select id="employment_status" name="employment_status" required>
+            <option value="">Select employment status</option>
+            <% const employmentOptions = [
+              ["employed","Employed"],
+              ["self_employed","Self-employed"],
+              ["unemployed","Unemployed"],
+              ["student","Student"],
+              ["retired","Retired"],
+              ["other","Other"]
+            ]; %>
+            <% employmentOptions.forEach(([value, label]) => { %>
+              <option value="<%= value %>" <%= selected("employment_status", value) ? "selected" : "" %>><%= label %></option>
+            <% }) %>
+          </select>
+          <% if (error("employment_status")) { %><span class="field-error"><%= error("employment_status") %></span><% } %>
         </div>
+
         <div class="field">
-          <label for="phone">Phone Contact</label>
-          <input id="phone" name="phone" type="text" required maxlength="40" value="<%= values.phone || '' %>">
-          <% if (fieldErrors.phone) { %><span class="field-error"><%= fieldErrors.phone %></span><% } %>
+          <label for="profession">
+            Occupation / profession <span class="required-mark" aria-hidden="true">*</span>
+            <span class="sr-only">Required</span>
+          </label>
+          <input id="profession" name="profession" type="text"
+                 maxlength="120" required
+                 value="<%= v.profession || '' %>">
+          <% if (error("profession")) { %><span class="field-error"><%= error("profession") %></span><% } %>
         </div>
-      </div>
 
-      <!-- Password -->
-      <div class="field">
-        <label for="password">Password</label>
-        <div style="position: relative;">
-          <input id="password" name="password" type="password" autocomplete="new-password" required minlength="5" maxlength="200" style="width: 100%; padding-right: 44px;">
-          <button type="button" class="password-toggle" data-target="password" aria-label="Show password" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; font-size: 1.2rem; padding: 4px 8px; color: var(--muted);">👁</button>
+        <div class="field">
+          <label for="highest_education">Highest education level <span class="field-optional">(optional)</span></label>
+          <select id="highest_education" name="highest_education">
+            <option value="">Select education level</option>
+            <% const educationOptions = [
+              ["primary","Primary"],
+              ["secondary","Secondary"],
+              ["certificate","Certificate"],
+              ["diploma","Diploma"],
+              ["bachelors","Bachelor's degree"],
+              ["postgraduate_diploma","Postgraduate diploma"],
+              ["masters","Master's degree"],
+              ["doctorate","Doctorate"],
+              ["other","Other"]
+            ]; %>
+            <% educationOptions.forEach(([value, label]) => { %>
+              <option value="<%= value %>" <%= selected("highest_education", value) ? "selected" : "" %>><%= label %></option>
+            <% }) %>
+          </select>
+          <% if (error("highest_education")) { %><span class="field-error"><%= error("highest_education") %></span><% } %>
         </div>
-        <span class="field-hint">At least 5 characters.</span>
-        <% if (fieldErrors.password) { %><span class="field-error"><%= fieldErrors.password %></span><% } %>
-      </div>
 
-      <!-- Confirm Password -->
-      <div class="field">
-        <label for="confirm_password">Confirm password</label>
-        <div style="position: relative;">
-          <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required minlength="5" maxlength="200" style="width: 100%; padding-right: 44px;">
-          <button type="button" class="password-toggle" data-target="confirm_password" aria-label="Show password" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; font-size: 1.2rem; padding: 4px 8px; color: var(--muted);">👁</button>
+        <div class="registration-grid registration-grid--two">
+          <div class="field">
+            <label for="specialization">Area of specialization <span class="field-optional">(optional)</span></label>
+            <input id="specialization" name="specialization" type="text"
+                   maxlength="160" value="<%= v.specialization || '' %>">
+            <% if (error("specialization")) { %><span class="field-error"><%= error("specialization") %></span><% } %>
+          </div>
+
+          <div class="field">
+            <label for="organization">Employer / organization <span class="field-optional">(optional)</span></label>
+            <input id="organization" name="organization" type="text"
+                   maxlength="160" value="<%= v.organization || '' %>">
+            <% if (error("organization")) { %><span class="field-error"><%= error("organization") %></span><% } %>
+          </div>
         </div>
-        <% if (fieldErrors.confirm_password) { %><span class="field-error"><%= fieldErrors.confirm_password %></span><% } %>
-      </div>
 
-      <div class="field" style="flex-direction: row; align-items: center; gap: var(--space-2);">
-        <input type="checkbox" id="mentor_opt_in" name="mentor_opt_in" value="on" style="min-height: auto;">
-        <label for="mentor_opt_in" style="margin: 0; font-weight: normal;">I am willing to mentor current students</label>
-      </div>
+        <div class="field">
+          <label for="skills">Skills and areas of expertise <span class="field-optional">(optional)</span></label>
+          <textarea id="skills" name="skills" rows="3"
+                    placeholder="For example: accounting, software development, teaching..."
+                    maxlength="500"><%= v.skills || '' %></textarea>
+          <% if (error("skills")) { %><span class="field-error"><%= error("skills") %></span><% } %>
+        </div>
 
-      <button type="submit" class="btn btn--primary" style="width: 100%; margin-top: var(--space-4);">Create account</button>
+        <div class="field">
+          <label for="business_owner">
+            Do you own or operate a business?
+            <span class="required-mark" aria-hidden="true">*</span>
+            <span class="sr-only">Required</span>
+          </label>
+          <select id="business_owner" name="business_owner" required>
+            <option value="">Select an answer</option>
+            <option value="yes" <%= selected("business_owner", "yes") || checked("business_owner", true) ? "selected" : "" %>>Yes</option>
+            <option value="no" <%= selected("business_owner", "no") || checked("business_owner", false) ? "selected" : "" %>>No</option>
+          </select>
+          <% if (error("business_owner")) { %><span class="field-error"><%= error("business_owner") %></span><% } %>
+          <span class="field-hint">Business details here do not automatically create a public business listing.</span>
+        </div>
+
+        <div data-conditional="business-details" hidden>
+          <div class="registration-divider"></div>
+          <h4>Business details</h4>
+
+          <div class="field">
+            <label for="business_name">
+              Business name <span class="required-mark" data-required-mark aria-hidden="true">*</span>
+              <span class="sr-only">Required for business owners</span>
+            </label>
+            <input id="business_name" name="business_name" type="text"
+                   maxlength="160" value="<%= v.business_name || '' %>" disabled>
+            <% if (error("business_name")) { %><span class="field-error"><%= error("business_name") %></span><% } %>
+          </div>
+
+          <div class="field">
+            <label for="business_category">
+              Business category <span class="required-mark" data-required-mark aria-hidden="true">*</span>
+              <span class="sr-only">Required for business owners</span>
+            </label>
+            <input id="business_category" name="business_category" type="text"
+                   maxlength="100" placeholder="For example: Agriculture, Retail, Technology"
+                   value="<%= v.business_category || '' %>" disabled>
+            <% if (error("business_category")) { %><span class="field-error"><%= error("business_category") %></span><% } %>
+          </div>
+
+          <div class="field">
+            <label for="business_description">Business description <span class="field-optional">(optional)</span></label>
+            <textarea id="business_description" name="business_description"
+                      rows="3" maxlength="1000" disabled><%= v.business_description || '' %></textarea>
+            <% if (error("business_description")) { %><span class="field-error"><%= error("business_description") %></span><% } %>
+          </div>
+
+          <div class="field">
+            <label for="business_website">Business website <span class="field-optional">(optional)</span></label>
+            <input id="business_website" name="business_website" type="url"
+                   maxlength="255" placeholder="https://example.com"
+                   value="<%= v.business_website || '' %>" disabled>
+            <% if (error("business_website")) { %><span class="field-error"><%= error("business_website") %></span><% } %>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 5: INTERESTS -->
+      <section class="registration-step"
+               data-step-panel="5"
+               aria-labelledby="step-5-title">
+        <div class="registration-step__heading">
+          <span class="registration-step__number">05 / 07</span>
+          <h3 id="step-5-title" tabindex="-1">Interests and participation</h3>
+          <p>Select the areas where you would like to connect and contribute.</p>
+        </div>
+
+        <fieldset class="registration-fieldset">
+          <legend>
+            Your HOSA interests
+            <span class="required-mark" aria-hidden="true">*</span>
+            <span class="sr-only">Required</span>
+          </legend>
+          <p class="field-hint">Select at least one interest.</p>
+
+          <% const interestOptions = [
+            ["mentorship","Mentorship"],
+            ["networking","Networking"],
+            ["career_development","Career development"],
+            ["business_opportunities","Business opportunities"],
+            ["sports_recreation","Sports and recreation"],
+            ["community_service","Community service"],
+            ["school_development","School development"],
+            ["fundraising","Fundraising"],
+            ["leadership","Leadership"],
+            ["events","Events"]
+          ]; %>
+
+          <div class="registration-interest-grid">
+            <% interestOptions.forEach(([value, label]) => { %>
+              <label class="registration-choice">
+                <input type="checkbox" name="interests" value="<%= value %>"
+                       <%= hasInterest(value) ? "checked" : "" %>>
+                <span><%= label %></span>
+              </label>
+            <% }) %>
+          </div>
+          <% if (error("interests")) { %><span class="field-error"><%= error("interests") %></span><% } %>
+        </fieldset>
+
+        <div class="registration-divider"></div>
+        <h4>Ways you may participate <span class="field-optional">Optional</span></h4>
+
+        <div class="registration-choice-list">
+          <label class="registration-choice">
+            <input type="checkbox" name="mentor_opt_in" value="on"
+                   <%= checked("mentor_opt_in", true) ? "checked" : "" %>>
+            <span><strong>I am willing to mentor current students.</strong>
+              <small>Share knowledge, experience and career guidance.</small></span>
+          </label>
+
+          <label class="registration-choice">
+            <input type="checkbox" name="seeking_mentorship" value="on"
+                   <%= checked("seeking_mentorship", true) ? "checked" : "" %>>
+            <span><strong>I am interested in receiving mentorship.</strong>
+              <small>Connect with experienced HOSA members.</small></span>
+          </label>
+
+          <label class="registration-choice">
+            <input type="checkbox" name="volunteer_opt_in" value="on"
+                   <%= checked("volunteer_opt_in", true) ? "checked" : "" %>>
+            <span><strong>I am willing to volunteer.</strong>
+              <small>Support HOSA activities and community initiatives.</small></span>
+          </label>
+
+          <label class="registration-choice">
+            <input type="checkbox" name="school_project_support" value="on"
+                   <%= checked("school_project_support", true) ? "checked" : "" %>>
+            <span><strong>I am interested in supporting school projects.</strong>
+              <small>Contribute skills, time or other appropriate support.</small></span>
+          </label>
+        </div>
+      </section>
+
+      <!-- STEP 6: ACCOUNT -->
+      <section class="registration-step"
+               data-step-panel="6"
+               aria-labelledby="step-6-title">
+        <div class="registration-step__heading">
+          <span class="registration-step__number">06 / 07</span>
+          <h3 id="step-6-title" tabindex="-1">Create your login credentials</h3>
+          <p>Choose a username and a secure password for your HOSA account.</p>
+        </div>
+
+        <div class="field">
+          <label for="username">
+            Username <span class="required-mark" aria-hidden="true">*</span>
+            <span class="sr-only">Required</span>
+          </label>
+          <input id="username" name="username" type="text"
+                 autocomplete="username" minlength="3" maxlength="30"
+                 pattern="[A-Za-z0-9._-]+" required
+                 value="<%= v.username || '' %>">
+          <span class="field-hint">Use 3–30 characters: letters, numbers, dots, underscores or hyphens. You can log in using this username or your email address.</span>
+          <% if (error("username")) { %><span class="field-error"><%= error("username") %></span><% } %>
+        </div>
+
+        <div class="field">
+          <label for="password">
+            Password <span class="required-mark" aria-hidden="true">*</span>
+            <span class="sr-only">Required</span>
+          </label>
+          <div class="registration-password">
+            <input id="password" name="password" type="password"
+                   autocomplete="new-password" minlength="5" maxlength="200"
+                   required>
+            <button type="button" class="password-toggle"
+                    data-target="password" aria-label="Show password"
+                    aria-pressed="false">Show</button>
+          </div>
+          <span class="field-hint">Use at least 5 characters. A longer, unique password is recommended.</span>
+          <% if (error("password")) { %><span class="field-error"><%= error("password") %></span><% } %>
+        </div>
+
+        <div class="field">
+          <label for="confirm_password">
+            Confirm password <span class="required-mark" aria-hidden="true">*</span>
+            <span class="sr-only">Required</span>
+          </label>
+          <div class="registration-password">
+            <input id="confirm_password" name="confirm_password" type="password"
+                   autocomplete="new-password" minlength="5" maxlength="200"
+                   required>
+            <button type="button" class="password-toggle"
+                    data-target="confirm_password" aria-label="Show password"
+                    aria-pressed="false">Show</button>
+          </div>
+          <% if (error("confirm_password")) { %><span class="field-error"><%= error("confirm_password") %></span><% } %>
+        </div>
+
+        <div class="registration-security-note">
+          <strong>Your account security matters.</strong>
+          <p>Your password is securely hashed. HOSA administrators should never ask you to disclose it.</p>
+        </div>
+      </section>
+
+      <!-- STEP 7: REVIEW AND SUBMIT -->
+      <section class="registration-step"
+               data-step-panel="7"
+               aria-labelledby="step-7-title">
+        <div class="registration-step__heading">
+          <span class="registration-step__number">07 / 07</span>
+          <h3 id="step-7-title" tabindex="-1">Review and submit</h3>
+          <p>Review your information before submitting your membership application.</p>
+        </div>
+
+        <div class="registration-review">
+          <section class="registration-review__section">
+            <div class="registration-review__heading">
+              <h4>Personal information</h4>
+              <button type="button" class="registration-edit"
+                      data-edit-step="1">Edit</button>
+            </div>
+            <dl>
+              <div><dt>Name</dt><dd data-review-target="full_name">Not provided</dd></div>
+              <div><dt>Other name</dt><dd data-review-target="other_name">Not provided</dd></div>
+            </dl>
+          </section>
+
+          <section class="registration-review__section">
+            <div class="registration-review__heading">
+              <h4>School history</h4>
+              <button type="button" class="registration-edit"
+                      data-edit-step="2">Edit</button>
+            </div>
+            <dl>
+              <div><dt>School</dt><dd>Highway Secondary School, Kiganda</dd></div>
+              <div><dt>Status</dt><dd data-review-target="school_status">Not provided</dd></div>
+              <div><dt>Admission year</dt><dd data-review-target="admission_year">Not provided</dd></div>
+              <div><dt>Last class</dt><dd data-review-target="last_class_attended">Not provided</dd></div>
+              <div><dt>Completion year</dt><dd data-review-target="school_completion">Not provided</dd></div>
+              <div><dt>House</dt><dd data-review-target="school_house">Not provided</dd></div>
+              <div><dt>Examination</dt><dd data-review-target="examination_level">Not provided</dd></div>
+              <div><dt>Examination index</dt><dd data-review-target="examination_index_number">Private information provided</dd></div>
+            </dl>
+          </section>
+
+          <section class="registration-review__section">
+            <div class="registration-review__heading">
+              <h4>Contact information</h4>
+              <button type="button" class="registration-edit"
+                      data-edit-step="3">Edit</button>
+            </div>
+            <dl>
+              <div><dt>Email</dt><dd data-review-target="email">Not provided</dd></div>
+              <div><dt>Phone</dt><dd data-review-target="phone">Not provided</dd></div>
+              <div><dt>WhatsApp</dt><dd data-review-target="whatsapp_phone">Not provided</dd></div>
+              <div><dt>Location</dt><dd data-review-target="location">Not provided</dd></div>
+              <div><dt>Nationality</dt><dd data-review-target="nationality">Not provided</dd></div>
+              <div><dt>HOSA region</dt><dd data-review-target="region">Not provided</dd></div>
+              <div><dt>Preferred contact</dt><dd data-review-target="preferred_contact">Not provided</dd></div>
+            </dl>
+          </section>
+
+          <section class="registration-review__section">
+            <div class="registration-review__heading">
+              <h4>Professional information</h4>
+              <button type="button" class="registration-edit"
+                      data-edit-step="4">Edit</button>
+            </div>
+            <dl>
+              <div><dt>Employment</dt><dd data-review-target="employment_status">Not provided</dd></div>
+              <div><dt>Profession</dt><dd data-review-target="profession">Not provided</dd></div>
+              <div><dt>Education</dt><dd data-review-target="highest_education">Not provided</dd></div>
+              <div><dt>Specialization</dt><dd data-review-target="specialization">Not provided</dd></div>
+              <div><dt>Organization</dt><dd data-review-target="organization">Not provided</dd></div>
+              <div><dt>Business ownership</dt><dd data-review-target="business_owner">Not provided</dd></div>
+              <div><dt>Business</dt><dd data-review-target="business_name">Not provided</dd></div>
+            </dl>
+          </section>
+
+          <section class="registration-review__section">
+            <div class="registration-review__heading">
+              <h4>Interests and participation</h4>
+              <button type="button" class="registration-edit"
+                      data-edit-step="5">Edit</button>
+            </div>
+            <dl>
+              <div><dt>Interests</dt><dd data-review-target="interests">None selected</dd></div>
+              <div><dt>Mentoring</dt><dd data-review-target="mentor_opt_in">Not selected</dd></div>
+              <div><dt>Seeking mentorship</dt><dd data-review-target="seeking_mentorship">Not selected</dd></div>
+              <div><dt>Volunteering</dt><dd data-review-target="volunteer_opt_in">Not selected</dd></div>
+              <div><dt>School projects</dt><dd data-review-target="school_project_support">Not selected</dd></div>
+            </dl>
+          </section>
+
+          <section class="registration-review__section">
+            <div class="registration-review__heading">
+              <h4>Account details</h4>
+              <button type="button" class="registration-edit"
+                      data-edit-step="6">Edit</button>
+            </div>
+            <dl>
+              <div><dt>Username</dt><dd data-review-target="username">Not provided</dd></div>
+              <div><dt>Password</dt><dd>••••••••</dd></div>
+            </dl>
+          </section>
+        </div>
+
+        <div class="registration-divider"></div>
+
+        <fieldset class="registration-fieldset registration-acceptances">
+          <legend>Agreements and declaration</legend>
+
+          <label class="registration-choice">
+            <input type="checkbox" id="terms_accepted"
+                   name="terms_accepted" value="on"
+                   <%= checked("terms_accepted", true) ? "checked" : "" %> required>
+            <span>
+              I have read and agree to the
+              <a href="/terms" target="_blank" rel="noopener">HOSA Terms of Service</a>.
+              <span class="required-mark" aria-hidden="true">*</span>
+              <span class="sr-only">Required</span>
+            </span>
+          </label>
+          <% if (error("terms_accepted")) { %><span class="field-error"><%= error("terms_accepted") %></span><% } %>
+
+          <label class="registration-choice">
+            <input type="checkbox" id="privacy_accepted"
+                   name="privacy_accepted" value="on"
+                   <%= checked("privacy_accepted", true) ? "checked" : "" %> required>
+            <span>
+              I have read and understood the
+              <a href="/privacy" target="_blank" rel="noopener">HOSA Privacy Policy</a>.
+              <span class="required-mark" aria-hidden="true">*</span>
+              <span class="sr-only">Required</span>
+            </span>
+          </label>
+          <% if (error("privacy_accepted")) { %><span class="field-error"><%= error("privacy_accepted") %></span><% } %>
+
+          <div class="registration-declaration">
+            <h4>Member declaration</h4>
+            <p>
+              I declare that the information I have provided in this registration
+              form is accurate and complete to the best of my knowledge. I understand
+              that HOSA may review and verify my information to establish my
+              eligibility for membership.
+            </p>
+            <p>
+              I understand that submitting this application does not automatically
+              guarantee membership. My account will remain pending until it has
+              been reviewed and approved by the authorized HOSA administrators.
+            </p>
+            <p>
+              I agree to respect the HOSA Constitution, its Terms of Service,
+              and the responsibilities and standards expected of members.
+              I understand that inaccurate information, impersonation, or misuse
+              of the HOSA platform may result in rejection of my application or
+              appropriate administrative action.
+            </p>
+          </div>
+
+          <label class="registration-choice">
+            <input type="checkbox" id="declaration_accepted"
+                   name="declaration_accepted" value="on"
+                   <%= checked("declaration_accepted", true) ? "checked" : "" %> required>
+            <span>
+              I confirm that the information I have supplied is accurate and
+              accept the HOSA Member Declaration.
+              <span class="required-mark" aria-hidden="true">*</span>
+              <span class="sr-only">Required</span>
+            </span>
+          </label>
+          <% if (error("declaration_accepted")) { %><span class="field-error"><%= error("declaration_accepted") %></span><% } %>
+        </fieldset>
+
+        <div class="registration-divider"></div>
+
+        <fieldset class="registration-fieldset">
+          <legend>Directory visibility</legend>
+          <label class="registration-choice">
+            <input type="checkbox" id="public_visibility"
+                   name="public_visibility" value="on"
+                   <%= checked("public_visibility", true) ? "checked" : "" %>>
+            <span>
+              <strong>Include my profile in the HOSA member directory.</strong>
+              <small>This is optional and off by default. Your contact details remain private unless separately shared through an authorized feature.</small>
+            </span>
+          </label>
+          <% if (error("public_visibility")) { %><span class="field-error"><%= error("public_visibility") %></span><% } %>
+        </fieldset>
+
+        <div class="registration-pending-note">
+          <strong>What happens next?</strong>
+          <p>
+            Your application will be submitted for administrative review.
+            You will be able to access membership features after your application
+            has been approved.
+          </p>
+        </div>
+      </section>
+
+      <div class="registration-navigation">
+        <button type="button" class="btn btn--secondary"
+                id="registration-back" disabled>
+          Back
+        </button>
+
+        <button type="button" class="btn btn--primary"
+                id="registration-continue">
+          Continue
+        </button>
+
+        <button type="submit" class="btn btn--primary"
+                id="registration-submit" hidden>
+          Submit membership application
+        </button>
+      </div>
     </form>
 
-    <p style="margin-top: var(--space-4); text-align: center; font-size: var(--text-sm);">
+    <p class="registration-login-link">
       Already have an account? <a href="/login">Log in</a>
     </p>
-  </div>
+  </main>
 </div>
+
+<script src="/js/registration.js" defer></script>

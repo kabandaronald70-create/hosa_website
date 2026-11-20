@@ -5,7 +5,9 @@ export async function getMentorPublicById(mentorId) {
     `SELECT mp.user_id, mp.display_name, mp.first_name, mp.last_name,
             mp.mentor_field, mp.public_visibility
        FROM member_profiles mp
+       JOIN users u ON u.id = mp.user_id
       WHERE mp.user_id = $1
+        AND u.membership_approved_at IS NOT NULL
         AND mp.mentor_opt_in = TRUE
         AND mp.public_visibility = TRUE
       LIMIT 1`,

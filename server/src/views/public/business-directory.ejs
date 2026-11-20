@@ -49,64 +49,126 @@
 <% } else { %>
 
   <!-- Featured Businesses -->
-  <% if (featuredBusinesses.length > 0) { %>
-    <h2 style="color: var(--gold-700); margin-bottom: var(--space-3); font-size: var(--text-xl);">⭐ Featured Businesses</h2>
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: var(--space-4); margin-bottom: var(--space-6);">
-      <% featuredBusinesses.forEach(b => { %>
-        <article class="card" style="display: flex; flex-direction: column; border: 2px solid var(--gold); background: var(--ivory);">
-          <div style="flex-grow: 1;">
-            <div style="display: flex; gap: var(--space-3); align-items: center; margin-bottom: var(--space-3);">
-              <% if (b.logo_path) { %>
-                <img src="<%= b.logo_path %>" alt="<%= b.name %> Logo" style="width: 50px; height: 50px; border-radius: var(--radius-sm); object-fit: cover;">
-              <% } else { %>
-                <div style="width: 50px; height: 50px; border-radius: var(--radius-sm); background: var(--gold); color: var(--ink); display: grid; place-items: center; font-size: var(--text-xl); font-weight: bold;">
-                  <%= b.name[0].toUpperCase() %>
-                </div>
-              <% } %>
-              <div>
-                <span class="badge badge--gold">Featured</span>
-                <h2 style="font-size: var(--text-lg); margin: 0;"><%= b.name %></h2>
-              </div>
-            </div>
-            <p style="color: var(--muted); font-size: var(--text-sm); margin-bottom: var(--space-2);">📍 <%= b.location %></p>
-            <p style="font-size: var(--text-sm);"><%= b.description %></p>
-          </div>
-          <div style="margin-top: var(--space-4); border-top: 1px solid var(--line); padding-top: var(--space-3);">
-            <% if (b.website) { %><a href="<%= b.website %>" target="_blank" class="btn btn--accent btn--sm" style="width: 100%; margin-bottom: var(--space-2);">Visit Website</a><% } %>
-            <p style="font-size: var(--text-xs); color: var(--muted); margin: 0; text-align: center;">Owned by: <%= b.first_name %> <%= b.last_name %></p>
-          </div>
-        </article>
-      <% }) %>
-    </div>
-  <% } %>
+<% if (featuredBusinesses.length > 0) { %>
+  <h2 class="business-section-title business-section-title--featured">
+    ⭐ Featured Businesses
+  </h2>
 
-  <!-- All Other Businesses -->
-  <h2 style="margin-bottom: var(--space-3); font-size: var(--text-xl);">All Businesses</h2>
-  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: var(--space-4);">
-    <% regularBusinesses.forEach(b => { %>
-      <article class="card" style="display: flex; flex-direction: column;">
-        <div style="flex-grow: 1;">
-          <div style="display: flex; gap: var(--space-3); align-items: center; margin-bottom: var(--space-3);">
-            <% if (b.logo_path) { %>
-              <img src="<%= b.logo_path %>" alt="<%= b.name %> Logo" style="width: 50px; height: 50px; border-radius: var(--radius-sm); object-fit: cover;">
-            <% } else { %>
-              <div style="width: 50px; height: 50px; border-radius: var(--radius-sm); background: var(--gold); color: var(--ink); display: grid; place-items: center; font-size: var(--text-xl); font-weight: bold;">
-                <%= b.name[0].toUpperCase() %>
-              </div>
-            <% } %>
-            <div>
-              <span class="badge badge--muted"><%= b.category %></span>
-              <h2 style="font-size: var(--text-lg); margin: 0;"><%= b.name %></h2>
+  <div class="business-grid">
+    <% featuredBusinesses.forEach(b => { %>
+      <article class="business-card business-card--featured">
+        <div class="business-card__hero">
+          <% if (b.logo_path) { %>
+            <img class="business-card__image" src="<%= b.logo_path %>" alt="<%= b.name %>" loading="lazy">
+          <% } else { %>
+            <div class="business-card__image business-card__image--fallback">
+              <span><%= (b.name || "B").charAt(0).toUpperCase() %></span>
+            </div>
+          <% } %>
+
+          <div class="business-card__overlay">
+            <span class="business-card__featured-label">⭐ Featured</span>
+            <div class="business-card__hero-content">
+              <span class="business-card__category"><%= b.category %></span>
+              <h2 class="business-card__title"><%= b.name %></h2>
+              <p class="business-card__location">
+                <span aria-hidden="true">📍</span> <%= b.location %>
+              </p>
             </div>
           </div>
-          <p style="color: var(--muted); font-size: var(--text-sm); margin-bottom: var(--space-2);">📍 <%= b.location %></p>
-          <p style="font-size: var(--text-sm);"><%= b.description %></p>
         </div>
-        <div style="margin-top: var(--space-4); border-top: 1px solid var(--line); padding-top: var(--space-3);">
-          <% if (b.website) { %><a href="<%= b.website %>" target="_blank" class="btn btn--ghost btn--sm" style="width: 100%; margin-bottom: var(--space-2);">Visit Website</a><% } %>
-          <p style="font-size: var(--text-xs); color: var(--muted); margin: 0; text-align: center;">Owned by: <%= b.first_name %> <%= b.last_name %></p>
+
+        <div class="business-card__body">
+          <p class="business-card__description"><%= b.description %></p>
+
+          <% if (b.website) { %>
+            <a href="<%= b.website %>" target="_blank" rel="noopener noreferrer"
+               class="btn btn--accent business-card__website">Visit Website ↗</a>
+          <% } %>
+
+          <div class="business-card__owner">
+            <h3>Owned by</h3>
+            <p class="business-card__owner-name">
+              <%= [b.first_name, b.last_name].filter(Boolean).join(" ") || "HOSA Member" %>
+            </p>
+
+            <% if (b.phone) { %>
+              <a class="business-card__contact"
+                 href="tel:<%= b.phone.replace(/[^\d+]/g, '') %>">
+                <span aria-hidden="true">☎</span> <%= b.phone %>
+              </a>
+            <% } %>
+
+            <% if (b.email) { %>
+              <a class="business-card__contact" href="mailto:<%= b.email %>">
+                <span aria-hidden="true">✉</span> <%= b.email %>
+              </a>
+            <% } %>
+          </div>
         </div>
       </article>
     <% }) %>
   </div>
+<% } %>
+
+<!-- All Other Businesses -->
+<% if (regularBusinesses.length > 0) { %>
+  <h2 class="business-section-title">All Businesses</h2>
+
+  <div class="business-grid">
+    <% regularBusinesses.forEach(b => { %>
+      <article class="business-card">
+        <div class="business-card__hero">
+          <% if (b.logo_path) { %>
+            <img class="business-card__image" src="<%= b.logo_path %>" alt="<%= b.name %>" loading="lazy">
+          <% } else { %>
+            <div class="business-card__image business-card__image--fallback">
+              <span><%= (b.name || "B").charAt(0).toUpperCase() %></span>
+            </div>
+          <% } %>
+
+          <div class="business-card__overlay">
+            <div class="business-card__hero-content">
+              <span class="business-card__category"><%= b.category %></span>
+              <h2 class="business-card__title"><%= b.name %></h2>
+              <p class="business-card__location">
+                <span aria-hidden="true">📍</span> <%= b.location %>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="business-card__body">
+          <p class="business-card__description"><%= b.description %></p>
+
+          <% if (b.website) { %>
+            <a href="<%= b.website %>" target="_blank" rel="noopener noreferrer"
+               class="btn btn--ghost business-card__website">Visit Website ↗</a>
+          <% } %>
+
+          <div class="business-card__owner">
+            <h3>Owned by</h3>
+            <p class="business-card__owner-name">
+              <%= [b.first_name, b.last_name].filter(Boolean).join(" ") || "HOSA Member" %>
+            </p>
+
+            <% if (b.phone) { %>
+              <a class="business-card__contact"
+                 href="tel:<%= b.phone.replace(/[^\d+]/g, '') %>">
+                <span aria-hidden="true">☎</span> <%= b.phone %>
+              </a>
+            <% } %>
+
+            <% if (b.email) { %>
+              <a class="business-card__contact" href="mailto:<%= b.email %>">
+                <span aria-hidden="true">✉</span> <%= b.email %>
+              </a>
+            <% } %>
+          </div>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+<% } %>
+
 <% } %>

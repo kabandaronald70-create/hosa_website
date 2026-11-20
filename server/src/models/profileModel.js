@@ -15,6 +15,21 @@ export async function getProfileByUserId(userId) {
   );
   return rows[0] || null;
 }
+export async function getPublicAvatarProfileByUserId(userId) {
+  const { rows } = await query(
+    `SELECT mp.user_id, mp.avatar_path
+       FROM member_profiles mp
+       JOIN users u ON u.id = mp.user_id
+      WHERE mp.user_id = $1
+        AND mp.public_visibility = TRUE
+        AND u.membership_approved_at IS NOT NULL
+        AND u.status = 'active'
+      LIMIT 1`,
+    [userId],
+  );
+
+  return rows[0] || null;
+}
 
 /**
  * Update a member's profile. Ownership is enforced by user_id = $1.

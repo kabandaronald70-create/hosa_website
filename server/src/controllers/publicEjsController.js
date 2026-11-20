@@ -9,11 +9,11 @@ import { listPublishedEvents, getEventBySlug } from "../models/eventModel.js";
 import { listPublishedStories } from "../models/storyModel.js";
 import { listApprovedOpportunities } from "../models/opportunityModel.js";
 import { query } from "../config/db.js";
-import { listDocuments } from "../models/documentModel.js";
+import { listAccessibleDocuments } from "../models/documentModel.js";
 import {
   getActiveCampaign,
   getCampaignBusinesses,
-} from "../models/campaignModel.js"; // <-- ADDED
+} from "../models/campaignModel.js";
 
 // ---------- Directory ----------
 
@@ -199,7 +199,12 @@ export async function showArchive(req, res, next) {
         ORDER BY published_at ASC LIMIT 20`,
     );
 
-    const documents = await listDocuments();
+    const documents = await listAccessibleDocuments({
+      isSuperAdmin: req.userRoles?.includes("super_admin") ?? false,
+      isApprovedMember: Boolean(req.user?.membership_approved_at),
+      hasCurrentLeadership:
+        Array.isArray(req.leadershipRoles) && req.leadershipRoles.length > 0,
+    });
 
     res.render("public/archive", {
       title: "Archive — HOSA",

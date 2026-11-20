@@ -2,12 +2,14 @@ import { query } from "../config/db.js";
 
 // --- 1. Public Directory (Only shows approved AND posted in the last 30 days) ---
 export async function listApprovedBusinesses({ category, search } = {}) {
-  // Added the 30-day interval check to automatically hide old businesses
-  let where = [
+  const where = [
     `b.status = 'approved'`,
     `b.created_at >= NOW() - INTERVAL '30 days'`,
+    `u.membership_approved_at IS NOT NULL`,
+    `u.status = 'active'`,
   ];
-  let values = [];
+
+  const values = [];
   let i = 1;
 
   if (category) {
@@ -15,6 +17,7 @@ export async function listApprovedBusinesses({ category, search } = {}) {
     values.push(category);
     i++;
   }
+
   if (search) {
     where.push(`(b.name ILIKE $${i} OR b.description ILIKE $${i})`);
     values.push(`%${search}%`);
@@ -22,14 +25,28 @@ export async function listApprovedBusinesses({ category, search } = {}) {
   }
 
   const { rows } = await query(
-    `SELECT b.*, mp.first_name, mp.last_name 
+    `SELECT
+       b.id,
+       b.name,
+       b.category,
+       b.description,
+       b.location,
+       b.website,
+       b.phone,
+       b.email,
+       b.logo_path,
+       b.featured_until,
+       b.created_at,
+       mp.first_name,
+       mp.last_name
      FROM businesses b
      JOIN users u ON b.user_id = u.id
      LEFT JOIN member_profiles mp ON u.id = mp.user_id
      WHERE ${where.join(" AND ")}
-     ORDER BY b.featured_until DESC NULLS LAST, b.created_at DESC`, // Featured first, then latest
+     ORDER BY b.featured_until DESC NULLS LAST, b.created_at DESC`,
     values,
   );
+
   return rows;
 }
 

@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { requireApproved } from "../middleware/requireApproved.js";
 import {
   showAbout,
   showPrivacy,
@@ -63,19 +62,13 @@ router.get("/", async (req, res, next) => {
 });
 
 router.get("/archive", showArchive);
-router.get(
-  "/documents/:id/view",
-  requireAuth,
-  requireApproved,
-  viewDocumentFile,
-);
 
-router.get(
-  "/documents/:id/download",
-  requireAuth,
-  requireApproved,
-  downloadDocumentFile,
-);
+// Document permissions are enforced inside documentController.
+// Authentication is required, but membership approval alone is not
+// the access rule: current leaders may also access leadership documents.
+router.get("/documents/:id/view", requireAuth, viewDocumentFile);
+
+router.get("/documents/:id/download", requireAuth, downloadDocumentFile);
 
 // --- Static Public Pages ---
 router.get("/about", showAbout);
