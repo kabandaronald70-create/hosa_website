@@ -1,6 +1,6 @@
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5);">
+﻿<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5);">
   <h1 style="margin: 0;">Projects Management</h1>
-  <a href="/admin" class="btn btn--ghost">← Back to Admin</a>
+  <a href="/admin" class="btn btn--ghost">â† Back to Admin</a>
 </div>
 
 <div style="display: grid; grid-template-columns: 1fr; gap: var(--space-5);">
@@ -57,17 +57,10 @@
         <h2><%= p.title %></h2>
         <span class="badge badge--<%= p.status === 'approved' ? 'success' : p.status === 'completed' ? 'primary' : 'warning' %>"><%= p.status %></span>
       </div>
-      <p><%= p.region %> Region · Budget: UGX <%= Number(p.budget).toLocaleString() %></p>
+      <p><%= p.region %> Region Â· Budget: UGX <%= Number(p.budget).toLocaleString() %></p>
       
       <!-- Actions -->
       <div style="margin-top: var(--space-3); display: flex; gap: var(--space-2); flex-wrap: wrap;">
-        <% if (p.status === 'proposed') { %>
-          <form method="post" action="/admin/projects/<%= p.id %>/status" style="display:inline;">
-            <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
-            <input type="hidden" name="status" value="approved">
-            <button type="submit" class="btn btn--primary btn--sm">Approve</button>
-          </form>
-        <% } %>
         <a href="/admin/projects/<%= p.id %>" class="btn btn--ghost btn--sm">View Milestones</a>
         
         <!-- EDIT BUTTON -->
@@ -147,7 +140,7 @@
               <option value="">None</option>
               <% outreachOfficers.forEach(o => { %>
                 <option value="<%= o.office_title.replace('Outreach Officer (', '').replace(')', '') %>">
-                  <%= o.first_name %> <%= o.last_name %> — <%= o.office_title.replace('Outreach Officer (', '').replace(')', '') %>
+                  <%= o.first_name %> <%= o.last_name %> â€” <%= o.office_title.replace('Outreach Officer (', '').replace(')', '') %>
                 </option>
               <% }) %>
             </select>

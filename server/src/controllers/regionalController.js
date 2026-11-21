@@ -1,7 +1,8 @@
 import { query } from "../config/db.js";
-import { createProject, listProjects } from "../models/projectModel.js";
+import { createProject, listRegionalOfficerProjects } from "../models/projectModel.js";
 import { uploadProjectImage } from "../services/projectFileService.js";
 import { auditLog } from "../services/auditService.js";
+import { notifyProjectProposalSubmitted } from "../services/notificationsService.js";
 import {
   uploadRegionalReportFile,
   cleanupRegionalReportFile,
@@ -40,15 +41,24 @@ export async function showRegionalDashboard(req, res, next) {
       .replace("Outreach Officer (", "")
       .replace(")", "");
 
-    const projects = await listProjects({ region });
+    const projects = await listRegionalOfficerProjects(req.user.id, region);
 
     const stats = {
+      pendingProposals: projects.filter(
+        (p) => p.approval_status === "pending",
+      ).length,
+      approvedProjects: projects.filter(
+        (p) => p.approval_status === "approved",
+      ).length,
+      rejectedProposals: projects.filter(
+        (p) => p.approval_status === "rejected",
+      ).length,
       activeProjects: projects.filter((p) =>
         ["approved", "in_progress"].includes(p.status),
       ).length,
-      completedProjects: projects.filter((p) => p.status === "completed")
-        .length,
-      proposedProjects: projects.filter((p) => p.status === "proposed").length,
+      completedProjects: projects.filter(
+        (p) => p.status === "completed",
+      ).length,
     };
 
     res.render("regional/dashboard", {
@@ -144,6 +154,7 @@ export async function actionSubmitRegionalProposal(req, res, next) {
       endDate: null,
       leadUserId: req.user.id,
       createdBy: req.user.id,
+      proposalSource: "regional_outreach",
       imagePath,
     });
 
@@ -155,9 +166,11 @@ export async function actionSubmitRegionalProposal(req, res, next) {
       metadata: { title, region },
     });
 
+    await notifyProjectProposalSubmitted(created);
+
     req.flash(
       "success",
-      "Proposal submitted successfully. Awaiting admin approval.",
+      "Proposal submitted successfully. Awaiting Projects Manager review.",
     );
 
     res.redirect("/regional/dashboard");

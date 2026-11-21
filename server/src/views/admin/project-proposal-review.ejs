@@ -1,0 +1,201 @@
+﻿<div style="margin-bottom:1.25rem;">
+  <a href="/admin/project-proposals" class="btn btn--secondary">
+    &larr; Back to Approval Queue
+  </a>
+</div>
+
+<section class="card" style="padding:1.5rem; margin-bottom:1.5rem;">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+    <div>
+      <div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:.75rem;">
+        <span class="badge badge--warning">
+          Awaiting <%= getProjectApprovalStageLabel(currentStage) %>
+        </span>
+
+        <span class="badge badge--secondary">
+          <%= project.proposal_source === "regional_outreach"
+            ? "Regional Outreach Proposal"
+            : project.proposal_source === "projects_manager"
+              ? "Projects Manager Proposal"
+              : "Legacy Project" %>
+        </span>
+      </div>
+
+      <h1 style="margin:0;"><%= project.title %></h1>
+
+      <p style="color:var(--text-muted); margin:.5rem 0 0;">
+        <%= project.region %> Region
+        <% if (project.category) { %>
+          · <%= project.category %>
+        <% } %>
+      </p>
+    </div>
+
+    <span class="badge badge--warning">Pending Approval</span>
+  </div>
+
+  <% if (project.image_path) { %>
+    <div style="margin-top:1.25rem;">
+      <img
+        src="<%= project.image_path %>"
+        alt="Project proposal image"
+        loading="lazy"
+        style="display:block; width:100%; max-height:380px; object-fit:cover; border-radius:var(--radius-md, 8px);"
+      >
+    </div>
+  <% } %>
+
+  <div style="margin-top:1.5rem;">
+    <h2>Project Description</h2>
+    <p style="line-height:1.7; white-space:pre-line;"><%= project.description || "No description provided." %></p>
+  </div>
+
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:1rem; margin-top:1.5rem;">
+    <div>
+      <small style="color:var(--text-muted);">Proposed Budget</small>
+      <p style="font-size:1.1rem; font-weight:600; margin:.25rem 0;">
+        UGX <%= Number(project.budget || 0).toLocaleString() %>
+      </p>
+    </div>
+
+    <div>
+      <small style="color:var(--text-muted);">Funds Raised</small>
+      <p style="font-size:1.1rem; font-weight:600; margin:.25rem 0;">
+        UGX <%= Number(project.funds_raised || 0).toLocaleString() %>
+      </p>
+    </div>
+
+    <div>
+      <small style="color:var(--text-muted);">Proposed Start Date</small>
+      <p style="margin:.25rem 0;">
+        <%= project.start_date
+          ? new Date(project.start_date).toLocaleDateString()
+          : "Not specified" %>
+      </p>
+    </div>
+
+    <div>
+      <small style="color:var(--text-muted);">Proposed End Date</small>
+      <p style="margin:.25rem 0;">
+        <%= project.end_date
+          ? new Date(project.end_date).toLocaleDateString()
+          : "Not specified" %>
+      </p>
+    </div>
+
+    <div>
+      <small style="color:var(--text-muted);">Submission Date</small>
+      <p style="margin:.25rem 0;">
+        <%= project.created_at
+          ? new Date(project.created_at).toLocaleDateString()
+          : "Not available" %>
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="card" style="padding:1.5rem; margin-bottom:1.5rem;">
+  <h2 style="margin-top:0;">Approval History</h2>
+
+  <% if (!history || history.length === 0) { %>
+    <p style="color:var(--text-muted);">No approval decisions have been recorded yet.</p>
+  <% } else { %>
+    <div style="display:grid; gap:1rem;">
+      <% history.forEach(entry => { %>
+        <div style="border-left:3px solid <%= entry.decision === 'approved' ? 'var(--color-success, #198754)' : 'var(--color-danger, #dc3545)' %>; padding:.25rem 0 .25rem 1rem;">
+          <div style="display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+            <strong><%= entry.actor_name || "Former or unavailable reviewer" %></strong>
+            <small style="color:var(--text-muted);">
+              <%= entry.created_at
+                ? new Date(entry.created_at).toLocaleString()
+                : "" %>
+            </small>
+          </div>
+
+          <p style="margin:.35rem 0;">
+            <strong><%= entry.actor_role.replaceAll("_", " ") %></strong>
+            —
+            <span class="badge <%= entry.decision === 'approved' ? 'badge--success' : 'badge--danger' %>">
+              <%= entry.decision %>
+            </span>
+          </p>
+
+          <% if (entry.comments) { %>
+            <p style="margin:.4rem 0 0; white-space:pre-line;"><%= entry.comments %></p>
+          <% } %>
+        </div>
+      <% }); %>
+    </div>
+  <% } %>
+</section>
+
+<section class="card" style="padding:1.5rem;">
+  <h2 style="margin-top:0;">Your Decision</h2>
+
+  <p style="color:var(--text-muted);">
+    You are reviewing this proposal as
+    <strong><%= getProjectApprovalStageLabel(currentStage) %></strong>.
+    Your decision will be recorded in the approval history.
+  </p>
+
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1rem; margin-top:1.25rem;">
+    <form
+      method="post"
+      action="/admin/project-proposals/<%= project.id %>/decision"
+      style="border:1px solid var(--border-color, #ddd); border-radius:var(--radius-md, 8px); padding:1rem;"
+    >
+      <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+      <input type="hidden" name="decision" value="approved">
+
+      <h3 style="margin-top:0;">Approve Proposal</h3>
+
+      <label for="approval-comments">Comments (optional)</label>
+      <textarea
+        id="approval-comments"
+        name="comments"
+        rows="4"
+        maxlength="2000"
+        placeholder="Add any observations or recommendations..."
+        style="width:100%; margin:.5rem 0 1rem;"
+      ></textarea>
+
+      <button type="submit" class="btn btn--primary" style="width:100%;">
+        Approve and Forward
+      </button>
+    </form>
+
+    <form
+      method="post"
+      action="/admin/project-proposals/<%= project.id %>/decision"
+      style="border:1px solid var(--border-color, #ddd); border-radius:var(--radius-md, 8px); padding:1rem;"
+    >
+      <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+      <input type="hidden" name="decision" value="rejected">
+
+      <h3 style="margin-top:0;">Reject Proposal</h3>
+
+      <label for="rejection-comments">
+        Reason for rejection <span aria-hidden="true">*</span>
+      </label>
+
+      <textarea
+        id="rejection-comments"
+        name="comments"
+        rows="4"
+        maxlength="2000"
+        required
+        placeholder="Explain why this proposal is being rejected..."
+        style="width:100%; margin:.5rem 0 1rem;"
+      ></textarea>
+
+      <button
+        type="submit"
+        class="btn btn--danger"
+        style="width:100%;"
+        onclick="return confirm('Are you sure you want to reject this proposal? The rejection will be final.');"
+      >
+        Reject Proposal
+      </button>
+    </form>
+  </div>
+</section>

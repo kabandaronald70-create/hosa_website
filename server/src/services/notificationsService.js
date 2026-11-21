@@ -122,3 +122,160 @@ export function notifyExpenseRejectedBySuperAdmin({ chairpersonId, reason }) {
     `/admin/finance`,
   );
 }
+
+// ---------------------------------------------------------------------------
+// Project Proposal Approval Notifications
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolve active leadership users for a project approval stage.
+ * DISTINCT prevents duplicate leadership assignments from sending duplicates.
+ */
+async function getProjectApprovalRecipients(stage, excludeUserId = null) {
+  let sql;
+
+  if (stage === "projects_manager" || stage === "chairperson") {
+    const officeTitle =
+      stage === "projects_manager" ? "Projects Manager" : "Chairperson";
+
+    sql = `
+      SELECT DISTINCT user_id AS id
+      FROM leadership_roles
+      WHERE TRIM(office_title) = $1
+        AND status = 'active'
+        AND (term_start IS NULL OR term_start <= CURRENT_DATE)
+        AND (term_end IS NULL OR term_end >= CURRENT_DATE)
+        AND ($2::uuid IS NULL OR user_id <> $2::uuid)
+    `;
+    const { rows } = await query(sql, [officeTitle, excludeUserId]);
+    return rows;
+  }
+
+  if (stage === "super_admin") {
+    sql = `
+      SELECT DISTINCT u.id
+      FROM users u
+      JOIN user_roles ur ON ur.user_id = u.id
+      JOIN roles r ON r.id = ur.role_id
+      WHERE r.name = 'super_admin'
+        AND ($1::uuid IS NULL OR u.id <> $1::uuid)
+    `;
+    const { rows } = await query(sql, [excludeUserId]);
+    return rows;
+  }
+
+  return [];
+}
+
+/**
+ * Send a notification to all eligible reviewers at the next approval stage.
+ * Recipient lookup and notification failures are deliberately non-fatal.
+ */
+async function notifyProjectNextApprovers({
+  project,
+  stage,
+  excludeUserId = null,
+}) {
+  try {
+    const recipients = await getProjectApprovalRecipients(
+      stage,
+      excludeUserId,
+    );
+
+    const stageNames = {
+      projects_manager: "Projects Manager",
+      chairperson: "Chairperson",
+      super_admin: "Super Admin",
+    };
+
+    for (const recipient of recipients) {
+      await notify(
+        recipient.id,
+        "project.approval_required",
+        "Project Proposal Awaiting Your Review",
+        `"${project.title}" (${project.region}) has passed the previous approval stage and requires your review.`,
+        "/admin/project-proposals",
+      );
+    }
+
+    if (recipients.length === 0) {
+      logger.warn(
+        { projectId: project.id, stage },
+        `No eligible ${stageNames[stage] || stage} found for project approval`,
+      );
+    }
+  } catch (err) {
+    logger.error(
+      { err, projectId: project.id, stage },
+      "Failed to notify project proposal approvers",
+    );
+  }
+}
+
+/**
+ * Notify the next eligible approver when a project proposal is submitted.
+ * Exclude the submitter to prevent self-review notifications.
+ */
+export async function notifyProjectProposalSubmitted(project) {
+  await notifyProjectNextApprovers({
+    project,
+    stage: project.approval_stage,
+    excludeUserId: project.created_by,
+  });
+}
+
+/**
+ * Notify the next reviewer after an approval, or the submitter after a
+ * rejection or final approval.
+ */
+export async function notifyProjectApprovalDecision({
+  project,
+  actorUserId,
+  decision,
+  nextStage,
+}) {
+  try {
+    if (decision === "rejected") {
+      if (project.created_by) {
+        await notify(
+          project.created_by,
+          "project.proposal_rejected",
+          "Project Proposal Not Approved",
+          `"${project.title}" was rejected. Reason: ${project.rejection_reason || "No reason provided."}`,
+          project.proposal_source === "regional_outreach"
+            ? "/regional/dashboard"
+            : "/admin/projects",
+        );
+      }
+      return;
+    }
+
+    if (nextStage === "completed") {
+      if (project.created_by) {
+        await notify(
+          project.created_by,
+          "project.proposal_approved",
+          "Project Proposal Approved",
+          `"${project.title}" has passed all approval stages and is now approved for publication.`,
+          project.proposal_source === "regional_outreach"
+            ? "/regional/dashboard"
+            : "/admin/projects",
+        );
+      }
+      return;
+    }
+
+    if (nextStage) {
+      await notifyProjectNextApprovers({
+        project,
+        stage: nextStage,
+        excludeUserId: actorUserId,
+      });
+    }
+  } catch (err) {
+    logger.error(
+      { err, projectId: project.id, decision },
+      "Failed to send project approval decision notifications",
+    );
+  }
+}

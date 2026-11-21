@@ -1,0 +1,78 @@
+﻿<div class="page-header" style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; margin-bottom:1.5rem;">
+  <div>
+    <h1 style="margin:0;">Project Proposal Approvals</h1>
+    <p style="margin:.4rem 0 0; color:var(--text-muted);">
+      Review and process project proposals assigned to your approval stage.
+    </p>
+  </div>
+  <a href="/admin/projects" class="btn btn--secondary">Manage Projects</a>
+</div>
+
+<% if (!projects || projects.length === 0) { %>
+  <section class="card" style="padding:2rem; text-align:center;">
+    <h2 style="margin-top:0;">No proposals awaiting your review</h2>
+    <p style="color:var(--text-muted); margin-bottom:0;">
+      There are currently no pending proposals assigned to your approval stages.
+    </p>
+  </section>
+<% } else { %>
+  <div style="display:grid; gap:1rem;">
+    <% projects.forEach(project => { %>
+      <article class="card" style="padding:1.25rem;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+          <div style="flex:1; min-width:220px;">
+            <div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:.65rem;">
+              <span class="badge badge--warning">
+                Awaiting <%= getProjectApprovalStageLabel(project.approval_stage) %>
+              </span>
+
+              <span class="badge badge--secondary">
+                <%= project.proposal_source === "regional_outreach"
+                  ? "Regional Outreach Proposal"
+                  : project.proposal_source === "projects_manager"
+                    ? "Projects Manager Proposal"
+                    : "Legacy Project" %>
+              </span>
+            </div>
+
+            <h2 style="margin:0 0 .4rem;">
+              <a href="/admin/project-proposals/<%= project.id %>">
+                <%= project.title %>
+              </a>
+            </h2>
+
+            <p style="margin:0; color:var(--text-muted);">
+              <%= project.region %> Region
+              <% if (project.category) { %>
+                · <%= project.category %>
+              <% } %>
+            </p>
+          </div>
+
+          <div style="text-align:right;">
+            <strong>UGX <%= Number(project.budget || 0).toLocaleString() %></strong>
+            <p style="margin:.3rem 0 0; color:var(--text-muted); font-size:.85rem;">
+              Submitted <%= project.created_at
+                ? new Date(project.created_at).toLocaleDateString()
+                : "Date unavailable" %>
+            </p>
+          </div>
+        </div>
+
+        <p style="margin:1rem 0; line-height:1.6;">
+          <%= project.description
+            ? (project.description.length > 280
+              ? project.description.substring(0, 280) + "..."
+              : project.description)
+            : "No description provided." %>
+        </p>
+
+        <div style="display:flex; justify-content:flex-end;">
+          <a href="/admin/project-proposals/<%= project.id %>" class="btn btn--primary">
+            Review Proposal
+          </a>
+        </div>
+      </article>
+    <% }); %>
+  </div>
+<% } %>

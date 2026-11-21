@@ -1,11 +1,11 @@
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); flex-wrap: wrap; gap: var(--space-3);">
+﻿<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); flex-wrap: wrap; gap: var(--space-3);">
   <div>
     <h1 style="margin: 0;"><%= project.title %></h1>
     <p style="color: var(--muted); margin: var(--space-1) 0 0; font-size: var(--text-sm);">
-      <%= project.region %> Region · <%= project.category %>
+      <%= project.region %> Region Â· <%= project.category %>
     </p>
   </div>
-  <a href="/admin/projects" class="btn btn--ghost">← Back to Projects</a>
+  <a href="/admin/projects" class="btn btn--ghost">â† Back to Projects</a>
 </div>
 
 <!-- Project Summary Card -->
@@ -35,13 +35,7 @@
         </span>
       </p>
       <div style="margin-top: var(--space-2);">
-        <% if (project.status === 'proposed') { %>
-          <form method="post" action="/admin/projects/<%= project.id %>/status" style="display:inline;">
-            <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
-            <input type="hidden" name="status" value="approved">
-            <button type="submit" class="btn btn--primary btn--sm">Approve</button>
-          </form>
-        <% } else if (project.status === 'approved') { %>
+        <% if (project.status === 'approved') { %>
           <form method="post" action="/admin/projects/<%= project.id %>/status" style="display:inline;">
             <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
             <input type="hidden" name="status" value="in_progress">
@@ -123,7 +117,7 @@
                 <strong style="display: block;"><%= m.title %></strong>
                 <span style="font-size: var(--text-xs); color: var(--muted);">
                   Target: <%= m.target_date ? new Date(m.target_date).toLocaleDateString() : 'TBD' %>
-                  <% if (m.assigned_region) { %> · Region: <%= m.assigned_region %><% } %>
+                  <% if (m.assigned_region) { %> Â· Region: <%= m.assigned_region %><% } %>
                 </span>
               </div>
               <span class="badge badge--<%= m.status === 'completed' ? 'success' : 'warning' %>"><%= m.status %></span>
@@ -181,7 +175,7 @@
               <strong style="font-size: var(--text-sm);"><%= a.title %></strong><br>
               <span style="font-size: 10px; color: var(--muted);"><%= a.file_name %></span>
             </div>
-            <a href="<%= a.file_path %>" target="_blank" class="btn btn--ghost btn--sm">⬇ Download</a>
+            <a href="<%= a.file_path %>" target="_blank" class="btn btn--ghost btn--sm">â¬‡ Download</a>
           </div>
         <% }) %>
       </div>

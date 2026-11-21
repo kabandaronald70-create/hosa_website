@@ -25,6 +25,9 @@ import {
   actionUpdateProject,
   actionDeleteProject,
   actionUpdateFundsRaised,
+  showProjectApprovalQueue,
+  showProjectProposalReview,
+  actionDecideProjectProposal,
 } from "../controllers/projectController.js";
 
 import {
@@ -372,6 +375,21 @@ router.get(
 // Projects & Regional Development
 // ---------------------------------------------------------------------------
 
+// Project proposal approval access is based on current leadership roles
+// or the Super Admin system role.
+const requireProjectApprovalAccess = (req, res, next) => {
+  const isSuperAdmin = req.userRoles?.includes("super_admin");
+  const isChairperson = req.leadershipRoles?.includes("Chairperson");
+  const isProjectsManager = req.leadershipRoles?.includes("Projects Manager");
+
+  if (isSuperAdmin || isChairperson || isProjectsManager) {
+    return next();
+  }
+
+  req.flash("error", "You do not have permission to review project proposals.");
+  return res.redirect("/dashboard");
+};
+
 const requireProjectAccess = (req, res, next) => {
   const isSuperAdmin = req.userRoles?.includes("super_admin");
   const isChairperson = req.leadershipRoles?.includes("Chairperson");
@@ -461,6 +479,29 @@ router.post(
 );
 
 // ---------------------------------------------------------------------------
+// Project proposal approval workflow.
+router.get(
+  "/admin/project-proposals",
+  requireAuth,
+  requireProjectApprovalAccess,
+  showProjectApprovalQueue,
+);
+
+router.get(
+  "/admin/project-proposals/:id",
+  requireAuth,
+  requireProjectApprovalAccess,
+  showProjectProposalReview,
+);
+
+router.post(
+  "/admin/project-proposals/:id/decision",
+  requireAuth,
+  requireProjectApprovalAccess,
+  csrfCheck,
+  actionDecideProjectProposal,
+);
+
 // Regional Reports
 // Restricted to Super Admin, Chairperson and Projects Manager.
 // ---------------------------------------------------------------------------

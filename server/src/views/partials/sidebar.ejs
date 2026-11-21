@@ -124,6 +124,16 @@
     </div>
   <% } %>
 
+  <% if (isSuper || isProjectManager) { %>
+    <hr class="sidebar__divider">
+    <div class="sidebar__group">
+      <p class="sidebar__group-title">Approvals</p>
+      <a href="/admin/project-proposals" class="sidebar__link" <%= activePath.startsWith('/admin/project-proposals') ? 'aria-current="page"' : '' %>>
+        <span class="sidebar__link-icon">&#10003;</span> Project Approvals
+      </a>
+    </div>
+  <% } %>
+
     <% if (isSuper) { %>
     <hr class="sidebar__divider">
     <div class="sidebar__group">
