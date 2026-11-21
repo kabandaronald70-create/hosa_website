@@ -11,6 +11,9 @@ import {
   listAllContributionsForExport,
   getExpenseById,
   listAllExpensesForExport,
+  rejectContribution,
+  getMemberContributionProof,
+  getFinanceContributionProof,
 } from "../models/financeModel.js";
 import { query } from "../config/db.js";
 import { auditLog } from "../services/auditService.js";
@@ -20,6 +23,11 @@ import {
   notifyExpenseRejectedBySuperAdmin,
 } from "../services/notificationsService.js";
 import { listDonationProjects } from "../models/projectModel.js";
+import {
+  uploadContributionProofFile,
+  cleanupContributionProofFile,
+  createContributionProofSignedUrl,
+} from "../services/contributionProofFileService.js";
 
 export async function showFinanceDashboard(req, res, next) {
   try {
@@ -66,6 +74,52 @@ export async function actionVerifyContribution(req, res, next) {
 
     req.flash("success", "Contribution verified and added to the balance.");
     res.redirect("/admin/finance");
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Reject Contribution
+// ---------------------------------------------------------------------------
+
+export async function actionRejectContribution(req, res, next) {
+  try {
+    const { id } = req.params;
+    const reason =
+      typeof req.body.reason === "string" ? req.body.reason.trim() : "";
+
+    if (reason.length < 5 || reason.length > 500) {
+      req.flash(
+        "error",
+        "The rejection reason must be between 5 and 500 characters.",
+      );
+      return res.redirect("/admin/finance");
+    }
+
+    const rejected = await rejectContribution(id, req.user.id, reason);
+
+    if (!rejected) {
+      req.flash(
+        "error",
+        "This contribution was already processed or is no longer pending.",
+      );
+      return res.redirect("/admin/finance");
+    }
+
+    await auditLog({
+      req,
+      action: "finance.reject_contribution",
+      targetType: "contribution",
+      targetId: id,
+    });
+
+    req.flash(
+      "success",
+      "Contribution rejected. The rejection reason has been recorded.",
+    );
+
+    return res.redirect("/admin/finance");
   } catch (err) {
     next(err);
   }
@@ -207,7 +261,24 @@ export async function showMyContributions(req, res, next) {
   try {
     const [{ rows: contributions }, projects] = await Promise.all([
       query(
-        `SELECT c.*, p.title AS project_title
+        `SELECT
+           c.id,
+           c.user_id,
+           c.amount,
+           c.currency,
+           c.purpose,
+           c.payment_method,
+           c.reference,
+           c.project_id,
+           c.status,
+           c.verified_by,
+           c.verified_at,
+           c.rejection_reason,
+           c.rejected_at,
+           c.payment_proof_name,
+           (c.payment_proof_path IS NOT NULL) AS has_payment_proof,
+           c.created_at,
+           p.title AS project_title
          FROM contributions c
          LEFT JOIN projects p ON c.project_id = p.id
          WHERE c.user_id = $1
@@ -219,18 +290,22 @@ export async function showMyContributions(req, res, next) {
 
     const purposeQuery =
       typeof req.query.purpose === "string" ? req.query.purpose : "";
+
     const projectQuery =
       typeof req.query.project_id === "string" ? req.query.project_id : "";
+
     const preselectedProject = projects.find(
       (project) =>
         project.id === projectQuery || project.title === purposeQuery,
     );
+
     const purposes = [
       "Annual Subscription",
       "Project Donation",
       "General Fund",
       "Other",
     ];
+
     const preselectedPurpose = preselectedProject
       ? "Project Donation"
       : purposes.includes(purposeQuery)
@@ -250,26 +325,98 @@ export async function showMyContributions(req, res, next) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Member: View Own Payment Proof
+// ---------------------------------------------------------------------------
+
+export async function showMyContributionProof(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    // The model query must match BOTH the contribution ID and member ID.
+    const proof = await getMemberContributionProof(id, req.user.id);
+
+    if (!proof) {
+      req.flash(
+        "error",
+        "Payment proof was not found or you are not authorized to access it.",
+      );
+      return res.redirect("/dashboard/contributions");
+    }
+
+    const signedUrl = await createContributionProofSignedUrl(
+      proof.payment_proof_path,
+    );
+
+    return res.redirect(signedUrl);
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Finance: View Contribution Payment Proof
+// ---------------------------------------------------------------------------
+
+export async function showFinanceContributionProof(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    // This route must be protected by requireFinanceAccess in admin.js.
+    const proof = await getFinanceContributionProof(id);
+
+    if (!proof) {
+      req.flash("error", "Payment proof was not found for this contribution.");
+      return res.redirect("/admin/finance");
+    }
+
+    const signedUrl = await createContributionProofSignedUrl(
+      proof.payment_proof_path,
+    );
+
+    return res.redirect(signedUrl);
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Submit Member Contribution
+// ---------------------------------------------------------------------------
+
 export async function actionSubmitContribution(req, res, next) {
+  let uploadedProof = null;
+
   try {
     const { amount, purpose, payment_method, reference, project_id } = req.body;
 
     const parsedAmount = Number(amount);
+
     const purposes = [
       "Annual Subscription",
       "Project Donation",
       "General Fund",
       "Other",
     ];
+
     const paymentMethods = ["Mobile Money", "Bank Transfer", "Cash"];
 
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-      req.flash("error", "Enter a valid contribution amount greater than zero.");
+      req.flash(
+        "error",
+        "Enter a valid contribution amount greater than zero.",
+      );
       return res.redirect("/dashboard/contributions");
     }
 
-    if (!purposes.includes(purpose) || !paymentMethods.includes(payment_method)) {
-      req.flash("error", "Select a valid contribution purpose and payment method.");
+    if (
+      !purposes.includes(purpose) ||
+      !paymentMethods.includes(payment_method)
+    ) {
+      req.flash(
+        "error",
+        "Select a valid contribution purpose and payment method.",
+      );
       return res.redirect("/dashboard/contributions");
     }
 
@@ -282,6 +429,22 @@ export async function actionSubmitContribution(req, res, next) {
       return res.redirect("/dashboard/contributions");
     }
 
+    // Every member contribution must include payment evidence.
+    if (!req.file) {
+      req.flash(
+        "error",
+        "Upload an image of your payment slip or receipt before submitting.",
+      );
+      return res.redirect("/dashboard/contributions");
+    }
+
+    // Validate the actual image content and upload it privately.
+    uploadedProof = await uploadContributionProofFile(
+      req.user.id,
+      req.file.buffer,
+      req.file.originalname,
+    );
+
     const contribution = await createContribution({
       userId: req.user.id,
       amount: parsedAmount,
@@ -289,22 +452,39 @@ export async function actionSubmitContribution(req, res, next) {
       paymentMethod: payment_method,
       reference,
       projectId: purpose === "Project Donation" ? project_id : null,
+      paymentProofPath: uploadedProof.storagePath,
+      paymentProofName: uploadedProof.originalName,
     });
 
     if (!contribution) {
+      await cleanupContributionProofFile(uploadedProof.storagePath);
+      uploadedProof = null;
+
       req.flash(
         "error",
         "That project is no longer accepting donations. Select an approved project and try again.",
       );
+
       return res.redirect("/dashboard/contributions");
     }
 
+    // The database record now owns the uploaded proof.
+    // Do not remove it after successful submission.
+    uploadedProof = null;
+
     req.flash(
       "success",
-      "Contribution submitted! It will reflect in your history once the Treasurer verifies it.",
+      "Contribution submitted successfully! Your payment proof has been uploaded securely. The Treasurer will review it before verification.",
     );
-    res.redirect("/dashboard/contributions");
+
+    return res.redirect("/dashboard/contributions");
   } catch (err) {
+    // If the database operation fails after the file upload,
+    // remove the unreferenced storage object.
+    if (uploadedProof?.storagePath) {
+      await cleanupContributionProofFile(uploadedProof.storagePath);
+    }
+
     next(err);
   }
 }

@@ -4,24 +4,40 @@
 </header>
 
 <div style="display: grid; grid-template-columns: 1fr; gap: var(--space-5);">
-  
+
   <!-- Submit New Contribution -->
   <div class="card">
     <h2 style="margin-top: 0;">Make a Contribution</h2>
+
     <p style="font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-4);">
-      Submit your payment details below. The Treasurer will verify the transaction against the bank statement. Verified project donations update the selected project's funds raised and progress.
+      Submit your payment details and upload an image of your payment slip or receipt.
+      The Treasurer will review your evidence before verifying the contribution.
+      Verified project donations update the selected project's funds raised and progress.
     </p>
 
-    <form method="POST" action="/dashboard/contributions">
+    <form
+      method="POST"
+      action="/dashboard/contributions"
+      enctype="multipart/form-data"
+    >
       <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
-      
+
       <div class="responsive-fields" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
         <div class="field">
-          <label>Amount (UGX)</label>
-          <input type="number" name="amount" required min="1" placeholder="e.g. 50000">
+          <label for="contribution-amount">Amount (UGX)</label>
+          <input
+            type="number"
+            id="contribution-amount"
+            name="amount"
+            required
+            min="1"
+            step="0.01"
+            placeholder="e.g. 50000"
+          >
         </div>
+
         <div class="field">
-          <label>Purpose</label>
+          <label for="purpose-select">Purpose</label>
           <select name="purpose" id="purpose-select" required>
             <option value="Annual Subscription" <%= preselectedPurpose === 'Annual Subscription' ? 'selected' : '' %>>Annual Subscription (Dues)</option>
             <option value="Project Donation" <%= preselectedPurpose === 'Project Donation' ? 'selected' : '' %> <%= projects.length === 0 ? 'disabled' : '' %>>Project Donation</option>
@@ -31,50 +47,109 @@
         </div>
       </div>
 
-      <!-- Project Dropdown (hidden by default, shown when "Project Donation" is selected) -->
-      <div class="field" id="project-field" style="<%= preselectedPurpose === 'Project Donation' ? '' : 'display: none;' %>">
-        <label>Select Project</label>
-        <select name="project_id" id="project-select" <%= preselectedPurpose === 'Project Donation' ? 'required' : 'disabled' %>>
+      <!-- Project Dropdown -->
+      <div
+        class="field"
+        id="project-field"
+        style="<%= preselectedPurpose === 'Project Donation' ? '' : 'display: none;' %>"
+      >
+        <label for="project-select">Select Project</label>
+
+        <select
+          name="project_id"
+          id="project-select"
+          <%= preselectedPurpose === 'Project Donation' ? 'required' : 'disabled' %>
+        >
           <option value="">-- Select an approved project --</option>
+
           <% projects.forEach(p => { %>
-            <option value="<%= p.id %>" <%= preselectedProjectId === p.id ? 'selected' : '' %>>
+            <option
+              value="<%= p.id %>"
+              <%= preselectedProjectId === p.id ? 'selected' : '' %>
+            >
               <%= p.title %> (<%= p.region %>) — UGX <%= Number(p.funds_raised || 0).toLocaleString() %> raised
             </option>
           <% }) %>
         </select>
+
         <% if (projects.length === 0) { %>
-          <span class="field-hint">There are no approved projects accepting donations right now.</span>
+          <span class="field-hint">
+            There are no approved projects accepting donations right now.
+          </span>
         <% } else { %>
-          <span class="field-hint">Choose an approved or in-progress project. Its progress updates after the Treasurer verifies your contribution.</span>
+          <span class="field-hint">
+            Choose an approved or in-progress project. Its progress updates after the Treasurer verifies your contribution.
+          </span>
         <% } %>
       </div>
 
       <div class="responsive-fields" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
         <div class="field">
-          <label>Payment Method</label>
-          <select name="payment_method" required>
+          <label for="payment-method">Payment Method</label>
+          <select name="payment_method" id="payment-method" required>
             <option value="Mobile Money">Mobile Money (MTN/Airtel)</option>
             <option value="Bank Transfer">Bank Transfer</option>
             <option value="Cash">Cash to Treasurer</option>
           </select>
         </div>
+
         <div class="field">
-          <label>Transaction Reference (Optional)</label>
-          <input type="text" name="reference" placeholder="e.g. MP123456">
+          <label for="payment-reference">Transaction Reference (Optional)</label>
+          <input
+            type="text"
+            id="payment-reference"
+            name="reference"
+            maxlength="150"
+            placeholder="e.g. MP123456"
+          >
         </div>
       </div>
 
-      <button type="submit" class="btn btn--primary" style="width: 100%; margin-top: var(--space-2);">Submit Contribution</button>
+      <!-- Required Payment Proof -->
+      <div class="field" style="margin-top: var(--space-3);">
+        <label for="payment-proof">
+          Payment Slip / Receipt Image <span aria-hidden="true">*</span>
+        </label>
+
+        <input
+          type="file"
+          id="payment-proof"
+          name="payment_proof"
+          accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+          required
+        >
+
+        <span class="field-hint">
+          Required. Upload a clear image of your payment slip or receipt.
+          Accepted formats: JPG, JPEG, PNG and WebP. Maximum size: 5 MB.
+        </span>
+
+        <p style="font-size: var(--text-xs); color: var(--muted); margin-top: var(--space-2);">
+          Your payment evidence is stored privately and can only be accessed by you
+          and authorized HOSA finance personnel.
+        </p>
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn--primary"
+        style="width: 100%; margin-top: var(--space-3);"
+      >
+        Submit Contribution
+      </button>
     </form>
   </div>
 
   <!-- Contribution History -->
   <div class="card">
     <h2 style="margin-top: 0;">My Payment History</h2>
-    
+
     <% if (contributions.length === 0) { %>
-      <p style="color: var(--muted);">You have not made any contributions yet.</p>
+      <p style="color: var(--muted);">
+        You have not made any contributions yet.
+      </p>
     <% } else { %>
+
       <div class="table-responsive">
         <table class="data-table">
           <thead>
@@ -83,28 +158,66 @@
               <th>Purpose</th>
               <th>Amount</th>
               <th>Status</th>
+              <th>Payment Proof</th>
             </tr>
           </thead>
+
           <tbody>
             <% contributions.forEach(c => { %>
               <tr>
                 <td data-label="Date" style="font-size: var(--text-sm);">
                   <%= new Date(c.created_at).toLocaleDateString('en-GB') %>
                 </td>
+
                 <td data-label="Purpose">
                   <strong><%= c.purpose %></strong><br>
+
                   <% if (c.project_title) { %>
-                    <span style="font-size: var(--text-xs); color: var(--green);">Project: <%= c.project_title %></span><br>
+                    <span style="font-size: var(--text-xs); color: var(--green);">
+                      Project: <%= c.project_title %>
+                    </span><br>
                   <% } %>
-                  <span style="font-size: var(--text-xs); color: var(--muted);"><%= c.payment_method %> <%= c.reference ? `(${c.reference})` : '' %></span>
+
+                  <span style="font-size: var(--text-xs); color: var(--muted);">
+                    <%= c.payment_method %>
+                    <%= c.reference ? `(${c.reference})` : '' %>
+                  </span>
+
+                  <% if (c.status === 'rejected' && c.rejection_reason) { %>
+                    <div style="margin-top: var(--space-2); color: var(--danger); font-size: var(--text-xs);">
+                      <strong>Rejection reason:</strong>
+                      <%= c.rejection_reason %>
+                    </div>
+                  <% } %>
                 </td>
+
                 <td data-label="Amount">
-                  <strong>UGX <%= Number(c.amount).toLocaleString() %></strong>
+                  <strong>
+                    UGX <%= Number(c.amount).toLocaleString() %>
+                  </strong>
                 </td>
+
                 <td data-label="Status">
                   <span class="badge badge--<%= c.status === 'verified' ? 'success' : c.status === 'pending' ? 'warning' : 'danger' %>">
                     <%= c.status %>
                   </span>
+                </td>
+
+                <td data-label="Payment Proof">
+                  <% if (c.has_payment_proof) { %>
+                    <a
+                      href="/dashboard/contributions/<%= c.id %>/proof"
+                      class="btn btn--ghost"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View Receipt
+                    </a>
+                  <% } else { %>
+                    <span style="font-size: var(--text-xs); color: var(--muted);">
+                      Not available
+                    </span>
+                  <% } %>
                 </td>
               </tr>
             <% }) %>

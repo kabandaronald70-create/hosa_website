@@ -28,12 +28,15 @@
 
 <div style="display: grid; grid-template-columns: 1fr; gap: var(--space-6);">
   
-  <!-- Contributions to Verify -->
+    <!-- Contributions to Verify -->
   <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3); flex-wrap: wrap; gap: var(--space-2);">
       <h2 style="margin: 0;">Pending Contributions</h2>
+      <span style="font-size: var(--text-sm); color: var(--muted);">
+        Review payment evidence before verification.
+      </span>
     </div>
-    
+
     <% if (pendingContribs.length === 0) { %>
       <p style="color: var(--muted);">No pending contributions to verify.</p>
     <% } else { %>
@@ -44,8 +47,9 @@
               <th>Member</th>
               <th>Purpose</th>
               <th>Amount</th>
-              <th>Method</th>
-              <th>Action</th>
+              <th>Payment Details</th>
+              <th>Payment Proof</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -53,20 +57,127 @@
               <tr>
                 <td data-label="Member">
                   <strong><%= c.first_name ? `${c.first_name} ${c.last_name}` : 'Guest / External' %></strong>
+                  <% if (c.user_email) { %>
+                    <br>
+                    <span style="font-size: var(--text-xs); color: var(--muted);"><%= c.user_email %></span>
+                  <% } %>
                 </td>
+
                 <td data-label="Purpose">
                   <%= c.purpose %>
                   <% if (c.project_title) { %>
-                    <br><span style="font-size: var(--text-xs); color: var(--green);">Project: <%= c.project_title %></span>
+                    <br>
+                    <span style="font-size: var(--text-xs); color: var(--green);">
+                      Project: <%= c.project_title %>
+                    </span>
                   <% } %>
                 </td>
-                <td data-label="Amount"><strong>UGX <%= Number(c.amount).toLocaleString() %></strong></td>
-                <td data-label="Method"><%= c.payment_method %> (<%= c.reference || 'No Ref' %>)</td>
-                <td data-label="Action">
-                  <form method="post" action="/admin/finance/contributions/<%= c.id %>/verify" style="display:inline;">
-                    <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
-                    <button type="submit" class="btn btn--primary btn--sm">Verify</button>
-                  </form>
+
+                <td data-label="Amount">
+                  <strong>UGX <%= Number(c.amount).toLocaleString() %></strong>
+                </td>
+
+                <td data-label="Payment Details">
+                  <%= c.payment_method %>
+                  <br>
+                  <span style="font-size: var(--text-xs); color: var(--muted);">
+                    Ref: <%= c.reference || 'Not provided' %>
+                  </span>
+                </td>
+
+                <td data-label="Payment Proof">
+                  <% if (c.has_payment_proof) { %>
+                    <a
+                      href="/admin/finance/contributions/<%= c.id %>/proof"
+                      class="btn btn--ghost btn--sm"
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      View Receipt
+                    </a>
+                    <% if (c.payment_proof_name) { %>
+                      <br>
+                      <span style="font-size: 10px; color: var(--muted);">
+                        <%= c.payment_proof_name %>
+                      </span>
+                    <% } %>
+                  <% } else { %>
+                    <span style="color: var(--danger); font-size: var(--text-sm);">
+                      No receipt uploaded
+                    </span>
+                  <% } %>
+                </td>
+
+                <td data-label="Actions">
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+
+                    <% if (!c.user_id || c.has_payment_proof) { %>
+                      <form
+                        method="post"
+                        action="/admin/finance/contributions/<%= c.id %>/verify"
+                        onsubmit="return confirm('Have you checked the payment evidence and confirmed that this contribution was received?')"
+                        style="display: inline;"
+                      >
+                        <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                        <button type="submit" class="btn btn--primary btn--sm">
+                          Verify
+                        </button>
+                      </form>
+                    <% } else { %>
+                      <span style="font-size: 11px; color: var(--danger);">
+                        Receipt required
+                      </span>
+                    <% } %>
+
+                    <button
+                      type="button"
+                      class="btn btn--ghost btn--sm"
+                      style="color: var(--danger);"
+                      onclick="document.getElementById('reject-contribution-<%= c.id %>').style.display = document.getElementById('reject-contribution-<%= c.id %>').style.display === 'none' ? 'block' : 'none';"
+                    >
+                      Reject
+                    </button>
+                  </div>
+
+                  <div
+                    id="reject-contribution-<%= c.id %>"
+                    style="display: none; margin-top: var(--space-3); background: #fff5f5; padding: var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--danger);"
+                  >
+                    <form
+                      method="post"
+                      action="/admin/finance/contributions/<%= c.id %>/reject"
+                    >
+                      <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+
+                      <div class="field" style="margin-bottom: var(--space-2);">
+                        <label style="font-size: 12px; color: var(--danger); font-weight: bold;">
+                          Reason for Rejection
+                        </label>
+                        <textarea
+                          name="reason"
+                          required
+                          minlength="5"
+                          maxlength="500"
+                          rows="3"
+                          placeholder="Explain why this contribution cannot be verified."
+                          style="width: 100%;"
+                        ></textarea>
+                      </div>
+
+                      <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                        <button type="submit" class="btn btn--danger btn--sm">
+                          Confirm Rejection
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn--ghost btn--sm"
+                          onclick="document.getElementById('reject-contribution-<%= c.id %>').style.display = 'none';"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  </div>
                 </td>
               </tr>
             <% }) %>

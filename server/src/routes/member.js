@@ -15,7 +15,7 @@ import {
 } from "../controllers/businessController.js";
 import { requireAuth } from "../middleware/auth.js";
 import { csrfCheck } from "../middleware/csrf.js";
-import { uploadLogo } from "../middleware/upload.js";
+import { uploadLogo, uploadContributionProof } from "../middleware/upload.js";
 import {
   showMyNetworkRequests,
   actionCreateRequest,
@@ -23,6 +23,7 @@ import {
 } from "../controllers/networkController.js";
 import {
   showMyContributions,
+  showMyContributionProof,
   actionSubmitContribution,
 } from "../controllers/financeController.js";
 
@@ -67,6 +68,18 @@ router.post(
 
 // Contributions
 router.get("/dashboard/contributions", requireAuth, showMyContributions);
-router.post("/dashboard/contributions", requireAuth, actionSubmitContribution);
+
+router.post(
+  "/dashboard/contributions",
+  requireAuth,
+  uploadContributionProof,
+  csrfCheck,
+  actionSubmitContribution,
+);
+router.get(
+  "/dashboard/contributions/:id/proof",
+  requireAuth,
+  showMyContributionProof,
+);
 
 export default router;

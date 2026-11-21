@@ -1,14 +1,19 @@
 import { Router } from "express";
 import multer from "multer";
-import { requireRole } from "../middleware/auth.js";
+import { requireAuth, requireRole } from "../middleware/auth.js";
 import { csrfCheck } from "../middleware/csrf.js";
+import { requireFinanceAccess } from "../middleware/requireFinanceAccess.js";
+import { requireRegionalReportsAccess } from "../middleware/requireRegionalReportsAccess.js";
+
 import {
   showPendingBusinesses,
   actionApproveBusiness,
   actionRejectBusiness,
   actionToggleFeatured,
 } from "../controllers/businessController.js";
+
 import { showAnalyticsDashboard } from "../controllers/analyticsController.js";
+
 import {
   showAdminProjects,
   showAdminProjectDetail,
@@ -27,6 +32,7 @@ import {
   submitAnnouncement,
   removeAnnouncement,
 } from "../controllers/announcementController.js";
+
 import {
   showAdminOverview,
   showMembersList,
@@ -63,6 +69,7 @@ import {
   actionMarkRegionalReportReviewed,
   actionDownloadRegionalReportAttachmentAdmin,
 } from "../controllers/adminController.js";
+
 import {
   showAdminCampaigns,
   actionCreateCampaign,
@@ -70,9 +77,12 @@ import {
   actionUpdateCampaign,
   actionDeleteCampaign,
 } from "../controllers/campaignController.js";
+
 import {
   showFinanceDashboard,
   actionVerifyContribution,
+  actionRejectContribution,
+  showFinanceContributionProof,
   actionCreateExpense,
   actionUpdateExpenseStatus,
   actionUpdateExpense,
@@ -81,21 +91,27 @@ import {
   actionExportAllExpenses,
   actionExportSingleExpense,
 } from "../controllers/financeController.js";
-import { requireRegionalReportsAccess } from "../middleware/requireRegionalReportsAccess.js";
 
 const router = Router();
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
 });
 
+// General admin access restriction.
+//
+// Finance and regional-report routes have their own dedicated
+// authentication and authorization middleware.
 router.use("/admin", (req, res, next) => {
   const isRegionalReportsRoute =
     req.path === "/regional-reports" ||
     req.path.startsWith("/regional-reports/");
 
-  // Regional reports have their own dedicated authorization.
-  if (isRegionalReportsRoute) {
+  const isFinanceRoute =
+    req.path === "/finance" || req.path.startsWith("/finance/");
+
+  if (isRegionalReportsRoute || isFinanceRoute) {
     return next();
   }
 
@@ -104,7 +120,10 @@ router.use("/admin", (req, res, next) => {
 
 router.get("/admin", showAdminOverview);
 
+// ---------------------------------------------------------------------------
 // Members
+// ---------------------------------------------------------------------------
+
 router.get("/admin/members", showMembersList);
 router.get("/admin/members/:id", showMemberDetail);
 router.post("/admin/members/:id/verify", actionVerifyMember);
@@ -113,7 +132,10 @@ router.post("/admin/members/:id/suspend", actionSuspendMember);
 router.post("/admin/members/:id/reactivate", actionReactivateMember);
 router.post("/admin/members/:id/approve-membership", actionApproveMembership);
 
+// ---------------------------------------------------------------------------
 // Moderation
+// ---------------------------------------------------------------------------
+
 router.get("/admin/moderation", showModerationQueue);
 router.post("/admin/moderation/stories/:id/approve", actionApproveStory);
 router.post("/admin/moderation/stories/:id/reject", actionRejectStory);
@@ -126,26 +148,38 @@ router.post(
   actionRejectOpportunity,
 );
 
+// ---------------------------------------------------------------------------
 // Events
+// ---------------------------------------------------------------------------
+
 router.get("/admin/events", showEventsList);
-router.get("/admin/events/new", showNewEventForm); // BEFORE :id
+router.get("/admin/events/new", showNewEventForm);
 router.post("/admin/events/new", actionCreateEvent);
 router.get("/admin/events/:id", showEventDetail);
 router.get("/admin/events/:id/edit", showEditEventForm);
 router.post("/admin/events/:id/update", actionUpdateEvent);
 router.post("/admin/events/:id/status", actionSetEventStatus);
 
+// ---------------------------------------------------------------------------
 // Audit log
+// ---------------------------------------------------------------------------
+
 router.get("/admin/audit", showAuditLog);
 router.get("/admin/audit/export.csv", exportAuditCsv);
 router.get("/admin/audit/:id", showAuditDetail);
 
+// ---------------------------------------------------------------------------
 // Announcements
+// ---------------------------------------------------------------------------
+
 router.get("/admin/announcements", showAdminAnnouncements);
 router.post("/admin/announcements", submitAnnouncement);
 router.post("/admin/announcements/:id/delete", removeAnnouncement);
 
+// ---------------------------------------------------------------------------
 // Reports
+// ---------------------------------------------------------------------------
+
 router.get(
   "/admin/reports",
   requireRole("admin", "super_admin"),
@@ -167,7 +201,10 @@ router.post(
   actionDeleteReportedContent,
 );
 
+// ---------------------------------------------------------------------------
 // Leadership & Governance
+// ---------------------------------------------------------------------------
+
 router.get(
   "/admin/leadership",
   requireRole("super_admin"),
@@ -189,7 +226,10 @@ router.post(
   actionDeleteLeadershipRole,
 );
 
+// ---------------------------------------------------------------------------
 // Business Directory Moderation
+// ---------------------------------------------------------------------------
+
 router.get(
   "/admin/businesses",
   requireRole("admin", "super_admin"),
@@ -211,7 +251,10 @@ router.post(
   actionToggleFeatured,
 );
 
+// ---------------------------------------------------------------------------
 // Campaigns
+// ---------------------------------------------------------------------------
+
 router.get(
   "/admin/campaigns",
   requireRole("admin", "super_admin"),
@@ -240,82 +283,87 @@ router.post(
 
 // ---------------------------------------------------------------------------
 // Financial Management
+// Restricted to Super Admin, Chairperson and Treasurer.
 // ---------------------------------------------------------------------------
-
-const requireFinanceAccess = (req, res, next) => {
-  const isSuperAdmin = req.userRoles.includes("super_admin");
-  const isChairperson = req.leadershipRoles?.includes("Chairperson");
-  const isTreasurer = req.leadershipRoles?.includes("Treasurer");
-
-  if (isSuperAdmin || isChairperson || isTreasurer) {
-    return next();
-  }
-
-  req.flash(
-    "error",
-    "You do not have permission to access the financial dashboard.",
-  );
-  res.redirect("/dashboard");
-};
 
 router.get(
   "/admin/finance",
-  requireRole("admin", "super_admin"),
+  requireAuth,
   requireFinanceAccess,
   showFinanceDashboard,
 );
 
+// Verify a pending contribution.
 router.post(
   "/admin/finance/contributions/:id/verify",
-  requireRole("admin", "super_admin"),
+  requireAuth,
   requireFinanceAccess,
   actionVerifyContribution,
 );
 
+// View private payment proof.
+router.get(
+  "/admin/finance/contributions/:id/proof",
+  requireAuth,
+  requireFinanceAccess,
+  showFinanceContributionProof,
+);
+
+// Reject a pending contribution with a reason.
+router.post(
+  "/admin/finance/contributions/:id/reject",
+  requireAuth,
+  requireFinanceAccess,
+  actionRejectContribution,
+);
+
+// Expenses.
 router.post(
   "/admin/finance/expenses",
-  requireRole("admin", "super_admin"),
+  requireAuth,
   requireFinanceAccess,
   actionCreateExpense,
 );
 
 router.post(
   "/admin/finance/expenses/:id/status",
-  requireRole("admin", "super_admin"),
+  requireAuth,
   requireFinanceAccess,
   actionUpdateExpenseStatus,
 );
 
 router.post(
   "/admin/finance/expenses/:id/update",
-  requireRole("admin", "super_admin"),
+  requireAuth,
   requireFinanceAccess,
   actionUpdateExpense,
 );
 
 router.post(
   "/admin/finance/expenses/:id/delete",
-  requireRole("admin", "super_admin"),
+  requireAuth,
   requireFinanceAccess,
   actionDeleteExpense,
 );
 
-// Document export
+// Financial exports.
 router.get(
   "/admin/finance/export/contributions",
-  requireRole("admin", "super_admin"),
+  requireAuth,
   requireFinanceAccess,
   actionExportContributions,
 );
+
 router.get(
   "/admin/finance/export/expenses",
-  requireRole("admin", "super_admin"),
+  requireAuth,
   requireFinanceAccess,
   actionExportAllExpenses,
 );
+
 router.get(
   "/admin/finance/export/expenses/:id",
-  requireRole("admin", "super_admin"),
+  requireAuth,
   requireFinanceAccess,
   actionExportSingleExpense,
 );
@@ -343,6 +391,7 @@ router.get(
   requireProjectAccess,
   showAdminProjects,
 );
+
 router.post(
   "/admin/projects",
   requireRole("admin", "super_admin"),
@@ -351,42 +400,49 @@ router.post(
   csrfCheck,
   actionCreateProject,
 );
+
 router.get(
   "/admin/projects/:id",
   requireRole("admin", "super_admin"),
   requireProjectAccess,
   showAdminProjectDetail,
 );
+
 router.post(
   "/admin/projects/:id/status",
   requireRole("admin", "super_admin"),
   requireProjectAccess,
   actionUpdateProjectStatus,
 );
+
 router.post(
   "/admin/projects/milestones",
   requireRole("admin", "super_admin"),
   requireProjectAccess,
   actionCreateMilestone,
 );
+
 router.post(
   "/admin/projects/milestones/:id/status",
   requireRole("admin", "super_admin"),
   requireProjectAccess,
   actionUpdateMilestoneStatus,
 );
+
 router.post(
   "/admin/projects/:id/update",
   requireRole("admin", "super_admin"),
   requireProjectAccess,
   actionUpdateProject,
 );
+
 router.post(
   "/admin/projects/:id/delete",
   requireRole("admin", "super_admin"),
   requireProjectAccess,
   actionDeleteProject,
 );
+
 router.post(
   "/admin/projects/:id/funds",
   requireRole("admin", "super_admin"),
@@ -394,7 +450,7 @@ router.post(
   actionUpdateFundsRaised,
 );
 
-// File uploads
+// File uploads.
 router.post(
   "/admin/projects/:id/files",
   requireRole("admin", "super_admin"),
@@ -404,26 +460,37 @@ router.post(
   actionUploadProjectFile,
 );
 
-// Regional Reports (Restricted to Super Admin, Chairperson, Projects Manager)
+// ---------------------------------------------------------------------------
+// Regional Reports
+// Restricted to Super Admin, Chairperson and Projects Manager.
+// ---------------------------------------------------------------------------
+
 router.get(
   "/admin/regional-reports",
   requireRegionalReportsAccess,
   showRegionalReportsAdmin,
 );
+
 router.get(
   "/admin/regional-reports/:id/attachment",
   requireRegionalReportsAccess,
   actionDownloadRegionalReportAttachmentAdmin,
 );
+
 router.post(
   "/admin/regional-reports/:id/review",
   requireRegionalReportsAccess,
   actionMarkRegionalReportReviewed,
 );
+
+// ---------------------------------------------------------------------------
 // Analytics
+// ---------------------------------------------------------------------------
+
 router.get(
   "/admin/analytics",
   requireRole("super_admin"),
   showAnalyticsDashboard,
 );
+
 export default router;

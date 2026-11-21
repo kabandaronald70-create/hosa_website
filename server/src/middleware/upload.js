@@ -52,3 +52,28 @@ export const uploadDocument = multer({
     cb(null, true);
   },
 }).single("document");
+
+// --- Contribution Payment Proof Upload ---
+export const MAX_CONTRIBUTION_PROOF_BYTES = 5 * 1024 * 1024;
+
+export const uploadContributionProof = multer({
+  storage,
+  limits: {
+    fileSize: MAX_CONTRIBUTION_PROOF_BYTES,
+    files: 1,
+    fields: 10,
+    parts: 11,
+  },
+  fileFilter(req, file, cb) {
+    if (!ALLOWED_MIMES.has(file.mimetype)) {
+      const err = new Error(
+        "Only JPEG, PNG, or WebP payment-slip images are allowed.",
+      );
+      err.status = 400;
+      err.code = "INVALID_FILE_TYPE";
+      return cb(err);
+    }
+
+    cb(null, true);
+  },
+}).single("payment_proof");

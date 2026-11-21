@@ -89,6 +89,10 @@ export const env = Object.freeze({
       "SUPABASE_REGIONAL_REPORT_BUCKET",
       "regional-reports",
     ),
+    contributionProofBucket: optional(
+      "SUPABASE_CONTRIBUTION_PROOF_BUCKET",
+      "contribution-proofs",
+    ),
     signedUrlTtlSeconds: boundedInt(
       "SUPABASE_SIGNED_URL_TTL_SECONDS",
       60,
