@@ -16,6 +16,7 @@ import {
   getProjectApprovalHistory,
   decideProjectApproval,
 } from "../models/projectModel.js";
+import { listRegionalExpensesForProjectsManagerReview } from "../models/financeModel.js";
 import {
   uploadProjectFile,
   uploadProjectImage,
@@ -25,6 +26,37 @@ import {
   notifyProjectProposalSubmitted,
   notifyProjectApprovalDecision,
 } from "../services/notificationsService.js";
+
+function canManageProjects(req) {
+  const systemRoles = (req.userRoles || []).map((role) =>
+    String(role || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[\s-]+/g, "_"),
+  );
+
+  const leadershipRoles = (req.leadershipRoles || []).map((role) =>
+    String(role || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[\s-]+/g, "_"),
+  );
+
+  return (
+    systemRoles.includes("super_admin") ||
+    leadershipRoles.includes("projects_manager")
+  );
+}
+
+function isProjectsManager(req) {
+  return (req.leadershipRoles || []).some(
+    (role) =>
+      String(role || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[\s-]+/g, "_") === "projects_manager",
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Public Views
@@ -80,15 +112,23 @@ export async function showProjectDetails(req, res, next) {
 
 export async function showAdminProjects(req, res, next) {
   try {
-    const [projects, outreachOfficers] = await Promise.all([
+    const canReviewRegionalExpenses = isProjectsManager(req);
+
+    const [projects, outreachOfficers, regionalExpenses] = await Promise.all([
       listProjects({ limit: 100 }),
       listOutreachOfficers(),
+      canReviewRegionalExpenses
+        ? listRegionalExpensesForProjectsManagerReview({ limit: 50 })
+        : Promise.resolve([]),
     ]);
 
     res.render("admin/projects", {
       title: "Projects Management — Admin",
       projects,
       outreachOfficers,
+      canManageProjects: canManageProjects(req),
+      canReviewRegionalExpenses,
+      regionalExpenses,
       layout: "layouts/app",
     });
   } catch (err) {
@@ -328,12 +368,14 @@ export async function actionDeleteProject(req, res, next) {
 export async function showAdminProjectDetail(req, res, next) {
   try {
     const project = await getProjectById(req.params.id);
+
     if (!project) {
       return res.status(404).render("admin/404", {
         title: "Project not found",
         layout: "layouts/app",
       });
     }
+
     const [milestones, attachments] = await Promise.all([
       listMilestones(project.id),
       listAttachments(project.id),
@@ -344,6 +386,7 @@ export async function showAdminProjectDetail(req, res, next) {
       project,
       milestones,
       attachments,
+      canManageProjects: canManageProjects(req),
       layout: "layouts/app",
     });
   } catch (err) {
@@ -428,8 +471,7 @@ export async function showProjectApprovalQueue(req, res, next) {
       .flat()
       .sort(
         (a, b) =>
-          new Date(a.created_at).getTime() -
-          new Date(b.created_at).getTime(),
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
       );
 
     res.render("admin/project-proposals", {
@@ -517,9 +559,7 @@ export async function actionDecideProjectProposal(req, res, next) {
         : "";
 
     const comments =
-      typeof req.body.comments === "string"
-        ? req.body.comments.trim()
-        : "";
+      typeof req.body.comments === "string" ? req.body.comments.trim() : "";
 
     if (!["approved", "rejected"].includes(decision)) {
       req.flash("error", "Please select a valid approval decision.");
@@ -579,13 +619,19 @@ export async function actionDecideProjectProposal(req, res, next) {
       const failureMessages = {
         not_found: "Project proposal not found.",
         not_pending: "This proposal has already received a final decision.",
-        unauthorized: "Your required leadership appointment is not currently active.",
-        invalid_proposal_source: "This proposal has an invalid approval configuration.",
-        invalid_approval_sequence: "The proposal's approval sequence is invalid.",
-        incomplete_approval_history: "The proposal's approval history is incomplete.",
-        already_participated: "You have already participated in this proposal's approval process.",
+        unauthorized:
+          "Your required leadership appointment is not currently active.",
+        invalid_proposal_source:
+          "This proposal has an invalid approval configuration.",
+        invalid_approval_sequence:
+          "The proposal's approval sequence is invalid.",
+        incomplete_approval_history:
+          "The proposal's approval history is incomplete.",
+        already_participated:
+          "You have already participated in this proposal's approval process.",
         wrong_stage: "This proposal is awaiting a different approval stage.",
-        submitter_cannot_approve: "You cannot approve a proposal that you submitted.",
+        submitter_cannot_approve:
+          "You cannot approve a proposal that you submitted.",
       };
 
       req.flash(

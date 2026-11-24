@@ -2,7 +2,11 @@ import { Router } from "express";
 import multer from "multer";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { csrfCheck } from "../middleware/csrf.js";
-import { requireFinanceAccess } from "../middleware/requireFinanceAccess.js";
+import {
+  requireFinanceAccess,
+  requireFinanceDashboardAccess,
+  requireExpenseWorkflowAccess,
+} from "../middleware/requireFinanceAccess.js";
 import { requireRegionalReportsAccess } from "../middleware/requireRegionalReportsAccess.js";
 
 import {
@@ -104,8 +108,8 @@ const upload = multer({
 
 // General admin access restriction.
 //
-// Finance and regional-report routes have their own dedicated
-// authentication and authorization middleware.
+// Finance, regional reports, Projects Management and project proposal
+// routes have dedicated authentication and authorization middleware.
 router.use("/admin", (req, res, next) => {
   const isRegionalReportsRoute =
     req.path === "/regional-reports" ||
@@ -114,14 +118,24 @@ router.use("/admin", (req, res, next) => {
   const isFinanceRoute =
     req.path === "/finance" || req.path.startsWith("/finance/");
 
-  if (isRegionalReportsRoute || isFinanceRoute) {
+  const isProjectsRoute =
+    req.path === "/projects" || req.path.startsWith("/projects/");
+
+  const isProjectProposalsRoute =
+    req.path === "/project-proposals" ||
+    req.path.startsWith("/project-proposals/");
+
+  if (
+    isRegionalReportsRoute ||
+    isFinanceRoute ||
+    isProjectsRoute ||
+    isProjectProposalsRoute
+  ) {
     return next();
   }
 
   return requireRole("admin", "super_admin", "moderator")(req, res, next);
 });
-
-router.get("/admin", showAdminOverview);
 
 // ---------------------------------------------------------------------------
 // Members
@@ -286,17 +300,17 @@ router.post(
 
 // ---------------------------------------------------------------------------
 // Financial Management
-// Restricted to Super Admin, Chairperson and Treasurer.
 // ---------------------------------------------------------------------------
 
+// Full Treasurer/Super Admin dashboard, with a restricted Chairperson view.
 router.get(
   "/admin/finance",
   requireAuth,
-  requireFinanceAccess,
+  requireFinanceDashboardAccess,
   showFinanceDashboard,
 );
 
-// Verify a pending contribution.
+// Contribution operations remain restricted to Treasurer and Super Admin.
 router.post(
   "/admin/finance/contributions/:id/verify",
   requireAuth,
@@ -304,7 +318,6 @@ router.post(
   actionVerifyContribution,
 );
 
-// View private payment proof.
 router.get(
   "/admin/finance/contributions/:id/proof",
   requireAuth,
@@ -312,7 +325,6 @@ router.get(
   showFinanceContributionProof,
 );
 
-// Reject a pending contribution with a reason.
 router.post(
   "/admin/finance/contributions/:id/reject",
   requireAuth,
@@ -320,36 +332,23 @@ router.post(
   actionRejectContribution,
 );
 
-// Expenses.
+// Expense submission and approval use the separate office-role middleware.
+// The controller and model must enforce the individual approval stages.
 router.post(
   "/admin/finance/expenses",
   requireAuth,
-  requireFinanceAccess,
+  requireExpenseWorkflowAccess,
   actionCreateExpense,
 );
 
 router.post(
   "/admin/finance/expenses/:id/status",
   requireAuth,
-  requireFinanceAccess,
+  requireExpenseWorkflowAccess,
   actionUpdateExpenseStatus,
 );
 
-router.post(
-  "/admin/finance/expenses/:id/update",
-  requireAuth,
-  requireFinanceAccess,
-  actionUpdateExpense,
-);
-
-router.post(
-  "/admin/finance/expenses/:id/delete",
-  requireAuth,
-  requireFinanceAccess,
-  actionDeleteExpense,
-);
-
-// Financial exports.
+// Financial exports remain restricted to Treasurer and Super Admin.
 router.get(
   "/admin/finance/export/contributions",
   requireAuth,
@@ -372,107 +371,166 @@ router.get(
 );
 
 // ---------------------------------------------------------------------------
-// Projects & Regional Development
+// Project access permissions
 // ---------------------------------------------------------------------------
 
-// Project proposal approval access is based on current leadership roles
-// or the Super Admin system role.
+function normalizeProjectRole(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_");
+}
+
+function getProjectSystemRoles(req) {
+  return (req.userRoles || []).map(normalizeProjectRole);
+}
+
+function getProjectLeadershipRoles(req) {
+  return (req.leadershipRoles || []).map(normalizeProjectRole);
+}
+
+// Project proposal approval remains a separate permission.
 const requireProjectApprovalAccess = (req, res, next) => {
-  const isSuperAdmin = req.userRoles?.includes("super_admin");
-  const isChairperson = req.leadershipRoles?.includes("Chairperson");
-  const isProjectsManager = req.leadershipRoles?.includes("Projects Manager");
+  const systemRoles = getProjectSystemRoles(req);
+  const leadershipRoles = getProjectLeadershipRoles(req);
+
+  const isSuperAdmin = systemRoles.includes("super_admin");
+  const isChairperson = leadershipRoles.includes("chairperson");
+  const isProjectsManager = leadershipRoles.includes("projects_manager");
 
   if (isSuperAdmin || isChairperson || isProjectsManager) {
     return next();
   }
 
-  req.flash("error", "You do not have permission to review project proposals.");
+  req.flash(
+    "error",
+    "Access denied. Project proposal review is restricted to the Projects Manager, Chairperson and Super Admin.",
+  );
+
   return res.redirect("/dashboard");
 };
 
+// Viewing Projects Management allows Super Admin, Projects Manager
+// and Chairperson.
 const requireProjectAccess = (req, res, next) => {
-  const isSuperAdmin = req.userRoles?.includes("super_admin");
-  const isChairperson = req.leadershipRoles?.includes("Chairperson");
-  const isProjectsManager = req.leadershipRoles?.includes("Projects Manager");
+  const systemRoles = getProjectSystemRoles(req);
+  const leadershipRoles = getProjectLeadershipRoles(req);
+
+  const isSuperAdmin = systemRoles.includes("super_admin");
+  const isChairperson = leadershipRoles.includes("chairperson");
+  const isProjectsManager = leadershipRoles.includes("projects_manager");
 
   if (isSuperAdmin || isChairperson || isProjectsManager) {
     return next();
   }
 
-  req.flash("error", "You do not have permission to manage projects.");
+  req.flash(
+    "error",
+    "Access denied. Projects Management is restricted to the Projects Manager, Chairperson and Super Admin.",
+  );
+
   return res.redirect("/dashboard");
 };
 
+// Only Super Admin and Projects Manager can modify projects.
+// Chairperson is strictly read-only.
+const requireProjectMutationAccess = (req, res, next) => {
+  const systemRoles = getProjectSystemRoles(req);
+  const leadershipRoles = getProjectLeadershipRoles(req);
+
+  const isSuperAdmin = systemRoles.includes("super_admin");
+  const isProjectsManager = leadershipRoles.includes("projects_manager");
+
+  if (isSuperAdmin || isProjectsManager) {
+    return next();
+  }
+
+  req.flash(
+    "error",
+    "Access denied. Only the Projects Manager and Super Admin can modify projects.",
+  );
+
+  return res.redirect("/admin/projects");
+};
+
+// ---------------------------------------------------------------------------
+// Projects Management
+// ---------------------------------------------------------------------------
+
+// View project list: Super Admin, Projects Manager, Chairperson.
 router.get(
   "/admin/projects",
-  requireRole("admin", "super_admin"),
+  requireAuth,
   requireProjectAccess,
   showAdminProjects,
 );
 
+// Create project: Super Admin or Projects Manager.
 router.post(
   "/admin/projects",
-  requireRole("admin", "super_admin"),
-  requireProjectAccess,
+  requireAuth,
+  requireProjectMutationAccess,
   upload.single("image"),
   csrfCheck,
   actionCreateProject,
 );
 
+// View individual project: Super Admin, Projects Manager, Chairperson.
 router.get(
   "/admin/projects/:id",
-  requireRole("admin", "super_admin"),
+  requireAuth,
   requireProjectAccess,
   showAdminProjectDetail,
 );
 
+// All project mutations: Super Admin or Projects Manager.
 router.post(
   "/admin/projects/:id/status",
-  requireRole("admin", "super_admin"),
-  requireProjectAccess,
+  requireAuth,
+  requireProjectMutationAccess,
   actionUpdateProjectStatus,
 );
 
 router.post(
   "/admin/projects/milestones",
-  requireRole("admin", "super_admin"),
-  requireProjectAccess,
+  requireAuth,
+  requireProjectMutationAccess,
   actionCreateMilestone,
 );
 
 router.post(
   "/admin/projects/milestones/:id/status",
-  requireRole("admin", "super_admin"),
-  requireProjectAccess,
+  requireAuth,
+  requireProjectMutationAccess,
   actionUpdateMilestoneStatus,
 );
 
 router.post(
   "/admin/projects/:id/update",
-  requireRole("admin", "super_admin"),
-  requireProjectAccess,
+  requireAuth,
+  requireProjectMutationAccess,
   actionUpdateProject,
 );
 
 router.post(
   "/admin/projects/:id/delete",
-  requireRole("admin", "super_admin"),
-  requireProjectAccess,
+  requireAuth,
+  requireProjectMutationAccess,
   actionDeleteProject,
 );
 
 router.post(
   "/admin/projects/:id/funds",
-  requireRole("admin", "super_admin"),
-  requireProjectAccess,
+  requireAuth,
+  requireProjectMutationAccess,
   actionUpdateFundsRaised,
 );
 
-// File uploads.
+// File uploads: Super Admin or Projects Manager.
 router.post(
   "/admin/projects/:id/files",
-  requireRole("admin", "super_admin"),
-  requireProjectAccess,
+  requireAuth,
+  requireProjectMutationAccess,
   upload.single("file"),
   csrfCheck,
   actionUploadProjectFile,

@@ -1,5 +1,8 @@
-﻿import { describe, it, expect, vi } from "vitest";
-import { requireFinanceAccess } from "../src/middleware/requireFinanceAccess.js";
+import { describe, it, expect, vi } from "vitest";
+import {
+  requireFinanceAccess,
+  requireExpenseWorkflowAccess,
+} from "../src/middleware/requireFinanceAccess.js";
 
 function createMocks({ userRoles = [], leadershipRoles = [] } = {}) {
   const req = {
@@ -41,7 +44,7 @@ describe("requireFinanceAccess", () => {
     expect(res.redirect).not.toHaveBeenCalled();
   });
 
-  it("allows an appointed Chairperson without an admin system role", () => {
+  it("denies an appointed Chairperson without an authorized finance role", () => {
     const { req, res, next } = createMocks({
       userRoles: ["member"],
       leadershipRoles: ["Chairperson"],
@@ -49,8 +52,8 @@ describe("requireFinanceAccess", () => {
 
     requireFinanceAccess(req, res, next);
 
-    expect(next).toHaveBeenCalledOnce();
-    expect(res.redirect).not.toHaveBeenCalled();
+    expect(next).not.toHaveBeenCalled();
+    expect(res.redirect).toHaveBeenCalledWith("/dashboard");
   });
 
   it("denies an ordinary member", () => {
@@ -63,7 +66,7 @@ describe("requireFinanceAccess", () => {
     expect(next).not.toHaveBeenCalled();
     expect(req.flash).toHaveBeenCalledWith(
       "error",
-      "You do not have permission to access the financial dashboard.",
+      "Access denied. Only the Treasurer and Super Admin can perform this financial operation.",
     );
     expect(res.redirect).toHaveBeenCalledWith("/dashboard");
   });
@@ -86,6 +89,36 @@ describe("requireFinanceAccess", () => {
     });
 
     requireFinanceAccess(req, res, next);
+
+    expect(next).not.toHaveBeenCalled();
+    expect(res.redirect).toHaveBeenCalledWith("/dashboard");
+  });
+});
+
+describe("requireExpenseWorkflowAccess", () => {
+  it.each([
+    "Outreach Officer (Eastern)",
+    "Outreach Officer (Central)",
+    "Outreach Officer (Western)",
+    "Outreach Officer (Northern)",
+  ])("allows %s to access expense workflow routes", (role) => {
+    const { req, res, next } = createMocks({
+      userRoles: ["member"],
+      leadershipRoles: [role],
+    });
+
+    requireExpenseWorkflowAccess(req, res, next);
+
+    expect(next).toHaveBeenCalledOnce();
+    expect(res.redirect).not.toHaveBeenCalled();
+  });
+
+  it("does not grant ordinary members expense workflow access", () => {
+    const { req, res, next } = createMocks({
+      userRoles: ["member"],
+    });
+
+    requireExpenseWorkflowAccess(req, res, next);
 
     expect(next).not.toHaveBeenCalled();
     expect(res.redirect).toHaveBeenCalledWith("/dashboard");

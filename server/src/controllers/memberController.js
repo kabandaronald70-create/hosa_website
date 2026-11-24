@@ -5,17 +5,32 @@ import {
 } from "../models/profileModel.js";
 import { listMyUpcomingRsvps } from "../models/rsvpModel.js";
 import { listMyRequests } from "../models/mentorshipModel.js";
-import { getFinancialSummary } from "../models/financeModel.js";
+import {
+  getFinancialSummary,
+  listPublicExpenseSummaries,
+  listPublicCompletedExpenseSummaries,
+} from "../models/financeModel.js";
 
 export async function showDashboard(req, res, next) {
   try {
-    const [profile, rsvps, requests, finance] = await Promise.all([
+    const [
+      profile,
+      rsvps,
+      requests,
+      finance,
+      publicExpenses,
+      completedExpenses,
+    ] = await Promise.all([
       getProfileByUserId(req.user.id),
       listMyUpcomingRsvps(req.user.id, 5),
       listMyRequests(req.user.id),
       getFinancialSummary(),
+      listPublicExpenseSummaries({ limit: 100 }),
+      listPublicCompletedExpenseSummaries({ limit: 100 }),
     ]);
+
     const completion = profileCompletion(profile);
+
     const activeMentorship =
       requests.received.filter((r) => r.status === "pending").length +
       requests.sent.filter((r) => ["pending", "accepted"].includes(r.status))
@@ -27,6 +42,8 @@ export async function showDashboard(req, res, next) {
       rsvps,
       activeMentorship,
       finance,
+      publicExpenses,
+      completedExpenses,
       layout: "layouts/app",
     });
   } catch (err) {

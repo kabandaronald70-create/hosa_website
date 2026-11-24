@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
   listProjectApprovalQueue: vi.fn(),
   getProjectApprovalHistory: vi.fn(),
   decideProjectApproval: vi.fn(),
+  listRegionalExpensesForProjectsManagerReview: vi.fn(),
 
   uploadProjectFile: vi.fn(),
   uploadProjectImage: vi.fn(),
@@ -45,6 +46,11 @@ vi.mock("../src/models/projectModel.js", () => ({
   decideProjectApproval: mocks.decideProjectApproval,
 }));
 
+vi.mock("../src/models/financeModel.js", () => ({
+  listRegionalExpensesForProjectsManagerReview:
+    mocks.listRegionalExpensesForProjectsManagerReview,
+}));
+
 vi.mock("../src/services/projectFileService.js", () => ({
   uploadProjectFile: mocks.uploadProjectFile,
   uploadProjectImage: mocks.uploadProjectImage,
@@ -60,6 +66,7 @@ vi.mock("../src/services/notificationsService.js", () => ({
 }));
 
 import {
+  showAdminProjects,
   showProjectApprovalQueue,
   showProjectProposalReview,
   actionDecideProjectProposal,
@@ -567,5 +574,142 @@ describe("Project Controller - Proposal Decisions", () => {
 
     expect(next).toHaveBeenCalledWith(error);
     expect(res.redirect).not.toHaveBeenCalled();
+  });
+});
+
+describe("Project Controller - Projects Management Dashboard", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    mocks.listProjects.mockResolvedValue([]);
+    mocks.listOutreachOfficers.mockResolvedValue([]);
+    mocks.listRegionalExpensesForProjectsManagerReview.mockResolvedValue([]);
+  });
+
+  it("loads Regional expense requests for an active Projects Manager", async () => {
+    const regionalExpenses = [
+      {
+        id: "expense-123",
+        title: "Regional Outreach Transport",
+        amount: 250000,
+        category: "Projects",
+        description: "Transport for regional activities.",
+        status: "pending",
+        approval_stage: "projects_manager",
+        submitted_office: "Regional Outreach",
+        submitted_role: "regional_outreach_officer",
+        first_name: "Regional",
+        last_name: "Officer",
+      },
+    ];
+
+    mocks.listRegionalExpensesForProjectsManagerReview.mockResolvedValue(
+      regionalExpenses,
+    );
+
+    const { req, res, next } = createMocks({
+      userRoles: ["admin"],
+      leadershipRoles: ["Projects Manager"],
+    });
+
+    await showAdminProjects(req, res, next);
+
+    expect(
+      mocks.listRegionalExpensesForProjectsManagerReview,
+    ).toHaveBeenCalledWith({ limit: 50 });
+
+    expect(res.render).toHaveBeenCalledWith(
+      "admin/projects",
+      expect.objectContaining({
+        canManageProjects: true,
+        canReviewRegionalExpenses: true,
+        regionalExpenses,
+      }),
+    );
+
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("does not grant Projects Manager expense approval to Super Admin", async () => {
+    const { req, res, next } = createMocks({
+      userRoles: ["super_admin"],
+      leadershipRoles: [],
+    });
+
+    await showAdminProjects(req, res, next);
+
+    expect(
+      mocks.listRegionalExpensesForProjectsManagerReview,
+    ).not.toHaveBeenCalled();
+
+    expect(res.render).toHaveBeenCalledWith(
+      "admin/projects",
+      expect.objectContaining({
+        canManageProjects: true,
+        canReviewRegionalExpenses: false,
+        regionalExpenses: [],
+      }),
+    );
+
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("does not grant Projects Manager expense approval to Chairperson", async () => {
+    const { req, res, next } = createMocks({
+      userRoles: ["admin"],
+      leadershipRoles: ["Chairperson"],
+    });
+
+    await showAdminProjects(req, res, next);
+
+    expect(
+      mocks.listRegionalExpensesForProjectsManagerReview,
+    ).not.toHaveBeenCalled();
+
+    expect(res.render).toHaveBeenCalledWith(
+      "admin/projects",
+      expect.objectContaining({
+        canManageProjects: false,
+        canReviewRegionalExpenses: false,
+        regionalExpenses: [],
+      }),
+    );
+
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("recognizes Projects Manager titles case-insensitively", async () => {
+    const { req, res, next } = createMocks({
+      userRoles: ["admin"],
+      leadershipRoles: ["  PROJECTS MANAGER  "],
+    });
+
+    await showAdminProjects(req, res, next);
+
+    expect(
+      mocks.listRegionalExpensesForProjectsManagerReview,
+    ).toHaveBeenCalledWith({ limit: 50 });
+
+    expect(res.render).toHaveBeenCalledWith(
+      "admin/projects",
+      expect.objectContaining({
+        canReviewRegionalExpenses: true,
+      }),
+    );
+
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("forwards dashboard loading errors to error middleware", async () => {
+    const error = new Error("Regional expense review query failed");
+
+    mocks.listRegionalExpensesForProjectsManagerReview.mockRejectedValue(error);
+
+    const { req, res, next } = createMocks();
+
+    await showAdminProjects(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(error);
+    expect(res.render).not.toHaveBeenCalled();
   });
 });

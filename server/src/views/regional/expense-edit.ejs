@@ -1,0 +1,83 @@
+﻿<div style="max-width: 760px; margin: 0 auto;">
+  <div style="margin-bottom: var(--space-4);">
+    <a href="/regional/dashboard" class="btn btn--ghost btn--sm">
+      ← Back to Regional Dashboard
+    </a>
+  </div>
+
+  <div class="card" style="padding: var(--space-5);">
+    <h1 style="margin-top: 0;">Edit Expense Request</h1>
+
+    <p style="color: var(--muted); font-size: var(--text-sm);">
+      You can edit this request only while it is awaiting its first review by the Projects Manager.
+      Once approved, it can no longer be changed or deleted.
+    </p>
+
+    <form
+      method="POST"
+      action="/regional/expenses/<%= expense.id %>/edit"
+      style="display: grid; gap: var(--space-3);"
+    >
+      <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+
+      <div class="field">
+        <label for="expense-title">Expense Title</label>
+        <input
+          id="expense-title"
+          type="text"
+          name="title"
+          value="<%= expense.title %>"
+          maxlength="150"
+          required
+        >
+      </div>
+
+      <div class="field">
+        <label for="expense-amount">Amount (UGX)</label>
+        <input
+          id="expense-amount"
+          type="number"
+          name="amount"
+          value="<%= expense.amount %>"
+          min="1"
+          step="1"
+          required
+        >
+      </div>
+
+      <div class="field">
+        <label for="expense-category">Category</label>
+        <select id="expense-category" name="category" required>
+          <% ["Administration", "Events", "Projects", "Other"].forEach((category) => { %>
+            <option
+              value="<%= category %>"
+              <%= expense.category === category ? "selected" : "" %>
+            >
+              <%= category %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="expense-description">Description</label>
+        <textarea
+          id="expense-description"
+          name="description"
+          maxlength="2000"
+          rows="5"
+        ><%= expense.description || "" %></textarea>
+      </div>
+
+      <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+        <button type="submit" class="btn btn--primary">
+          Save Changes
+        </button>
+
+        <a href="/regional/dashboard" class="btn btn--ghost">
+          Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>

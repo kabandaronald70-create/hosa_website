@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   listContributions: vi.fn(),
   verifyContribution: vi.fn(),
   listExpenses: vi.fn(),
+  listExpensesForChairpersonReview: vi.fn(),
   createExpense: vi.fn(),
   setExpenseStatus: vi.fn(),
   createContribution: vi.fn(),
@@ -21,6 +22,7 @@ const mocks = vi.hoisted(() => ({
   auditLog: vi.fn(),
 
   notifyExpenseApprovalRequired: vi.fn(),
+  notifyExpenseApprovalDecision: vi.fn(),
   notifyExpenseRejected: vi.fn(),
   notifyExpenseRejectedBySuperAdmin: vi.fn(),
 
@@ -36,6 +38,7 @@ vi.mock("../src/models/financeModel.js", () => ({
   listContributions: mocks.listContributions,
   verifyContribution: mocks.verifyContribution,
   listExpenses: mocks.listExpenses,
+  listExpensesForChairpersonReview: mocks.listExpensesForChairpersonReview,
   createExpense: mocks.createExpense,
   setExpenseStatus: mocks.setExpenseStatus,
   createContribution: mocks.createContribution,
@@ -59,6 +62,7 @@ vi.mock("../src/services/auditService.js", () => ({
 
 vi.mock("../src/services/notificationsService.js", () => ({
   notifyExpenseApprovalRequired: mocks.notifyExpenseApprovalRequired,
+  notifyExpenseApprovalDecision: mocks.notifyExpenseApprovalDecision,
   notifyExpenseRejected: mocks.notifyExpenseRejected,
   notifyExpenseRejectedBySuperAdmin: mocks.notifyExpenseRejectedBySuperAdmin,
 }));
@@ -77,6 +81,10 @@ import {
   actionSubmitContribution,
   showMyContributionProof,
   showFinanceContributionProof,
+  showFinanceDashboard,
+  actionUpdateExpenseStatus,
+  actionExportAllExpenses,
+  actionExportSingleExpense,
 } from "../src/controllers/financeController.js";
 
 function createMocks({ includeFile = true, body = {} } = {}) {
@@ -382,6 +390,332 @@ describe("Finance Controller - Private Payment Proof Access", () => {
 
     expect(res.redirect).toHaveBeenCalledWith("/admin/finance");
 
+    expect(next).not.toHaveBeenCalled();
+  });
+});
+
+describe("Finance Controller - Dashboard Access", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    mocks.getFinancialSummary.mockResolvedValue({
+      totalIncome: 100000,
+      totalExpenses: 20000,
+      approvedUnpaidCommitments: 10000,
+      netBalance: 80000,
+      pendingContributions: 0,
+    });
+
+    mocks.listContributions.mockResolvedValue([]);
+    mocks.listExpenses.mockResolvedValue([]);
+    mocks.listAllContributionsForExport.mockResolvedValue([]);
+    mocks.listExpensesForChairpersonReview.mockResolvedValue([]);
+  });
+
+  it("renders only the restricted expense review dashboard for Chairperson", async () => {
+    const req = {
+      user: { id: "chairperson-id" },
+      userRoles: ["member"],
+      leadershipRoles: ["Chairperson"],
+    };
+
+    const res = {
+      render: vi.fn(),
+    };
+
+    const next = vi.fn();
+
+    mocks.listExpensesForChairpersonReview.mockResolvedValue([
+      { id: "expense-1", title: "Regional Outreach Activity" },
+    ]);
+
+    await showFinanceDashboard(req, res, next);
+
+    expect(mocks.listExpensesForChairpersonReview).toHaveBeenCalledWith({
+      limit: 50,
+    });
+
+    expect(res.render).toHaveBeenCalledWith(
+      "admin/finance-chairperson",
+      expect.objectContaining({
+        title: "Expense Approval Review",
+        layout: "layouts/app",
+      }),
+    );
+
+    expect(mocks.getFinancialSummary).not.toHaveBeenCalled();
+    expect(mocks.listContributions).not.toHaveBeenCalled();
+    expect(mocks.listExpenses).not.toHaveBeenCalled();
+    expect(mocks.listAllContributionsForExport).not.toHaveBeenCalled();
+
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("renders the full financial dashboard for the active Treasurer", async () => {
+    const req = {
+      user: { id: "treasurer-id" },
+      userRoles: ["member"],
+      leadershipRoles: ["Treasurer"],
+    };
+
+    const res = {
+      render: vi.fn(),
+    };
+
+    const next = vi.fn();
+
+    await showFinanceDashboard(req, res, next);
+
+    expect(mocks.getFinancialSummary).toHaveBeenCalledTimes(1);
+    expect(mocks.listContributions).toHaveBeenCalledWith({
+      status: "pending",
+      limit: 10,
+    });
+    expect(mocks.listExpenses).toHaveBeenCalledWith({ limit: 50 });
+    expect(mocks.listAllContributionsForExport).toHaveBeenCalledTimes(1);
+
+    expect(res.render).toHaveBeenCalledWith(
+      "admin/finance",
+      expect.objectContaining({
+        isTreasurer: true,
+        isSuperAdmin: false,
+        layout: "layouts/app",
+      }),
+    );
+
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("renders the full financial dashboard for Super Admin", async () => {
+    const req = {
+      user: { id: "super-admin-id" },
+      userRoles: ["super_admin"],
+      leadershipRoles: [],
+    };
+
+    const res = {
+      render: vi.fn(),
+    };
+
+    const next = vi.fn();
+
+    await showFinanceDashboard(req, res, next);
+
+    expect(mocks.getFinancialSummary).toHaveBeenCalledTimes(1);
+    expect(mocks.listExpenses).toHaveBeenCalledTimes(1);
+
+    expect(res.render).toHaveBeenCalledWith(
+      "admin/finance",
+      expect.objectContaining({
+        isSuperAdmin: true,
+        isTreasurer: false,
+        layout: "layouts/app",
+      }),
+    );
+
+    expect(next).not.toHaveBeenCalled();
+  });
+});
+
+describe("Finance Controller - Expense Payment Authorization", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("prevents Super Admin from recording an expense payment", async () => {
+    const req = {
+      user: { id: "super-admin-id" },
+      userRoles: ["super_admin"],
+      leadershipRoles: [],
+      params: { id: "expense-id" },
+      body: { status: "paid" },
+      flash: vi.fn(),
+    };
+
+    const res = {
+      redirect: vi.fn(),
+    };
+
+    const next = vi.fn();
+
+    mocks.query.mockResolvedValue({
+      rows: [
+        {
+          id: "expense-id",
+          title: "Regional Activity",
+          amount: 50000,
+          requested_by: "member-id",
+          status: "approved",
+          approval_stage: "payment",
+          submitted_role: "regional_outreach_officer",
+          submitted_office: "Regional Outreach",
+        },
+      ],
+    });
+
+    await actionUpdateExpenseStatus(req, res, next);
+
+    expect(req.flash).toHaveBeenCalledWith(
+      "error",
+      expect.stringContaining("Only the active Treasurer"),
+    );
+
+    expect(res.redirect).toHaveBeenCalledWith("/regional/dashboard");
+
+    expect(mocks.setExpenseStatus).not.toHaveBeenCalled();
+    expect(mocks.notifyExpenseApprovalDecision).not.toHaveBeenCalled();
+    expect(mocks.auditLog).not.toHaveBeenCalled();
+
+    expect(next).not.toHaveBeenCalled();
+  });
+});
+
+// ============================================================
+// Finance Controller - Expense CSV Export Security
+// ============================================================
+
+describe("Finance Controller - Expense CSV Export Security", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("exports expenses with CSV escaping and formula injection protection", async () => {
+    mocks.listAllExpensesForExport.mockResolvedValue([
+      {
+        id: "expense-1",
+        title: "=1+1",
+        amount: 50000,
+        category: "Events",
+        status: "pending",
+        requester_email: "member@example.com",
+        description: 'Regional "North", Activity\nLine two',
+        created_at: "2026-11-20T10:00:00.000Z",
+      },
+      {
+        id: "expense-2",
+        title: "+SUM(A1:A2)",
+        amount: 30000,
+        category: "Projects",
+        status: "approved",
+        requester_email: "other@example.com",
+        description: "@SUM(A1)",
+        created_at: "2026-11-21T10:00:00.000Z",
+      },
+    ]);
+
+    const req = {};
+    const res = {
+      setHeader: vi.fn(),
+      send: vi.fn(),
+    };
+    const next = vi.fn();
+
+    await actionExportAllExpenses(req, res, next);
+
+    expect(mocks.listAllExpensesForExport).toHaveBeenCalledTimes(1);
+
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "text/csv; charset=utf-8",
+    );
+
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Disposition",
+      'attachment; filename="hosa-expenses.csv"',
+    );
+
+    const csv = res.send.mock.calls[0][0];
+
+    expect(csv).toContain("'=1+1");
+    expect(csv).toContain("'+SUM(A1:A2)");
+    expect(csv).toContain("'@SUM(A1)");
+
+    expect(csv).toContain('"Regional ""North"", Activity\nLine two"');
+    expect(csv).toContain("member@example.com");
+    expect(csv).toContain("\r\n");
+
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("forwards bulk export database errors to error middleware", async () => {
+    const error = new Error("Expense export query failed");
+    mocks.listAllExpensesForExport.mockRejectedValue(error);
+
+    const req = {};
+    const res = {
+      setHeader: vi.fn(),
+      send: vi.fn(),
+    };
+    const next = vi.fn();
+
+    await actionExportAllExpenses(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(error);
+    expect(res.send).not.toHaveBeenCalled();
+  });
+
+  it("exports a single expense with safe CSV formatting", async () => {
+    mocks.getExpenseById.mockResolvedValue({
+      id: "expense-123",
+      title: 'Regional "Central", Meeting',
+      amount: 75000,
+      category: "Events",
+      status: "approved",
+      requester_email: "member@example.com",
+      description: '=HYPERLINK("https://example.com")',
+      created_at: "2026-11-20T10:00:00.000Z",
+    });
+
+    const req = {
+      params: { id: "expense-123" },
+    };
+    const res = {
+      setHeader: vi.fn(),
+      send: vi.fn(),
+      redirect: vi.fn(),
+    };
+    const next = vi.fn();
+
+    await actionExportSingleExpense(req, res, next);
+
+    expect(mocks.getExpenseById).toHaveBeenCalledWith("expense-123");
+
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Disposition",
+      'attachment; filename="expense-expense-123.csv"',
+    );
+
+    const csv = res.send.mock.calls[0][0];
+
+    expect(csv).toContain('"Regional ""Central"", Meeting"');
+    expect(csv).toContain("'=HYPERLINK");
+    expect(csv).toContain("member@example.com");
+    expect(csv).toContain("UGX");
+
+    expect(next).not.toHaveBeenCalled();
+    expect(res.redirect).not.toHaveBeenCalled();
+  });
+
+  it("redirects when the requested expense does not exist", async () => {
+    mocks.getExpenseById.mockResolvedValue(null);
+
+    const req = {
+      params: { id: "missing-expense" },
+      flash: vi.fn(),
+    };
+    const res = {
+      redirect: vi.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
+    };
+    const next = vi.fn();
+
+    await actionExportSingleExpense(req, res, next);
+
+    expect(req.flash).toHaveBeenCalledWith("error", "Expense not found.");
+
+    expect(res.redirect).toHaveBeenCalledWith("/admin/finance");
+    expect(res.send).not.toHaveBeenCalled();
     expect(next).not.toHaveBeenCalled();
   });
 });

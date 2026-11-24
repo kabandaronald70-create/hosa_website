@@ -14,13 +14,13 @@ import {
   rejectContribution,
   getMemberContributionProof,
   getFinanceContributionProof,
+  listExpensesForChairpersonReview,
 } from "../models/financeModel.js";
 import { query } from "../config/db.js";
 import { auditLog } from "../services/auditService.js";
 import {
   notifyExpenseApprovalRequired,
-  notifyExpenseRejected,
-  notifyExpenseRejectedBySuperAdmin,
+  notifyExpenseApprovalDecision,
 } from "../services/notificationsService.js";
 import { listDonationProjects } from "../models/projectModel.js";
 import {
@@ -29,8 +29,46 @@ import {
   createContributionProofSignedUrl,
 } from "../services/contributionProofFileService.js";
 
+function toCsvCell(value) {
+  let text = value == null ? "" : String(value);
+
+  // Neutralize spreadsheet formulas, including values preceded by whitespace.
+  if (/^[\u0000-\u0020]*[=+\-@]/.test(text) || /^[\t\r]/.test(text)) {
+    text = `'${text}`;
+  }
+
+  // Escape embedded quotation marks and preserve the CSV cell boundary.
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
 export async function showFinanceDashboard(req, res, next) {
   try {
+    const systemRoles = (req.userRoles || []).map(
+      normalizeExpenseControllerRole,
+    );
+
+    const leadershipRoles = (req.leadershipRoles || []).map(
+      normalizeExpenseControllerRole,
+    );
+
+    const isSuperAdmin = systemRoles.includes("super_admin");
+    const isTreasurer = leadershipRoles.includes("treasurer");
+    const isChairperson = leadershipRoles.includes("chairperson");
+
+    // Chairperson receives a separate, restricted expense-review page.
+    // Treasurer and Super Admin retain full dashboard access.
+    if (isChairperson && !isTreasurer && !isSuperAdmin) {
+      const expenses = await listExpensesForChairpersonReview({
+        limit: 50,
+      });
+
+      return res.render("admin/finance-chairperson", {
+        title: "Expense Approval Review",
+        expenses,
+        layout: "layouts/app",
+      });
+    }
+
     const [summary, pendingContribs, expenses, verifiedContribs] =
       await Promise.all([
         getFinancialSummary(),
@@ -39,12 +77,14 @@ export async function showFinanceDashboard(req, res, next) {
         listAllContributionsForExport(),
       ]);
 
-    res.render("admin/finance", {
-      title: "Financial Management — Admin",
+    return res.render("admin/finance", {
+      title: "Financial Management - Admin",
       summary,
       pendingContribs,
       expenses,
       verifiedContribs,
+      isSuperAdmin,
+      isTreasurer,
       layout: "layouts/app",
     });
   } catch (err) {
@@ -125,24 +165,288 @@ export async function actionRejectContribution(req, res, next) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Expense Submission and Multi-Stage Approval Workflow
+// ---------------------------------------------------------------------------
+
+function normalizeExpenseControllerRole(value) {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_");
+
+  if (
+    /^outreach_officer_(?:\((?:eastern|central|western|northern)\)|(?:eastern|central|western|northern))$/.test(
+      normalized,
+    )
+  ) {
+    return "regional_outreach_officer";
+  }
+
+  return normalized;
+}
+
+const EXPENSE_SUBMITTING_OFFICES = {
+  projects_manager: "Projects Management",
+  regional_outreach_officer: "Regional Outreach",
+  general_secretary: "General Secretary",
+  publicity: "Publicity",
+  treasurer: "Finance",
+};
+
+function getExpenseRedirect(expense, actorRole = null) {
+  if (actorRole === "projects_manager") {
+    return "/admin/projects";
+  }
+
+  const submittedRole = normalizeExpenseControllerRole(expense?.submitted_role);
+
+  if (submittedRole === "regional_outreach_officer") {
+    return "/regional/dashboard";
+  }
+
+  if (submittedRole === "projects_manager") {
+    return "/admin/projects";
+  }
+
+  return "/admin/finance";
+}
+
 export async function actionCreateExpense(req, res, next) {
   try {
     const { title, amount, category, description } = req.body;
-    await createExpense({
+
+    const activeLeadershipRoles = [
+      ...new Set(
+        (req.leadershipRoles || [])
+          .map(normalizeExpenseControllerRole)
+          .filter((role) =>
+            Object.prototype.hasOwnProperty.call(
+              EXPENSE_SUBMITTING_OFFICES,
+              role,
+            ),
+          ),
+      ),
+    ];
+
+    if (activeLeadershipRoles.length === 0) {
+      req.flash(
+        "error",
+        "You do not hold an eligible active leadership position for submitting expense requests.",
+      );
+      return res.redirect("/admin/finance");
+    }
+
+    const requestedRole = req.body.submitted_role
+      ? normalizeExpenseControllerRole(req.body.submitted_role)
+      : null;
+
+    let actorRole;
+
+    if (requestedRole) {
+      if (!activeLeadershipRoles.includes(requestedRole)) {
+        req.flash(
+          "error",
+          "You cannot submit an expense request on behalf of that office.",
+        );
+        return res.redirect("/admin/finance");
+      }
+
+      actorRole = requestedRole;
+    } else if (activeLeadershipRoles.length === 1) {
+      actorRole = activeLeadershipRoles[0];
+    } else {
+      req.flash(
+        "error",
+        "Select the leadership office submitting this expense request.",
+      );
+      return res.redirect("/admin/finance");
+    }
+
+    const expense = await createExpense({
       title,
       amount,
       category,
       description,
       requestedBy: req.user.id,
+      actorRole,
+      submittedOffice: EXPENSE_SUBMITTING_OFFICES[actorRole],
     });
 
-    await notifyExpenseApprovalRequired({ expenseTitle: title, amount });
+    await notifyExpenseApprovalRequired({
+      expense,
+      stage: expense.approval_stage,
+    });
+
+    await auditLog({
+      req,
+      action: "finance.expense_submitted",
+      targetType: "expense",
+      targetId: expense.id,
+      metadata: {
+        submittedRole: actorRole,
+        submittedOffice: EXPENSE_SUBMITTING_OFFICES[actorRole],
+        approvalStage: expense.approval_stage,
+      },
+    });
 
     req.flash(
       "success",
-      "Expense request submitted. Awaiting Executive Chairperson approval.",
+      "Expense request submitted successfully. The required approval process has started.",
     );
-    res.redirect("/admin/finance");
+
+    return res.redirect(getExpenseRedirect(expense, actorRole));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function actionUpdateExpenseStatus(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { status, reason } = req.body;
+
+    if (!["approved", "rejected", "paid"].includes(status)) {
+      req.flash("error", "Invalid expense action.");
+      return res.redirect("/admin/finance");
+    }
+
+    // Retrieve the current workflow stage from the database.
+    // The submitted form is never trusted to determine the approver's role.
+    const { rows } = await query(
+      `SELECT
+         id,
+         title,
+         amount,
+         requested_by,
+         status,
+         approval_stage,
+         submitted_role,
+         submitted_office
+       FROM expenses
+       WHERE id = $1`,
+      [id],
+    );
+
+    const expense = rows[0];
+
+    if (!expense) {
+      req.flash("error", "Expense request not found.");
+      return res.redirect("/admin/finance");
+    }
+
+    const systemRoles = (req.userRoles || []).map(
+      normalizeExpenseControllerRole,
+    );
+
+    const leadershipRoles = (req.leadershipRoles || []).map(
+      normalizeExpenseControllerRole,
+    );
+
+    const isSuperAdmin = systemRoles.includes("super_admin");
+    const isTreasurer = leadershipRoles.includes("treasurer");
+
+    let actorRole;
+
+    if (status === "paid") {
+      // Payment is separate from approval.
+      // Only the Treasurer can record actual payment.
+      if (!isTreasurer) {
+        req.flash(
+          "error",
+          "Only the active Treasurer can record expense payments.",
+        );
+        return res.redirect(getExpenseRedirect(expense));
+      }
+
+      actorRole = "treasurer";
+    } else {
+      const currentStage = normalizeExpenseControllerRole(
+        expense.approval_stage,
+      );
+
+      if (currentStage === "super_admin") {
+        if (!isSuperAdmin) {
+          req.flash(
+            "error",
+            "Only a Super Admin can complete the final approval stage.",
+          );
+          return res.redirect(getExpenseRedirect(expense));
+        }
+
+        actorRole = "super_admin";
+      } else {
+        if (!leadershipRoles.includes(currentStage)) {
+          req.flash(
+            "error",
+            "You are not authorized to act at the current approval stage.",
+          );
+          return res.redirect(getExpenseRedirect(expense));
+        }
+
+        actorRole = currentStage;
+      }
+    }
+
+    // The model performs the authoritative transactional checks:
+    // - correct approval stage
+    // - no skipped approval stages
+    // - requester cannot approve or reject their own request
+    // - meaningful rejection reason
+    // - Treasurer-only payment after final approval
+    const result = await setExpenseStatus(id, status, req.user.id, {
+      actorRole,
+      reason,
+    });
+
+    if (!result?.expense) {
+      req.flash(
+        "error",
+        "The expense could not be updated. It may have already changed or may no longer be eligible for this action.",
+      );
+      return res.redirect(getExpenseRedirect(expense, actorRole));
+    }
+
+    const updatedExpense = result.expense;
+
+    const approvedStage = status === "approved" ? expense.approval_stage : null;
+
+    await notifyExpenseApprovalDecision({
+      expense: updatedExpense,
+      actorUserId: req.user.id,
+      decision: status,
+      approvedStage,
+      nextStage: result.approvalStage,
+      reason,
+    });
+
+    await auditLog({
+      req,
+      action: `finance.expense_${status}`,
+      targetType: "expense",
+      targetId: id,
+      metadata: {
+        actorRole,
+        previousStatus: result.previousStatus,
+        newStatus: result.status,
+        previousStage: expense.approval_stage,
+        nextStage: result.approvalStage || updatedExpense.approval_stage,
+        rejectionReason: status === "rejected" ? reason : undefined,
+      },
+    });
+
+    const successMessages = {
+      approved:
+        result.approvalStage === "payment"
+          ? "Final approval granted. The expense is now awaiting payment by the Treasurer."
+          : `Expense approved successfully. It has advanced to the ${result.approvalStage} approval stage.`,
+      rejected: "Expense request rejected. The submitter has been notified.",
+      paid: "Expense payment recorded successfully. The request is now closed.",
+    };
+
+    req.flash("success", successMessages[status]);
+
+    return res.redirect(getExpenseRedirect(updatedExpense, actorRole));
   } catch (err) {
     next(err);
   }
@@ -150,109 +454,6 @@ export async function actionCreateExpense(req, res, next) {
 
 // ---------------------------------------------------------------------------
 // Expense Status (Approve, Reject, Pay)
-// ---------------------------------------------------------------------------
-
-export async function actionUpdateExpenseStatus(req, res, next) {
-  try {
-    const { id } = req.params;
-    const { status, reason } = req.body;
-
-    // 1. Fetch expense, CURRENT status, and the chairperson who approved it (if any)
-    const { rows } = await query(
-      `SELECT requested_by, status, chairperson_approved_by 
-       FROM expenses WHERE id = $1`,
-      [id],
-    );
-    const expense = rows[0];
-
-    if (!expense) {
-      req.flash("error", "Expense not found.");
-      return res.redirect("/admin/finance");
-    }
-
-    const previousStatus = expense.status;
-
-    // 2. SECURITY CHECK: You cannot approve your own expense
-    if (expense.requested_by === req.user.id && status !== "paid") {
-      req.flash("error", "You cannot approve your own expense request.");
-      return res.redirect("/admin/finance");
-    }
-
-    // 3. ROLE CHECK: First Approval requires Chairperson
-    if (status === "executive_approved" || status === "rejected") {
-      const { rows: chairRows } = await query(
-        `SELECT id FROM leadership_roles 
-         WHERE user_id = $1 AND office_title = 'Chairperson' AND status = 'active'`,
-        [req.user.id],
-      );
-      const isChairperson = chairRows.length > 0;
-
-      if (status === "executive_approved" && !isChairperson) {
-        req.flash(
-          "error",
-          "Only the Executive Committee Chairperson can give the first approval.",
-        );
-        return res.redirect("/admin/finance");
-      }
-
-      if (
-        status === "rejected" &&
-        !isChairperson &&
-        !req.userRoles.includes("super_admin")
-      ) {
-        req.flash(
-          "error",
-          "Only the Chairperson or a Super Admin can reject this expense.",
-        );
-        return res.redirect("/admin/finance");
-      }
-    }
-
-    // 4. ROLE CHECK: Final Approval requires Super Admin
-    if (status === "approved" && !req.userRoles.includes("super_admin")) {
-      req.flash("error", "Only a Super Admin can give the final approval.");
-      return res.redirect("/admin/finance");
-    }
-
-    // 5. Update the status
-    await setExpenseStatus(id, status, req.user.id, reason);
-
-    // 6. Handle Notifications on Rejection
-    if (status === "rejected") {
-      // A. Always notify the Treasurer (requester)
-      if (expense.requested_by) {
-        await notifyExpenseRejected({
-          userId: expense.requested_by,
-          reason: reason || "No reason provided",
-        });
-      }
-
-      // B. If Super Admin rejected an expense that was previously Executive Approved, notify the Chairperson
-      if (
-        previousStatus === "executive_approved" &&
-        expense.chairperson_approved_by
-      ) {
-        await notifyExpenseRejectedBySuperAdmin({
-          chairpersonId: expense.chairperson_approved_by,
-          reason: reason || "No reason provided",
-        });
-      }
-    }
-
-    await auditLog({
-      req,
-      action: `finance.expense_${status}`,
-      targetType: "expense",
-      targetId: id,
-    });
-
-    req.flash("success", `Expense status updated to ${status}.`);
-    res.redirect("/admin/finance");
-  } catch (err) {
-    next(err);
-  }
-}
-
 // ---------------------------------------------------------------------------
 // Member Contributions
 // ---------------------------------------------------------------------------
@@ -584,13 +785,30 @@ export async function actionExportAllExpenses(req, res, next) {
   try {
     const expenses = await listAllExpensesForExport();
 
-    let csv =
-      "Date,Title,Amount (UGX),Category,Status,Requested By,Description\n";
-    expenses.forEach((e) => {
-      csv += `"${new Date(e.created_at).toLocaleDateString()}","${e.title}","${e.amount}","${e.category}","${e.status}","${e.requester_email}","${e.description || ""}"\n`;
-    });
+    const rows = [
+      [
+        "Date",
+        "Title",
+        "Amount (UGX)",
+        "Category",
+        "Status",
+        "Requested By",
+        "Description",
+      ],
+      ...expenses.map((expense) => [
+        new Date(expense.created_at).toLocaleDateString(),
+        expense.title,
+        expense.amount,
+        expense.category,
+        expense.status,
+        expense.requester_email,
+        expense.description || "",
+      ]),
+    ];
 
-    res.setHeader("Content-Type", "text/csv");
+    const csv = rows.map((row) => row.map(toCsvCell).join(",")).join("\r\n");
+
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader(
       "Content-Disposition",
       'attachment; filename="hosa-expenses.csv"',
@@ -604,21 +822,27 @@ export async function actionExportAllExpenses(req, res, next) {
 export async function actionExportSingleExpense(req, res, next) {
   try {
     const expense = await getExpenseById(req.params.id);
+
     if (!expense) {
       req.flash("error", "Expense not found.");
       return res.redirect("/admin/finance");
     }
 
-    let csv = "HOSA Expense Report\n\n";
-    csv += `Title,${expense.title}\n`;
-    csv += `Amount,UGX ${Number(expense.amount).toLocaleString()}\n`;
-    csv += `Category,${expense.category}\n`;
-    csv += `Status,${expense.status}\n`;
-    csv += `Requested By,${expense.requester_email}\n`;
-    csv += `Date,${new Date(expense.created_at).toLocaleString()}\n`;
-    csv += `Description,${expense.description || "N/A"}\n`;
+    const rows = [
+      ["HOSA Expense Report"],
+      [],
+      ["Title", expense.title],
+      ["Amount", `UGX ${Number(expense.amount).toLocaleString()}`],
+      ["Category", expense.category],
+      ["Status", expense.status],
+      ["Requested By", expense.requester_email],
+      ["Date", new Date(expense.created_at).toLocaleString()],
+      ["Description", expense.description || "N/A"],
+    ];
 
-    res.setHeader("Content-Type", "text/csv");
+    const csv = rows.map((row) => row.map(toCsvCell).join(",")).join("\r\n");
+
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader(
       "Content-Disposition",
       `attachment; filename="expense-${expense.id}.csv"`,

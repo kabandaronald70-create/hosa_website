@@ -14,6 +14,15 @@
     <p style="color: var(--muted); font-size: var(--text-sm); margin: 0;">Total Expenses</p>
     <h2 style="margin: var(--space-1) 0 0; color: var(--danger);">UGX <%= summary.totalExpenses.toLocaleString() %></h2>
   </div>
+
+    <div class="card" style="border-left: 4px solid var(--warning);">
+    <p style="color: var(--muted); font-size: var(--text-sm); margin: 0;">
+      Approved — Awaiting Payment
+    </p>
+    <h2 style="margin: var(--space-1) 0 0; color: var(--warning);">
+      UGX <%= Number(summary.approvedUnpaidCommitments || 0).toLocaleString("en-UG") %>
+    </h2>
+  </div>
   
   <div class="card" style="border-left: 4px solid var(--green);">
     <p style="color: var(--muted); font-size: var(--text-sm); margin: 0;">Net Balance</p>
@@ -233,216 +242,374 @@
     <% } %>
   </div>
 
-  <!-- Expenses Management -->
+   <!-- Expenses Management -->
   <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3); flex-wrap: wrap; gap: var(--space-2);">
       <h2 style="margin: 0;">Expense Requests & History</h2>
-      <a href="/admin/finance/export/expenses" class="btn btn--ghost btn--sm">⬇ Download All</a>
+      <a href="/admin/finance/export/expenses" class="btn btn--ghost btn--sm">
+        ⬇ Download All
+      </a>
     </div>
-    
-    <!-- Add New Expense Form (Only for Treasurer) -->
-    <% if (currentLeadershipRoles.includes('Treasurer')) { %>
+
+    <!-- Treasurer Expense Submission -->
+    <% if (isTreasurer) { %>
       <div style="background: var(--ivory); padding: var(--space-4); border-radius: var(--radius-sm); margin-bottom: var(--space-4);">
-        <h3 style="margin-top: 0; font-size: var(--text-base);">Request New Expense</h3>
-        <form method="post" action="/admin/finance/expenses" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+        <h3 style="margin-top: 0; font-size: var(--text-base);">
+          Request New Expense
+        </h3>
+
+        <form method="post" action="/admin/finance/expenses"
+              style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+
           <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+
           <div class="field" style="margin: 0;">
-            <label>Title</label>
-            <input type="text" name="title" required placeholder="e.g. Venue Hire">
+            <label for="expense-title">Title</label>
+            <input id="expense-title" type="text" name="title"
+                   maxlength="150" required placeholder="e.g. Venue Hire">
           </div>
+
           <div class="field" style="margin: 0;">
-            <label>Amount (UGX)</label>
-            <input type="number" name="amount" required min="1" placeholder="e.g. 500000">
+            <label for="expense-amount">Amount (UGX)</label>
+            <input id="expense-amount" type="number" name="amount"
+                   min="1" step="0.01" required placeholder="e.g. 500000">
           </div>
+
           <div class="field" style="margin: 0;">
-            <label>Category</label>
-            <select name="category" required>
+            <label for="expense-category">Category</label>
+            <select id="expense-category" name="category" required>
               <option value="Administration">Administration</option>
               <option value="Events">Events</option>
               <option value="Projects">Projects</option>
               <option value="Other">Other</option>
             </select>
           </div>
+
           <div class="field" style="margin: 0;">
-            <label>Description</label>
-            <input type="text" name="description" placeholder="Short description">
+            <label for="expense-description">Description</label>
+            <textarea id="expense-description" name="description"
+                      maxlength="2000" rows="2"
+                      placeholder="Explain the expense"></textarea>
           </div>
-          <button type="submit" class="btn btn--primary" style="grid-column: 1 / -1; margin-top: var(--space-2);">Submit Expense Request</button>
+
+          <button type="submit" class="btn btn--primary"
+                  style="grid-column: 1 / -1; margin-top: var(--space-2);">
+            Submit Expense Request
+          </button>
         </form>
       </div>
     <% } %>
 
-    <!-- History Table -->
-    <% if (expenses.length === 0) { %>
+    <!-- Expense History -->
+    <% if (!expenses || expenses.length === 0) { %>
+
       <p style="color: var(--muted);">No expenses recorded.</p>
+
     <% } else { %>
+
       <div class="table-responsive">
         <table class="data-table">
           <thead>
             <tr>
-              <th>Title</th>
+              <th>Expense</th>
               <th>Amount</th>
+              <th>Office</th>
               <th>Status</th>
               <th>Requested By</th>
               <th>Actions</th>
             </tr>
           </thead>
+
           <tbody>
-            <% expenses.forEach(e => { %>
+            <% expenses.forEach(e => {
+              const stage = String(e.approval_stage || "legacy").trim().toLowerCase();
+              const isRequester = String(e.requested_by) === String(currentUser.id);
+
+              const canApproveAtCurrentStage =
+                !isRequester &&
+                e.status === "pending" &&
+                (
+                  (stage === "treasurer" && isTreasurer) ||
+                  (stage === "super_admin" && isSuperAdmin)
+                );
+
+              const canPay =
+                isTreasurer &&
+                e.status === "approved" &&
+                stage === "payment";
+
+              let statusLabel = e.status;
+              let stageLabel = stage.replace(/_/g, " ");
+
+              if (e.status === "approved" && stage === "payment") {
+                statusLabel = "Approved — Awaiting Payment";
+              } else if (e.status === "paid") {
+                statusLabel = "Paid — Closed";
+              } else if (e.status === "rejected") {
+                statusLabel = "Rejected";
+              } else if (e.status === "pending") {
+                statusLabel = "Pending — " + stageLabel;
+              } else if (stage === "legacy") {
+                statusLabel = "Historical Record";
+              }
+            %>
+
               <tr>
-                <td data-label="Title"><strong><%= e.title %></strong></td>
-                <td data-label="Amount">UGX <%= Number(e.amount).toLocaleString() %></td>
-                <td data-label="Status">
-                  <span class="badge badge--<%= e.status === 'paid' ? 'success' : e.status === 'approved' ? 'primary' : e.status === 'rejected' ? 'danger' : 'warning' %>">
-                    <%= e.status.replace('_', ' ') %>
+                <td data-label="Expense">
+                  <strong><%= e.title %></strong>
+                  <br>
+                  <span style="font-size: 11px; color: var(--muted);">
+                    <%= e.category %>
                   </span>
                 </td>
-                <td data-label="Requested By">
-                  <%= e.requester_email %>
-                  <% if (e.chairperson_email) { %>
-                    <br><span style="font-size: 10px; color: var(--muted);">Exec: <%= e.chairperson_email %></span>
-                  <% } %>
+
+                <td data-label="Amount">
+                  UGX <%= Number(e.amount).toLocaleString("en-UG") %>
                 </td>
+
+                <td data-label="Office">
+                  <%= e.submitted_office || "Legacy" %>
+                </td>
+
+                <td data-label="Status">
+                  <span class="badge badge--<%=
+                    e.status === "paid" ? "success" :
+                    e.status === "approved" ? "primary" :
+                    e.status === "rejected" ? "danger" :
+                    "warning"
+                  %>">
+                    <%= statusLabel %>
+                  </span>
+                </td>
+
+                <td data-label="Requested By">
+                  <%= e.requester_email || "Historical record" %>
+                </td>
+
                 <td data-label="Actions">
                   <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-                    
-                    <!-- View Details Button (for all statuses to allow auditing) -->
-                    <button type="button" class="btn btn--ghost btn--sm" onclick="document.getElementById('details-expense-<%= e.id %>').style.display = document.getElementById('details-expense-<%= e.id %>').style.display === 'none' ? 'block' : 'none';">View Details</button>
 
-                    <!-- PENDING STATE -->
-                    <% if (e.status === 'pending') { %>
-                      <% if (e.requested_by === currentUser.id) { %>
-                        <button type="button" class="btn btn--ghost btn--sm" onclick="document.getElementById('edit-expense-<%= e.id %>').style.display = document.getElementById('edit-expense-<%= e.id %>').style.display === 'none' ? 'block' : 'none';">Edit</button>
-                        <form method="post" action="/admin/finance/expenses/<%= e.id %>/delete" onsubmit="return confirm('Delete this expense request?')" style="display:inline;">
-                          <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
-                          <button type="submit" class="btn btn--ghost btn--sm" style="color: var(--danger);">Delete</button>
-                        </form>
-                      <% } else { %>
-                        <% if (currentLeadershipRoles.includes('Chairperson')) { %>
-                          <form method="post" action="/admin/finance/expenses/<%= e.id %>/status" style="display:inline;">
-                            <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
-                            <input type="hidden" name="status" value="executive_approved">
-                            <button type="submit" class="btn btn--primary btn--sm">Exec. Approve</button>
-                          </form>
-                        <% } %>
-                        <% if (currentLeadershipRoles.includes('Chairperson') || currentUserRoles.includes('super_admin')) { %>
-                          <button type="button" class="btn btn--ghost btn--sm" style="color: var(--danger);" onclick="document.getElementById('reject-form-<%= e.id %>').style.display = document.getElementById('reject-form-<%= e.id %>').style.display === 'none' ? 'block' : 'none';">Reject</button>
-                        <% } %>
-                      <% } %>
+                    <!-- View Details -->
+                    <button type="button" class="btn btn--ghost btn--sm"
+                      onclick="
+                        const panel = document.getElementById('details-expense-<%= e.id %>');
+                        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                      ">
+                      View Details
+                    </button>
 
-                    <!-- EXECUTIVE APPROVED STATE -->
-                    <% } else if (e.status === 'executive_approved') { %>
-                      <% if (currentUserRoles.includes('super_admin')) { %>
-                        <form method="post" action="/admin/finance/expenses/<%= e.id %>/status" style="display:inline;">
-                          <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
-                          <input type="hidden" name="status" value="approved">
-                          <button type="submit" class="btn btn--accent btn--sm">Final Approve</button>
-                        </form>
-                        <button type="button" class="btn btn--ghost btn--sm" style="color: var(--danger);" onclick="document.getElementById('reject-form-<%= e.id %>').style.display = document.getElementById('reject-form-<%= e.id %>').style.display === 'none' ? 'block' : 'none';">Reject</button>
-                      <% } else { %>
-                        <span style="font-size: 11px; color: var(--muted); font-style: italic;">Awaiting Super Admin</span>
-                      <% } %>
-                    
-                    <!-- APPROVED STATE -->
-                    <% } else if (e.status === 'approved') { %>
-                      <form method="post" action="/admin/finance/expenses/<%= e.id %>/status" style="display:inline;">
+                    <!-- Treasurer Approval -->
+                    <% if (canApproveAtCurrentStage && stage === "treasurer") { %>
+
+                      <form method="post"
+                            action="/admin/finance/expenses/<%= e.id %>/status"
+                            onsubmit="return confirm('Approve this expense request at the Treasurer stage?');">
+
+                        <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                        <input type="hidden" name="status" value="approved">
+
+                        <button type="submit" class="btn btn--primary btn--sm">
+                          Approve
+                        </button>
+                      </form>
+
+                    <!-- Super Admin Final Approval -->
+                    <% } else if (canApproveAtCurrentStage && stage === "super_admin") { %>
+
+                      <form method="post"
+                            action="/admin/finance/expenses/<%= e.id %>/status"
+                            onsubmit="return confirm('Give final approval to this expense?');">
+
+                        <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                        <input type="hidden" name="status" value="approved">
+
+                        <button type="submit" class="btn btn--accent btn--sm">
+                          Final Approve
+                        </button>
+                      </form>
+
+                    <% } %>
+
+                    <!-- Treasurer Payment -->
+                    <% if (canPay) { %>
+
+                      <form method="post"
+                            action="/admin/finance/expenses/<%= e.id %>/status"
+                            onsubmit="return confirm('Confirm that this expense has actually been paid?');">
+
                         <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
                         <input type="hidden" name="status" value="paid">
-                        <button type="submit" class="btn btn--success btn--sm" style="background: var(--success); color: white;">Mark as Paid</button>
+
+                        <button type="submit" class="btn btn--success btn--sm"
+                                style="background: var(--success); color: white;">
+                          Mark as Paid
+                        </button>
                       </form>
-                      <a href="/admin/finance/export/expenses/<%= e.id %>" class="btn btn--ghost btn--sm">⬇ Download</a>
-                    
-                    <!-- PAID STATE -->
-                    <% } else if (e.status === 'paid') { %>
-                      <a href="/admin/finance/export/expenses/<%= e.id %>" class="btn btn--ghost btn--sm">⬇ Download</a>
+
                     <% } %>
+
+                    <!-- Download Closed Expense -->
+                    <% if (e.status === "paid") { %>
+                      <a href="/admin/finance/export/expenses/<%= e.id %>"
+                         class="btn btn--ghost btn--sm">
+                        ⬇ Download
+                      </a>
+                    <% } %>
+
                   </div>
 
-                  <!-- Hidden Details Panel (for all statuses) -->
-                  <div id="details-expense-<%= e.id %>" style="display: none; margin-top: var(--space-3); background: var(--ivory); padding: var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--line);">
+                  <!-- Approval / Waiting Information -->
+                  <% if (e.status === "pending") { %>
+
+                    <p style="font-size: 11px; color: var(--muted); margin-top: 6px;">
+
+                      <% if (stage === "projects_manager") { %>
+                        Awaiting Projects Manager review.
+
+                      <% } else if (stage === "treasurer") { %>
+                        <%= isTreasurer && !isRequester
+                          ? "Awaiting Treasurer decision."
+                          : "Awaiting Treasurer approval." %>
+
+                      <% } else if (stage === "chairperson") { %>
+                        Awaiting Chairperson review.
+
+                      <% } else if (stage === "super_admin") { %>
+                        <%= isSuperAdmin && !isRequester
+                          ? "Awaiting final approval."
+                          : "Awaiting Super Admin approval." %>
+
+                      <% } else { %>
+                        Historical workflow record. No new approval action available.
+                      <% } %>
+
+                    </p>
+
+                  <% } else if (e.status === "approved" && stage === "payment") { %>
+
+                    <p style="font-size: 11px; color: var(--muted); margin-top: 6px;">
+                      Fully approved. Awaiting actual payment by the Treasurer.
+                    </p>
+
+                  <% } else if (e.status === "paid") { %>
+
+                    <p style="font-size: 11px; color: var(--success); margin-top: 6px;">
+                      Payment recorded. This expense is closed.
+                    </p>
+
+                  <% } %>
+
+                  <!-- Rejection Form -->
+                  <% if (canApproveAtCurrentStage) { %>
+
+                    <button type="button"
+                            class="btn btn--ghost btn--sm"
+                            style="color: var(--danger); margin-top: 5px;"
+                            onclick="
+                              const panel = document.getElementById('reject-expense-<%= e.id %>');
+                              panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                            ">
+                      Reject
+                    </button>
+
+                    <div id="reject-expense-<%= e.id %>"
+                         style="display: none; margin-top: var(--space-2); background: #fff5f5; padding: var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--danger);">
+
+                      <form method="post"
+                            action="/admin/finance/expenses/<%= e.id %>/status">
+
+                        <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
+                        <input type="hidden" name="status" value="rejected">
+
+                        <div class="field">
+                          <label for="reject-reason-<%= e.id %>">
+                            Reason for Rejection
+                          </label>
+
+                          <textarea
+                            id="reject-reason-<%= e.id %>"
+                            name="reason"
+                            required
+                            minlength="5"
+                            maxlength="500"
+                            rows="3"
+                            placeholder="Explain why this expense request is being rejected."
+                          ></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn--danger btn--sm">
+                          Confirm Rejection
+                        </button>
+
+                        <button type="button" class="btn btn--ghost btn--sm"
+                                onclick="document.getElementById('reject-expense-<%= e.id %>').style.display = 'none';">
+                          Cancel
+                        </button>
+                      </form>
+                    </div>
+
+                  <% } %>
+
+                  <!-- Expense Details -->
+                  <div id="details-expense-<%= e.id %>"
+                       style="display: none; margin-top: var(--space-3); background: var(--ivory); padding: var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--line);">
+
                     <h4 style="margin-top: 0;">Expense Details</h4>
+
                     <p><strong>Title:</strong> <%= e.title %></p>
-                    <p><strong>Amount:</strong> UGX <%= Number(e.amount).toLocaleString() %></p>
+
+                    <p>
+                      <strong>Amount:</strong>
+                      UGX <%= Number(e.amount).toLocaleString("en-UG") %>
+                    </p>
+
                     <p><strong>Category:</strong> <%= e.category %></p>
-                    <p><strong>Description:</strong> <%= e.description || 'No description provided' %></p>
-                    <p><strong>Status:</strong> <%= e.status.replace('_', ' ') %></p>
-                    <p><strong>Requested By:</strong> <%= e.requester_email %></p>
-                    <p><strong>Date:</strong> <%= new Date(e.created_at).toLocaleString() %></p>
-                    <button type="button" class="btn btn--ghost btn--sm" onclick="document.getElementById('details-expense-<%= e.id %>').style.display = 'none';">Close</button>
+
+                    <p>
+                      <strong>Description:</strong>
+                      <%= e.description || "No description provided" %>
+                    </p>
+
+                    <p><strong>Submitting Office:</strong> <%= e.submitted_office || "Legacy" %></p>
+
+                    <p><strong>Submitting Role:</strong> <%= e.submitted_role || "Legacy" %></p>
+
+                    <p><strong>Approval Stage:</strong> <%= stageLabel %></p>
+
+                    <p><strong>Status:</strong> <%= statusLabel %></p>
+
+                    <p>
+                      <strong>Requested By:</strong>
+                      <%= e.requester_email || "Historical record" %>
+                    </p>
+
+                    <p>
+                      <strong>Date Submitted:</strong>
+                      <%= e.created_at ? new Date(e.created_at).toLocaleString("en-GB") : "—" %>
+                    </p>
+
+                    <% if (e.status === "rejected" && e.rejection_reason) { %>
+                      <div style="background: #fff5f5; padding: var(--space-2); border-radius: var(--radius-sm);">
+                        <strong style="color: var(--danger);">Rejection Reason:</strong>
+                        <p style="margin-bottom: 0;"><%= e.rejection_reason %></p>
+                      </div>
+                    <% } %>
+
+                    <button type="button" class="btn btn--ghost btn--sm"
+                            onclick="document.getElementById('details-expense-<%= e.id %>').style.display = 'none';">
+                      Close
+                    </button>
+
                   </div>
 
-                  <!-- Hidden Reject Form (Pending) -->
-                  <% if (e.status === 'pending' && (currentLeadershipRoles.includes('Chairperson') || currentUserRoles.includes('super_admin'))) { %>
-                    <div id="reject-form-<%= e.id %>" style="display: none; margin-top: var(--space-3); background: #fff5f5; padding: var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--danger);">
-                      <form method="post" action="/admin/finance/expenses/<%= e.id %>/status">
-                        <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
-                        <input type="hidden" name="status" value="rejected">
-                        <div class="field" style="margin-bottom: var(--space-2);">
-                          <label style="font-size: 12px; color: var(--danger); font-weight: bold;">Reason for Rejection</label>
-                          <input type="text" name="reason" required placeholder="e.g. Budget exceeded, missing receipts..." style="padding: 6px; font-size: 12px; width: 100%; border: 1px solid var(--danger);">
-                        </div>
-                        <button type="submit" class="btn btn--danger btn--sm" style="padding: 2px 8px; font-size: 12px;">Confirm Reject</button>
-                        <button type="button" class="btn btn--ghost btn--sm" style="padding: 2px 8px; font-size: 12px;" onclick="document.getElementById('reject-form-<%= e.id %>').style.display = 'none';">Cancel</button>
-                      </form>
-                    </div>
-                  <% } %>
-
-                  <!-- Hidden Reject Form (Executive Approved) -->
-                  <% if (e.status === 'executive_approved' && currentUserRoles.includes('super_admin')) { %>
-                    <div id="reject-form-<%= e.id %>" style="display: none; margin-top: var(--space-3); background: #fff5f5; padding: var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--danger);">
-                      <form method="post" action="/admin/finance/expenses/<%= e.id %>/status">
-                        <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
-                        <input type="hidden" name="status" value="rejected">
-                        <div class="field" style="margin-bottom: var(--space-2);">
-                          <label style="font-size: 12px; color: var(--danger); font-weight: bold;">Reason for Rejection</label>
-                          <input type="text" name="reason" required placeholder="e.g. Budget exceeded, missing receipts..." style="padding: 6px; font-size: 12px; width: 100%; border: 1px solid var(--danger);">
-                        </div>
-                        <button type="submit" class="btn btn--danger btn--sm" style="padding: 2px 8px; font-size: 12px;">Confirm Reject</button>
-                        <button type="button" class="btn btn--ghost btn--sm" style="padding: 2px 8px; font-size: 12px;" onclick="document.getElementById('reject-form-<%= e.id %>').style.display = 'none';">Cancel</button>
-                      </form>
-                    </div>
-                  <% } %>
-
-                  <!-- Hidden Edit Form -->
-                  <% if (e.status === 'pending' && e.requested_by === currentUser.id) { %>
-                    <div id="edit-expense-<%= e.id %>" style="display: none; margin-top: var(--space-3); background: var(--ivory); padding: var(--space-3); border-radius: var(--radius-sm);">
-                      <form method="post" action="/admin/finance/expenses/<%= e.id %>/update" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
-                        <input type="hidden" name="<%= csrfField %>" value="<%= csrfToken %>">
-                        
-                        <div class="field" style="margin: 0;">
-                          <label style="font-size: 10px;">Title</label>
-                          <input type="text" name="title" value="<%= e.title %>" required style="padding: 4px; font-size: 12px;">
-                        </div>
-                        <div class="field" style="margin: 0;">
-                          <label style="font-size: 10px;">Amount</label>
-                          <input type="number" name="amount" value="<%= e.amount %>" required style="padding: 4px; font-size: 12px;">
-                        </div>
-                        <div class="field" style="margin: 0;">
-                          <label style="font-size: 10px;">Category</label>
-                          <select name="category" required style="padding: 4px; font-size: 12px;">
-                            <% ['Administration', 'Events', 'Projects', 'Other'].forEach(cat => { %>
-                              <option value="<%= cat %>" <%= e.category === cat ? 'selected' : '' %>><%= cat %></option>
-                            <% }) %>
-                          </select>
-                        </div>
-                        <div class="field" style="margin: 0;">
-                          <label style="font-size: 10px;">Description</label>
-                          <input type="text" name="description" value="<%= e.description || '' %>" style="padding: 4px; font-size: 12px;">
-                        </div>
-                        
-                        <div style="grid-column: 1 / -1; display: flex; gap: 4px; margin-top: 4px;">
-                          <button type="submit" class="btn btn--primary btn--sm" style="padding: 2px 8px; font-size: 12px;">Save</button>
-                          <button type="button" class="btn btn--ghost btn--sm" style="padding: 2px 8px; font-size: 12px;" onclick="document.getElementById('edit-expense-<%= e.id %>').style.display = 'none';">Cancel</button>
-                        </div>
-                      </form>
-                    </div>
-                  <% } %>
                 </td>
               </tr>
+
             <% }) %>
           </tbody>
         </table>
       </div>
+
     <% } %>
   </div>
 </div>

@@ -75,41 +75,277 @@ export function notifyMentorshipDeclined({ requesterId, mentorName }) {
 }
 
 // ---------------------------------------------------------------------------
-// Financial Notifications
+// Financial Notifications — Expense Approval Workflow
 // ---------------------------------------------------------------------------
 
-export async function notifyExpenseApprovalRequired({ expenseTitle, amount }) {
-  // Find all Super Admins and the current Chairperson
-  const { rows: approvers } = await query(`
-    SELECT DISTINCT u.id 
-    FROM users u
-    LEFT JOIN user_roles ur ON u.id = ur.user_id
-    LEFT JOIN roles r ON ur.role_id = r.id
-    LEFT JOIN leadership_roles lr ON u.id = lr.user_id
-    WHERE r.name = 'super_admin' 
-       OR (lr.office_title = 'Chairperson' AND lr.status = 'active')
-  `);
+const EXPENSE_STAGE_NAMES = {
+  projects_manager: "Projects Manager",
+  treasurer: "Treasurer",
+  chairperson: "Chairperson",
+  super_admin: "Super Admin",
+  payment: "Treasurer",
+};
 
-  const message = `New expense request for UGX ${Number(amount).toLocaleString()} (${expenseTitle}) requires your approval.`;
+const EXPENSE_STAGE_OFFICES = {
+  projects_manager: "projects manager",
+  treasurer: "treasurer",
+  chairperson: "chairperson",
+};
 
-  for (const admin of approvers) {
-    await notify(
-      admin.id,
-      "finance.expense_pending",
-      "Expense Approval Required",
-      message,
-      "/admin/finance",
+function expenseDashboardLink(expense) {
+  const role = String(expense?.submitted_role || "")
+    .trim()
+    .toLowerCase();
+
+  if (role === "regional_outreach_officer") {
+    return "/regional/dashboard";
+  }
+
+  if (role === "projects_manager") {
+    return "/admin/projects";
+  }
+
+  return "/admin/finance";
+}
+
+async function getExpenseApprovalRecipients(
+  stage,
+  excludeUserId = null,
+  additionalExcludeUserId = null,
+) {
+  try {
+    if (stage === "super_admin") {
+      const { rows } = await query(
+        `SELECT DISTINCT u.id
+         FROM users u
+         JOIN user_roles ur ON ur.user_id = u.id
+         JOIN roles r ON r.id = ur.role_id
+         WHERE LOWER(TRIM(r.name)) = 'super_admin'
+           AND LOWER(TRIM(COALESCE(u.status, ''))) NOT IN ('suspended', 'deactivated')
+           AND ($1::uuid IS NULL OR u.id <> $1::uuid)
+           AND ($2::uuid IS NULL OR u.id <> $2::uuid)`,
+        [excludeUserId, additionalExcludeUserId],
+      );
+
+      return rows;
+    }
+
+    const officeTitle = EXPENSE_STAGE_OFFICES[stage];
+
+    if (!officeTitle) {
+      return [];
+    }
+
+    const { rows } = await query(
+      `SELECT DISTINCT lr.user_id AS id
+       FROM leadership_roles lr
+       JOIN users u ON u.id = lr.user_id
+       WHERE LOWER(TRIM(lr.office_title)) = $1
+         AND LOWER(TRIM(lr.status)) = 'active'
+         AND (lr.term_start IS NULL OR lr.term_start <= CURRENT_DATE)
+         AND (lr.term_end IS NULL OR lr.term_end >= CURRENT_DATE)
+         AND ($2::uuid IS NULL OR lr.user_id <> $2::uuid)
+         AND ($3::uuid IS NULL OR lr.user_id <> $3::uuid)`,
+      [officeTitle, excludeUserId, additionalExcludeUserId],
+    );
+
+    return rows;
+  } catch (err) {
+    logger.error(
+      { err, stage },
+      "Failed to resolve expense approval recipients",
+    );
+
+    return [];
+  }
+}
+
+/**
+ * Notify the eligible approvers at a particular approval stage.
+ */
+async function notifyExpenseStageApprovers({
+  expense,
+  stage,
+  excludeUserId = null,
+  additionalExcludeUserId = null,
+}) {
+  try {
+    const recipients = await getExpenseApprovalRecipients(
+      stage,
+      excludeUserId,
+      additionalExcludeUserId,
+    );
+
+    const stageName = EXPENSE_STAGE_NAMES[stage] || stage;
+
+    for (const recipient of recipients) {
+      await notify(
+        recipient.id,
+        "finance.expense_pending",
+        "Expense Approval Required",
+        `Expense request "${expense.title}" for UGX ${Number(expense.amount).toLocaleString()} requires your approval as ${stageName}.`,
+        stage === "projects_manager" ? "/admin/projects" : "/admin/finance",
+      );
+    }
+
+    if (recipients.length === 0) {
+      logger.warn(
+        { expenseId: expense.id, stage },
+        `No eligible ${stageName} found for expense approval`,
+      );
+    }
+  } catch (err) {
+    logger.error(
+      { err, expenseId: expense.id, stage },
+      "Failed to notify expense approvers",
     );
   }
 }
 
+/**
+ * Notify the first approver after an expense request is submitted.
+ *
+ * The submitter is excluded from approver notifications.
+ */
+export async function notifyExpenseApprovalRequired({
+  expense,
+  expenseTitle,
+  amount,
+  stage,
+}) {
+  if (!expense) {
+    logger.warn(
+      { expenseTitle, stage },
+      "Expense approval notification called without an expense record",
+    );
+    return;
+  }
+
+  await notifyExpenseStageApprovers({
+    expense,
+    stage,
+    excludeUserId: expense.requested_by,
+  });
+}
+
+/**
+ * Notify the requester about an approval decision and notify the
+ * next eligible approvers where another stage remains.
+ *
+ * decision: approved | rejected | paid
+ */
+export async function notifyExpenseApprovalDecision({
+  expense,
+  actorUserId,
+  decision,
+  nextStage,
+  reason,
+  approvedStage,
+}) {
+  try {
+    if (!expense) return;
+
+    const requesterId = expense.requested_by;
+    const requesterLink = expenseDashboardLink(expense);
+
+    // Rejection: only the requester receives the private reason.
+    if (decision === "rejected") {
+      if (requesterId) {
+        await notify(
+          requesterId,
+          "finance.expense_rejected",
+          "Expense Request Rejected",
+          `Your expense request "${expense.title}" was rejected. Reason: ${reason || "No reason provided."}`,
+          requesterLink,
+        );
+      }
+
+      return;
+    }
+
+    // Payment is a separate action after final approval.
+    if (decision === "paid") {
+      if (requesterId) {
+        await notify(
+          requesterId,
+          "finance.expense_paid",
+          "Expense Payment Recorded",
+          `Payment for your expense request "${expense.title}" of UGX ${Number(expense.amount).toLocaleString()} has been recorded by the Treasurer.`,
+          requesterLink,
+        );
+      }
+
+      return;
+    }
+
+    if (decision !== "approved") return;
+
+    // Notify the requester after every successful approval stage.
+    if (requesterId) {
+      const approvedStageName =
+        EXPENSE_STAGE_NAMES[approvedStage] || "approval";
+
+      await notify(
+        requesterId,
+        "finance.expense_stage_approved",
+        "Expense Request Progress Updated",
+        `Your expense request "${expense.title}" has passed the ${approvedStageName} approval stage. Its next stage is ${EXPENSE_STAGE_NAMES[nextStage] || nextStage || "final processing"}.`,
+        requesterLink,
+      );
+    }
+
+    // Final approval means the request is awaiting payment.
+    // Notify every active Treasurer, including the original requester
+    // if that person also holds the Treasurer leadership role.
+    if (nextStage === "payment") {
+      const treasurers = await getExpenseApprovalRecipients("treasurer");
+
+      for (const treasurer of treasurers) {
+        await notify(
+          treasurer.id,
+          "finance.expense_payment_required",
+          "Expense Awaiting Payment",
+          `The Super Admin has granted final approval for "${expense.title}" amounting to UGX ${Number(expense.amount).toLocaleString()}. Please arrange and record the payment.`,
+          "/admin/finance",
+        );
+      }
+
+      if (treasurers.length === 0) {
+        logger.warn(
+          { expenseId: expense.id },
+          "No active Treasurer found to receive the payment notification",
+        );
+      }
+
+      return;
+    }
+
+    // Notify the next approval stage.
+    if (nextStage) {
+      await notifyExpenseStageApprovers({
+        expense,
+        stage: nextStage,
+        excludeUserId: actorUserId,
+        additionalExcludeUserId: requesterId,
+      });
+    }
+  } catch (err) {
+    logger.error(
+      { err, expenseId: expense?.id, decision },
+      "Failed to send expense approval decision notifications",
+    );
+  }
+}
+
+// Compatibility exports for existing controller references.
+// These can be removed after the controller is updated.
 export function notifyExpenseRejected({ userId, reason }) {
   return notify(
     userId,
     "finance.expense_rejected",
     "Expense Request Rejected",
     `Your expense request was rejected. Reason: ${reason}`,
-    `/admin/finance`,
+    "/admin/finance",
   );
 }
 
@@ -119,7 +355,7 @@ export function notifyExpenseRejectedBySuperAdmin({ chairpersonId, reason }) {
     "finance.expense_rejected_overturned",
     "Expense Rejection Overridden",
     `An expense you previously approved was rejected by the Super Admin. Reason: ${reason}`,
-    `/admin/finance`,
+    "/admin/finance",
   );
 }
 
@@ -177,10 +413,7 @@ async function notifyProjectNextApprovers({
   excludeUserId = null,
 }) {
   try {
-    const recipients = await getProjectApprovalRecipients(
-      stage,
-      excludeUserId,
-    );
+    const recipients = await getProjectApprovalRecipients(stage, excludeUserId);
 
     const stageNames = {
       projects_manager: "Projects Manager",

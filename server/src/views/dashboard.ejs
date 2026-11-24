@@ -54,6 +54,102 @@
   </section>
 <% } %>
 
+<!-- Active Expense Requests -->
+<section class="card" style="margin-bottom: var(--space-6);">
+  <h2 style="margin-top: 0;">Active Expense Requests</h2>
+  <p style="color: var(--muted); font-size: var(--text-sm);">
+    Follow the Association's expense requests and their approval progress.
+  </p>
+
+  <% if (publicExpenses && publicExpenses.length > 0) { %>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: var(--space-4);">
+      <% publicExpenses.forEach((expense) => { %>
+        <article class="card" style="border: 1px solid var(--line);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2);">
+            <h3 style="margin: 0;"><%= expense.title %></h3>
+
+            <% if (expense.status === "pending") { %>
+              <span class="badge badge--warning">Under Review</span>
+            <% } else if (expense.status === "approved" && expense.approval_stage === "payment") { %>
+              <span class="badge badge--success">Awaiting Payment</span>
+            <% } else if (expense.status === "rejected") { %>
+              <span class="badge badge--danger">Rejected</span>
+            <% } else { %>
+              <span class="badge"><%= expense.status %></span>
+            <% } %>
+          </div>
+
+          <p style="font-size: var(--text-lg); font-weight: 700; margin: var(--space-3) 0;">
+            UGX <%= Number(expense.amount || 0).toLocaleString("en-UG") %>
+          </p>
+
+          <p><strong>Category:</strong> <%= expense.category %></p>
+          <p><strong>Submitting office:</strong> <%= expense.submitted_office %></p>
+
+          <% if (expense.description) { %>
+            <p style="font-size: var(--text-sm); color: var(--muted);">
+              <%= expense.description %>
+            </p>
+          <% } %>
+
+          <p style="font-size: var(--text-xs); color: var(--muted); margin-bottom: 0;">
+            Submitted:
+            <%= expense.created_at ? new Date(expense.created_at).toLocaleDateString("en-UG") : "—" %>
+          </p>
+        </article>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <p style="color: var(--muted);">There are currently no active expense requests.</p>
+  <% } %>
+</section>
+
+<!-- Completed Expenses -->
+<section class="card" style="margin-bottom: var(--space-6);">
+  <h2 style="margin-top: 0;">Completed Expenses</h2>
+  <p style="color: var(--muted); font-size: var(--text-sm);">
+    These expenses have completed the approval process and have been paid and closed.
+  </p>
+
+  <% if (completedExpenses && completedExpenses.length > 0) { %>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: var(--space-4);">
+      <% completedExpenses.forEach((expense) => { %>
+        <article class="card" style="border: 1px solid var(--line);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2);">
+            <h3 style="margin: 0;"><%= expense.title %></h3>
+            <span class="badge badge--success">Paid — Closed</span>
+          </div>
+
+          <p style="font-size: var(--text-lg); font-weight: 700; margin: var(--space-3) 0;">
+            UGX <%= Number(expense.amount || 0).toLocaleString("en-UG") %>
+          </p>
+
+          <p><strong>Category:</strong> <%= expense.category %></p>
+          <p><strong>Submitting office:</strong> <%= expense.submitted_office %></p>
+
+          <% if (expense.description) { %>
+            <p style="font-size: var(--text-sm); color: var(--muted);">
+              <%= expense.description %>
+            </p>
+          <% } %>
+
+          <p style="font-size: var(--text-xs); color: var(--muted);">
+            Submitted:
+            <%= expense.created_at ? new Date(expense.created_at).toLocaleDateString("en-UG") : "—" %>
+          </p>
+
+          <p style="font-size: var(--text-xs); color: var(--success); margin-bottom: 0;">
+            Paid:
+            <%= expense.paid_at ? new Date(expense.paid_at).toLocaleDateString("en-UG") : "Date unavailable" %>
+          </p>
+        </article>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <p style="color: var(--muted);">No completed expenses to display yet.</p>
+  <% } %>
+</section>
+
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: var(--space-5); margin-bottom: var(--space-6);">
   <!-- Profile Completion -->
   <section class="card">

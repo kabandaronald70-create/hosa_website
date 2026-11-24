@@ -14,6 +14,10 @@ import {
   actionUpdateReport,
   actionDeleteReport,
   actionDownloadRegionalReportAttachment,
+  actionSubmitRegionalExpense,
+  showEditRegionalExpenseForm,
+  actionUpdateRegionalExpense,
+  actionDeleteRegionalExpense,
 } from "../controllers/regionalController.js";
 
 const router = Router();
@@ -35,6 +39,38 @@ router.get(
   requireAuth,
   requireOutreachOfficer,
   showRegionalDashboard,
+);
+
+// --- Regional Expense Requests ---
+router.post(
+  "/regional/expenses",
+  requireAuth,
+  requireOutreachOfficer,
+  csrfCheck,
+  actionSubmitRegionalExpense,
+);
+
+router.get(
+  "/regional/expenses/:id/edit",
+  requireAuth,
+  requireOutreachOfficer,
+  showEditRegionalExpenseForm,
+);
+
+router.post(
+  "/regional/expenses/:id/edit",
+  requireAuth,
+  requireOutreachOfficer,
+  csrfCheck,
+  actionUpdateRegionalExpense,
+);
+
+router.post(
+  "/regional/expenses/:id/delete",
+  requireAuth,
+  requireOutreachOfficer,
+  csrfCheck,
+  actionDeleteRegionalExpense,
 );
 
 // --- Regional Proposals ---

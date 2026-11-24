@@ -1,8 +1,19 @@
-import { query } from "../config/db.js";
-import { createProject, listRegionalOfficerProjects } from "../models/projectModel.js";
+﻿import { query } from "../config/db.js";
+import {
+  createProject,
+  listRegionalOfficerProjects,
+} from "../models/projectModel.js";
 import { uploadProjectImage } from "../services/projectFileService.js";
 import { auditLog } from "../services/auditService.js";
 import { notifyProjectProposalSubmitted } from "../services/notificationsService.js";
+import {
+  createExpense,
+  listExpensesSubmittedByUser,
+  listExpenseApprovalHistoryForUser,
+  updateRegionalExpenseRequest,
+  deleteRegionalExpenseRequest,
+} from "../models/financeModel.js";
+import { notifyExpenseApprovalRequired } from "../services/notificationsService.js";
 import {
   uploadRegionalReportFile,
   cleanupRegionalReportFile,
@@ -16,6 +27,38 @@ import {
 } from "../models/regionalModel.js";
 
 // ---------------------------------------------------------------------------
+// Regional Office Helpers
+// ---------------------------------------------------------------------------
+
+function getRegionalOfficeRegion(officeTitle) {
+  const title = String(officeTitle || "").trim();
+  const prefix = "Outreach Officer ";
+
+  if (!title.toLowerCase().startsWith(prefix.toLowerCase())) {
+    return null;
+  }
+
+  const regionText = title.slice(prefix.length).trim();
+
+  if (
+    regionText.charAt(0) !== "(" ||
+    regionText.charAt(regionText.length - 1) !== ")"
+  ) {
+    return null;
+  }
+
+  const region = regionText.slice(1, -1).trim().toLowerCase();
+
+  const regions = {
+    eastern: "Eastern",
+    central: "Central",
+    western: "Western",
+    northern: "Northern",
+  };
+
+  return regions[region] || null;
+}
+// ---------------------------------------------------------------------------
 // Regional Dashboard
 // ---------------------------------------------------------------------------
 
@@ -25,7 +68,7 @@ export async function showRegionalDashboard(req, res, next) {
       `SELECT office_title
        FROM leadership_roles
        WHERE user_id = $1
-         AND office_title LIKE 'Outreach Officer%'
+         AND LOWER(BTRIM(office_title)) ~ '^(outreach officer +[(]eastern[)]|outreach officer +[(]central[)]|outreach officer +[(]western[)]|outreach officer +[(]northern[)])$'
          AND status = 'active'
          AND (term_start IS NULL OR term_start <= CURRENT_DATE)
          AND (term_end IS NULL OR term_end >= CURRENT_DATE)`,
@@ -37,37 +80,204 @@ export async function showRegionalDashboard(req, res, next) {
       return res.redirect("/dashboard");
     }
 
-    const region = rows[0].office_title
-      .replace("Outreach Officer (", "")
-      .replace(")", "");
+    const region = getRegionalOfficeRegion(rows[0].office_title);
+
+    if (!region) {
+      req.flash("error", "Your regional leadership assignment is invalid.");
+      return res.redirect("/dashboard");
+    }
 
     const projects = await listRegionalOfficerProjects(req.user.id, region);
 
+    const submittedExpenses = await listExpensesSubmittedByUser({
+      requestedBy: req.user.id,
+      limit: 50,
+    });
+
+    const expenses = await Promise.all(
+      submittedExpenses.map(async (expense) => ({
+        ...expense,
+        approvalHistory: await listExpenseApprovalHistoryForUser({
+          expenseId: expense.id,
+          requestedBy: req.user.id,
+        }),
+      })),
+    );
+
     const stats = {
-      pendingProposals: projects.filter(
-        (p) => p.approval_status === "pending",
-      ).length,
-      approvedProjects: projects.filter(
-        (p) => p.approval_status === "approved",
-      ).length,
+      pendingProposals: projects.filter((p) => p.approval_status === "pending")
+        .length,
+      approvedProjects: projects.filter((p) => p.approval_status === "approved")
+        .length,
       rejectedProposals: projects.filter(
         (p) => p.approval_status === "rejected",
       ).length,
       activeProjects: projects.filter((p) =>
         ["approved", "in_progress"].includes(p.status),
       ).length,
-      completedProjects: projects.filter(
-        (p) => p.status === "completed",
-      ).length,
+      completedProjects: projects.filter((p) => p.status === "completed")
+        .length,
     };
 
     res.render("regional/dashboard", {
-      title: `Regional Dashboard — ${region}`,
+      title: `Regional Dashboard ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ${region}`,
       region,
       projects,
       stats,
       layout: "layouts/app",
+      expenses,
     });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Regional Outreach Expense Requests
+// ---------------------------------------------------------------------------
+
+export async function actionSubmitRegionalExpense(req, res, next) {
+  try {
+    const { title, amount, category, description } = req.body;
+
+    const expense = await createExpense({
+      title,
+      amount,
+      category,
+      description,
+      requestedBy: req.user.id,
+
+      // Never accept the submitting role or office from the form.
+      actorRole: "regional_outreach_officer",
+      submittedOffice: "Regional Outreach",
+    });
+
+    await notifyExpenseApprovalRequired({
+      expense,
+      stage: expense.approval_stage,
+    });
+
+    await auditLog({
+      req,
+      action: "finance.expense_submitted",
+      targetType: "expense",
+      targetId: expense.id,
+      metadata: {
+        submittedRole: "regional_outreach_officer",
+        submittedOffice: "Regional Outreach",
+        approvalStage: expense.approval_stage,
+      },
+    });
+
+    req.flash(
+      "success",
+      "Expense request submitted successfully. It is awaiting Projects Manager review.",
+    );
+
+    return res.redirect("/regional/dashboard");
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function showEditRegionalExpenseForm(req, res, next) {
+  try {
+    const expenses = await listExpensesSubmittedByUser({
+      requestedBy: req.user.id,
+      limit: 100,
+    });
+
+    const expense = expenses.find(
+      (item) =>
+        String(item.id) === String(req.params.id) &&
+        item.submitted_role === "regional_outreach_officer" &&
+        item.status === "pending" &&
+        item.approval_stage === "projects_manager",
+    );
+
+    if (!expense) {
+      req.flash(
+        "error",
+        "This request cannot be edited. Only your requests awaiting initial Projects Manager review can be edited.",
+      );
+      return res.redirect("/regional/dashboard");
+    }
+
+    return res.render("regional/expense-edit", {
+      title: "Edit Expense Request",
+      expense,
+      layout: "layouts/app",
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function actionUpdateRegionalExpense(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { title, amount, category, description } = req.body;
+
+    const updated = await updateRegionalExpenseRequest(id, req.user.id, {
+      title,
+      amount,
+      category,
+      description,
+    });
+
+    if (!updated) {
+      req.flash(
+        "error",
+        "This request cannot be edited. It may no longer be awaiting initial Projects Manager review.",
+      );
+      return res.redirect("/regional/dashboard");
+    }
+
+    await auditLog({
+      req,
+      action: "finance.regional_expense_updated",
+      targetType: "expense",
+      targetId: id,
+      metadata: {
+        title: updated.title,
+        submittedRole: "regional_outreach_officer",
+      },
+    });
+
+    req.flash("success", "Expense request updated successfully.");
+    return res.redirect("/regional/dashboard");
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function actionDeleteRegionalExpense(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    const deleted = await deleteRegionalExpenseRequest(id, req.user.id);
+
+    if (!deleted) {
+      req.flash(
+        "error",
+        "This request cannot be deleted. Only your requests awaiting initial Projects Manager review can be deleted.",
+      );
+      return res.redirect("/regional/dashboard");
+    }
+
+    await auditLog({
+      req,
+      action: "finance.regional_expense_deleted",
+      targetType: "expense",
+      targetId: id,
+      metadata: {
+        title: deleted.title,
+        submittedRole: "regional_outreach_officer",
+      },
+    });
+
+    req.flash("success", "Expense request deleted successfully.");
+    return res.redirect("/regional/dashboard");
   } catch (err) {
     next(err);
   }
@@ -83,7 +293,7 @@ export async function showRegionalProposalForm(req, res, next) {
       `SELECT office_title
        FROM leadership_roles
        WHERE user_id = $1
-         AND office_title LIKE 'Outreach Officer%'
+         AND LOWER(BTRIM(office_title)) ~ '^(outreach officer +[(]eastern[)]|outreach officer +[(]central[)]|outreach officer +[(]western[)]|outreach officer +[(]northern[)])$'
          AND status = 'active'
          AND (term_start IS NULL OR term_start <= CURRENT_DATE)
          AND (term_end IS NULL OR term_end >= CURRENT_DATE)`,
@@ -95,12 +305,15 @@ export async function showRegionalProposalForm(req, res, next) {
       return res.redirect("/dashboard");
     }
 
-    const region = rows[0].office_title
-      .replace("Outreach Officer (", "")
-      .replace(")", "");
+    const region = getRegionalOfficeRegion(rows[0].office_title);
+
+    if (!region) {
+      req.flash("error", "Your regional leadership assignment is invalid.");
+      return res.redirect("/dashboard");
+    }
 
     res.render("regional/proposal-new", {
-      title: `Submit Proposal — ${region} Region`,
+      title: `Submit Proposal ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ${region} Region`,
       region,
       layout: "layouts/app",
     });
@@ -117,7 +330,7 @@ export async function actionSubmitRegionalProposal(req, res, next) {
       `SELECT office_title
        FROM leadership_roles
        WHERE user_id = $1
-         AND office_title LIKE 'Outreach Officer%'
+         AND LOWER(BTRIM(office_title)) ~ '^(outreach officer +[(]eastern[)]|outreach officer +[(]central[)]|outreach officer +[(]western[)]|outreach officer +[(]northern[)])$'
          AND status = 'active'
          AND (term_start IS NULL OR term_start <= CURRENT_DATE)
          AND (term_end IS NULL OR term_end >= CURRENT_DATE)`,
@@ -129,9 +342,12 @@ export async function actionSubmitRegionalProposal(req, res, next) {
       return res.redirect("/dashboard");
     }
 
-    const region = rows[0].office_title
-      .replace("Outreach Officer (", "")
-      .replace(")", "");
+    const region = getRegionalOfficeRegion(rows[0].office_title);
+
+    if (!region) {
+      req.flash("error", "Your regional leadership assignment is invalid.");
+      return res.redirect("/dashboard");
+    }
 
     let imagePath = null;
 
@@ -189,7 +405,7 @@ export async function showRegionalReports(req, res, next) {
       `SELECT office_title
        FROM leadership_roles
        WHERE user_id = $1
-         AND office_title LIKE 'Outreach Officer%'
+         AND LOWER(BTRIM(office_title)) ~ '^(outreach officer +[(]eastern[)]|outreach officer +[(]central[)]|outreach officer +[(]western[)]|outreach officer +[(]northern[)])$'
          AND status = 'active'
          AND (term_start IS NULL OR term_start <= CURRENT_DATE)
          AND (term_end IS NULL OR term_end >= CURRENT_DATE)`,
@@ -201,9 +417,12 @@ export async function showRegionalReports(req, res, next) {
       return res.redirect("/dashboard");
     }
 
-    const region = rows[0].office_title
-      .replace("Outreach Officer (", "")
-      .replace(")", "");
+    const region = getRegionalOfficeRegion(rows[0].office_title);
+
+    if (!region) {
+      req.flash("error", "Your regional leadership assignment is invalid.");
+      return res.redirect("/dashboard");
+    }
 
     const reports = await listRegionalReports({
       region,
@@ -211,7 +430,7 @@ export async function showRegionalReports(req, res, next) {
     });
 
     res.render("regional/reports", {
-      title: `Regional Reports — ${region}`,
+      title: `Regional Reports ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ${region}`,
       region,
       reports,
       layout: "layouts/app",
@@ -253,7 +472,7 @@ export async function showNewReportForm(req, res, next) {
       `SELECT office_title
        FROM leadership_roles
        WHERE user_id = $1
-         AND office_title LIKE 'Outreach Officer%'
+         AND LOWER(BTRIM(office_title)) ~ '^(outreach officer +[(]eastern[)]|outreach officer +[(]central[)]|outreach officer +[(]western[)]|outreach officer +[(]northern[)])$'
          AND status = 'active'
          AND (term_start IS NULL OR term_start <= CURRENT_DATE)
          AND (term_end IS NULL OR term_end >= CURRENT_DATE)`,
@@ -265,12 +484,15 @@ export async function showNewReportForm(req, res, next) {
       return res.redirect("/dashboard");
     }
 
-    const region = rows[0].office_title
-      .replace("Outreach Officer (", "")
-      .replace(")", "");
+    const region = getRegionalOfficeRegion(rows[0].office_title);
+
+    if (!region) {
+      req.flash("error", "Your regional leadership assignment is invalid.");
+      return res.redirect("/dashboard");
+    }
 
     res.render("regional/report-new", {
-      title: `Submit Report — ${region} Region`,
+      title: `Submit Report ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ${region} Region`,
       region,
       layout: "layouts/app",
     });
@@ -305,7 +527,7 @@ export async function actionSubmitReport(req, res, next) {
       `SELECT office_title
        FROM leadership_roles
        WHERE user_id = $1
-         AND office_title LIKE 'Outreach Officer%'
+         AND LOWER(BTRIM(office_title)) ~ '^(outreach officer +[(]eastern[)]|outreach officer +[(]central[)]|outreach officer +[(]western[)]|outreach officer +[(]northern[)])$'
          AND status = 'active'
          AND (term_start IS NULL OR term_start <= CURRENT_DATE)
          AND (term_end IS NULL OR term_end >= CURRENT_DATE)`,
@@ -317,9 +539,12 @@ export async function actionSubmitReport(req, res, next) {
       return res.redirect("/dashboard");
     }
 
-    const region = rows[0].office_title
-      .replace("Outreach Officer (", "")
-      .replace(")", "");
+    const region = getRegionalOfficeRegion(rows[0].office_title);
+
+    if (!region) {
+      req.flash("error", "Your regional leadership assignment is invalid.");
+      return res.redirect("/dashboard");
+    }
 
     // Upload the attachment to private storage, if provided.
     let uploadResult = null;
@@ -382,7 +607,7 @@ export async function showEditReportForm(req, res, next) {
       `SELECT office_title
        FROM leadership_roles
        WHERE user_id = $1
-         AND office_title LIKE 'Outreach Officer%'
+         AND LOWER(BTRIM(office_title)) ~ '^(outreach officer +[(]eastern[)]|outreach officer +[(]central[)]|outreach officer +[(]western[)]|outreach officer +[(]northern[)])$'
          AND status = 'active'
          AND (term_start IS NULL OR term_start <= CURRENT_DATE)
          AND (term_end IS NULL OR term_end >= CURRENT_DATE)`,
