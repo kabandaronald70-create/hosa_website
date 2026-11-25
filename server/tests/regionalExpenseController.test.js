@@ -38,8 +38,7 @@ vi.mock("../src/services/notificationsService.js", () => ({
 vi.mock("../src/models/financeModel.js", () => ({
   createExpense: mocks.createExpense,
   listExpensesSubmittedByUser: mocks.listExpensesSubmittedByUser,
-  listExpenseApprovalHistoryForUser:
-    mocks.listExpenseApprovalHistoryForUser,
+  listExpenseApprovalHistoryForUser: mocks.listExpenseApprovalHistoryForUser,
   updateRegionalExpenseRequest: mocks.updateRegionalExpenseRequest,
   deleteRegionalExpenseRequest: mocks.deleteRegionalExpenseRequest,
 }));
@@ -81,7 +80,12 @@ function createMocks({
   body = {},
 } = {}) {
   const req = {
-    user: { id: userId },
+    user: {
+      id: userId,
+      email: "officer@example.com",
+    },
+    ip: "127.0.0.1",
+    get: vi.fn().mockReturnValue("Test browser"),
     params,
     body: {
       title: expense.title,
@@ -286,7 +290,7 @@ describe("Regional Expense Controller", () => {
   });
 
   describe("Expense deletion", () => {
-    it("deletes an eligible expense and records an audit event", async () => {
+    it("deletes an eligible expense with atomic audit metadata", async () => {
       const { req, res, next } = createMocks();
 
       await actionDeleteRegionalExpense(req, res, next);
@@ -294,15 +298,15 @@ describe("Regional Expense Controller", () => {
       expect(mocks.deleteRegionalExpenseRequest).toHaveBeenCalledWith(
         expense.id,
         "officer-123",
+        {
+          actorEmail: "officer@example.com",
+          ipAddress: "127.0.0.1",
+          userAgent: "Test browser",
+        },
       );
 
-      expect(mocks.auditLog).toHaveBeenCalledWith(
-        expect.objectContaining({
-          action: "finance.regional_expense_deleted",
-          targetType: "expense",
-          targetId: expense.id,
-        }),
-      );
+      // The model now inserts the audit event inside the deletion transaction.
+      expect(mocks.auditLog).not.toHaveBeenCalled();
 
       expect(req.flash).toHaveBeenCalledWith(
         "success",

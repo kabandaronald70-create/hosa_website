@@ -552,26 +552,58 @@ export async function updateRegionalExpenseRequest(id, userId, data = {}) {
  * Projects Manager approval.
  *
  * Associated approval-history rows are removed by the existing
- * ON DELETE CASCADE constraint. The controller must record the
- * deletion in the separate audit log.
+ * ON DELETE CASCADE constraint. The deletion and its audit record
+ * are committed together in a single transaction.
  */
-export async function deleteRegionalExpenseRequest(id, userId) {
+export async function deleteRegionalExpenseRequest(
+  id,
+  userId,
+  { actorEmail = null, ipAddress = null, userAgent = null } = {},
+) {
   if (!id || !userId) {
     return null;
   }
 
-  const { rows } = await query(
-    `DELETE FROM expenses
-     WHERE id = $1
-       AND requested_by = $2
-       AND submitted_role = 'regional_outreach_officer'
-       AND status = 'pending'
-       AND approval_stage = 'projects_manager'
-     RETURNING id, title, amount, category`,
-    [id, userId],
-  );
+  return withTransaction(async (client) => {
+    const { rows } = await client.query(
+      `DELETE FROM expenses
+       WHERE id = $1
+         AND requested_by = $2
+         AND submitted_role = 'regional_outreach_officer'
+         AND status = 'pending'
+         AND approval_stage = 'projects_manager'
+       RETURNING id, title, amount, category`,
+      [id, userId],
+    );
 
-  return rows[0] || null;
+    const deleted = rows[0] || null;
+
+    if (!deleted) {
+      return null;
+    }
+
+    await client.query(
+      `INSERT INTO audit_logs
+         (actor_user_id, actor_email, action, target_type, target_id,
+          metadata, ip_address, user_agent)
+       VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8)`,
+      [
+        userId,
+        actorEmail,
+        "finance.regional_expense_deleted",
+        "expense",
+        String(deleted.id),
+        JSON.stringify({
+          title: deleted.title,
+          submittedRole: "regional_outreach_officer",
+        }),
+        ipAddress,
+        userAgent ? String(userAgent).slice(0, 300) : null,
+      ],
+    );
+
+    return deleted;
+  });
 }
 /**
  * Lists public expense summaries.

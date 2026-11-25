@@ -255,7 +255,11 @@ export async function actionDeleteRegionalExpense(req, res, next) {
   try {
     const { id } = req.params;
 
-    const deleted = await deleteRegionalExpenseRequest(id, req.user.id);
+    const deleted = await deleteRegionalExpenseRequest(id, req.user.id, {
+      actorEmail: req.user.email ?? null,
+      ipAddress: req.ip ?? null,
+      userAgent: req.get("user-agent") || null,
+    });
 
     if (!deleted) {
       req.flash(
@@ -264,17 +268,6 @@ export async function actionDeleteRegionalExpense(req, res, next) {
       );
       return res.redirect("/regional/dashboard");
     }
-
-    await auditLog({
-      req,
-      action: "finance.regional_expense_deleted",
-      targetType: "expense",
-      targetId: id,
-      metadata: {
-        title: deleted.title,
-        submittedRole: "regional_outreach_officer",
-      },
-    });
 
     req.flash("success", "Expense request deleted successfully.");
     return res.redirect("/regional/dashboard");

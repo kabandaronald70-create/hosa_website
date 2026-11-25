@@ -998,32 +998,102 @@ describe("Regional Outreach expense request management", () => {
     expect(db.query).not.toHaveBeenCalled();
   });
 
-  it("deletes only the owner's unapproved Regional Outreach request", async () => {
+  it("deletes only the owner's eligible Regional Outreach request and audits it in the same transaction", async () => {
     const deleted = {
       id: "expense-id",
       title: "Regional transport",
+      amount: "150000",
+      category: "Events",
     };
 
-    db.query.mockResolvedValueOnce({ rows: [deleted] });
+    const client = {
+      query: vi
+        .fn()
+        .mockResolvedValueOnce({ rows: [deleted] })
+        .mockResolvedValueOnce({ rows: [] }),
+    };
+
+    db.withTransaction.mockImplementation((callback) => callback(client));
 
     await expect(
-      deleteRegionalExpenseRequest("expense-id", "officer-id"),
+      deleteRegionalExpenseRequest("expense-id", "officer-id", {
+        actorEmail: "officer@example.com",
+        ipAddress: "127.0.0.1",
+        userAgent: "Test browser",
+      }),
     ).resolves.toEqual(deleted);
 
-    const [sql, params] = db.query.mock.calls[0];
+    expect(db.withTransaction).toHaveBeenCalledOnce();
+    expect(client.query).toHaveBeenCalledTimes(2);
 
-    expect(sql).toContain("requested_by = $2");
-    expect(sql).toContain("submitted_role = 'regional_outreach_officer'");
-    expect(sql).toContain("status = 'pending'");
-    expect(sql).toContain("approval_stage = 'projects_manager'");
-    expect(params).toEqual(["expense-id", "officer-id"]);
+    const [deleteSql, deleteParams] = client.query.mock.calls[0];
+
+    expect(deleteSql).toContain("requested_by = $2");
+    expect(deleteSql).toContain("submitted_role = 'regional_outreach_officer'");
+    expect(deleteSql).toContain("status = 'pending'");
+    expect(deleteSql).toContain("approval_stage = 'projects_manager'");
+    expect(deleteParams).toEqual(["expense-id", "officer-id"]);
+
+    const [auditSql, auditParams] = client.query.mock.calls[1];
+
+    expect(auditSql).toContain("INSERT INTO audit_logs");
+    expect(auditSql).toContain("actor_user_id");
+    expect(auditSql).toContain("actor_email");
+    expect(auditSql).toContain("ip_address");
+    expect(auditSql).toContain("user_agent");
+
+    expect(auditParams).toEqual([
+      "officer-id",
+      "officer@example.com",
+      "finance.regional_expense_deleted",
+      "expense",
+      "expense-id",
+      JSON.stringify({
+        title: "Regional transport",
+        submittedRole: "regional_outreach_officer",
+      }),
+      "127.0.0.1",
+      "Test browser",
+    ]);
   });
 
-  it("returns null when a request cannot be deleted", async () => {
-    db.query.mockResolvedValueOnce({ rows: [] });
+  it("does not insert an audit record when the request is not eligible for deletion", async () => {
+    const client = {
+      query: vi.fn().mockResolvedValueOnce({ rows: [] }),
+    };
+
+    db.withTransaction.mockImplementation((callback) => callback(client));
 
     await expect(
       deleteRegionalExpenseRequest("expense-id", "officer-id"),
     ).resolves.toBeNull();
+
+    expect(client.query).toHaveBeenCalledOnce();
+  });
+
+  it("propagates audit insertion failure so the transaction can roll back the deletion", async () => {
+    const client = {
+      query: vi
+        .fn()
+        .mockResolvedValueOnce({
+          rows: [
+            {
+              id: "expense-id",
+              title: "Regional transport",
+              amount: "150000",
+              category: "Events",
+            },
+          ],
+        })
+        .mockRejectedValueOnce(new Error("Audit database failure")),
+    };
+
+    db.withTransaction.mockImplementation((callback) => callback(client));
+
+    await expect(
+      deleteRegionalExpenseRequest("expense-id", "officer-id"),
+    ).rejects.toThrow("Audit database failure");
+
+    expect(client.query).toHaveBeenCalledTimes(2);
   });
 });
